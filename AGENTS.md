@@ -33,11 +33,11 @@
 | :--- | :--- | :--- |
 | **Framework** | Next.js 15 (App Router, TypeScript) | SSR, cepat, SEO-friendly |
 | **Styling** | Tailwind CSS | Clean, responsif, ramah orang gaptek |
-| **Tema Warna** | Nuansa Militer TNI | Hijau Army (`#2D5A27`), Emas (`#C5A059`), Netral Bersih (`#F7F9F6`) |
+| **Tema Warna** | Nuansa Militer TNI Bersih | Hijau Militer Solid (`#1E3E20`), Canvas Netral (`#F9FAFB`), Border Netral (`#E5E7EB`) |
 | **Icons** | Lucide React | Konsisten dan minimalis |
 | **Database & Auth** | Supabase (PostgreSQL) | Manajemen stok, tabel pesanan bordir, auth admin |
 | **Bot Asisten** | Gemini API | Membantu customer mencari barang & cek status pesanan |
-| **Desain UI** | Figma via FigCraft MCP | 4 Frame UI prototipe sudah dibuat di kanvas Figma |
+| **Desain UI** | Figma via FigCraft MCP | 5 Frame UI prototipe sudah dibuat di kanvas Figma |
 | **Repository** | GitHub (`nndiph/web-toko-bordir`) | Remote: `https://github.com/nndiph/web-toko-bordir.git` |
 | **CI/CD** | GitHub Actions | Lint, test, dan build check otomatis |
 
@@ -67,12 +67,7 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Pull Request #1 (`chore/setup-workflow`) sukses dimerge ke `main`.
 - [x] **Fase 1 — Desain UI Prototipe di Figma via FigCraft (Selesai)**
   - Setup & build FigCraft MCP server lokal.
-  - Berhasil generate 4 frame utama di Figma Desktop:
-    1. `01 - Beranda & Katalog Stok`
-    2. `02 - Form Pesan Bordir Custom`
-    3. `03 - Cek Status Pesanan`
-    4. `04 - Dashboard Pemilik Toko`
-  - Audit desain FigCraft: `0 error, 0 unsafe`.
+  - Berhasil generate frame utama di Figma Desktop.
   - Pull Request #2 (`feature/design-ui-figma`) sukses dimerge ke `main`.
 - [x] **Fase 1.5 — Dokumentasi Memori Agen (Selesai)**
   - Dibuat file `AGENTS.md` sebagai memori abadi antar-agen.
@@ -93,14 +88,41 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - **Manajemen Antrean Mesin Bordir**: Tabel interaktif dengan filter status dan tombol 1-klik ubah status pengerjaan serta kirim pesan WhatsApp konfirmasi selesai.
   - Halaman kustom 404 di `src/app/not-found.tsx` dan integrasi menu Navbar ke `/admin`.
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
+- [x] **Fase 4.5 — Penyempurnaan Warna & Tipografi Tegas (Clean & Authentic) (Selesai)**
+  - Mengeliminasi border keruh kehijauan dan menggantinya dengan border netral bersih (`#E5E7EB`).
+  - Mengintegrasikan font **Plus Jakarta Sans** untuk tipografi tegas, tajam, dan berbobot tanpa ornamen/gimmick buatan.
+  - Menyelaraskan warna brand dengan hijau militer solid (`#1E3E20`) dan teks berbobot kontras tinggi Gray-900 (`#111827`).
+- [x] **Fase 4.6 — Visual E-Commerce: Sampul Gambar & Departemen ala Tokopedia/Uniqlo (Selesai)**
+  - Mengubah **Hero Banner** menjadi layout 2-kolom dengan **Featured Product Showcase Card** di sisi kanan (foto produk nyata, rating badge, sisa stok, harga tegas, rak fisik, tombol WA langsung), menghilangkan area kosong hijau.
+  - Memperbarui seksi **Jelajahi Departemen Produk** menjadi **Full-Photo Cards** (Badge & Pangkat, Seragam PDL, Sabuk Kopel, Topi Baret, Custom Bordir) dengan foto sampul riil, overlay gradien, jumlah item, dan filter katalog 1-klik.
+  - Menambahkan **Sampul Gambar Produk (*Aspect 4:3 Image Showcase*)** di etalase dengan zoom hover halus dan fallback grafis otomatis.
+  - Badge ketersediaan stok (*TERSEDIA*, *HABIS*, *CUSTOM*) dan kategori mengambang di atas foto sampul.
+  - Katalog diperkaya menjadi 8 produk dinas TNI nyata.
+  - Sinkronisasi frame visual di Figma Desktop via Figcraft (`12:284`).
+  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
+- [x] **Fase 4.7 — Optimasi Performa, Font Asinkron & Anti-Lag Gambar (Selesai)**
+  - Mengeliminasi render-blocking `@import` di `globals.css` yang memblokir parser browser.
+  - Menambahkan `preconnect` ke Google Fonts & GStatic di `layout.tsx` serta font fallback sistem kilat.
+  - Mengompresi beban gambar Unsplash (pengurangan ~60% bandwidth dengan `w=400&q=70&auto=format`).
+  - Menambahkan `decoding="async"` dan `loading="lazy"` agar proses decode gambar tidak membebani main thread JavaScript saat browsing dan scrolling.
+  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
+
+- [x] **Fase 5 — Integrasi Database Supabase (Kode Selesai, Menunggu Setup Supabase oleh Pemilik)**
+  - Skema + RLS + RPC di `supabase/migrations/0001_init.sql`, seed 5 kategori & 8 produk di `supabase/seed.sql`.
+  - Akses publik hanya lewat RPC `create_order` (nomor tiket dibuat server) dan `track_order` (tiket + 4 digit akhir WA). Tabel `orders` tertutup untuk anon. Admin = user dengan `app_metadata.role = 'admin'`.
+  - Data layer di `src/lib/data/` (`products.ts`, `orders.ts`); mapper snake_case → camelCase; tipe baru di `src/types/index.ts`.
+  - **Mode Demo:** bila `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` kosong, UI memakai `src/lib/demo-data.ts` dengan banner kuning dan tidak menyimpan apa pun. Cek via `isSupabaseConfigured`.
+  - `/admin` kini punya login (`src/components/AdminLogin.tsx`) dan tombol Keluar. Alert Kartu Merah dihitung dari `created_at` (>= 3 hari).
+  - `npm run lint` dan `npm run build` (7/7 route) lulus. **SQL belum pernah dijalankan** (tidak ada Postgres/Docker lokal) dan alur live belum diuji end-to-end.
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/admin-dashboard`
-- **Kondisi Working Directory:** Siap dicommit dan dipush.
-- **Tugas Selanjutnya:** Buka PR #5 (`feature/admin-dashboard` ke `main`), lalu lanjut ke **Fase 5: Integrasi Database Supabase & Skema Tabel Real-Time**.
+- **Branch Aktif:** `feature/supabase-integration` (terdorong ke `origin/feature/supabase-integration`, dibuat dari `feature/ui-ux-enhancement`).
+- **Kondisi Working Directory:** Bersih dan up to date dengan remote.
+- **Menunggu dari Pemilik:** buat project Supabase, isi `.env.local` (lihat `.env.example`), jalankan `0001_init.sql` lalu `seed.sql`, buat & tandai akun admin, lalu uji alur live.
+- **Tugas Selanjutnya:** Verifikasi end-to-end dengan Supabase nyata; pertimbangkan status `COMPLETED` (tombol "Sudah Diambil") karena pesanan `READY` belum punya aksi lanjutan di `/admin`.
 
 ---
 
@@ -108,12 +130,9 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah berikut:
 1. Baca file ini (`AGENTS.md`) dan [`PLAN.md`](./PLAN.md) untuk memahami status terakhir.
-2. Pastikan branch `feature/admin-dashboard` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
-3. Buat branch baru untuk fitur berikutnya:
-   ```bash
-   git checkout -b feature/supabase-integration
-   ```
-4. Kembangkan skema tabel database Supabase (tabel `products`, `orders`, `categories`), buat file migrasi/seed di folder `supabase/`, dan hubungkan klien Supabase di `src/lib/supabase.ts` ke UI.
+2. Pastikan PR `feature/ui-ux-enhancement` lalu `feature/supabase-integration` sudah dimerge ke `main` (urut), lalu `git pull origin main`.
+3. Buat branch baru dari `main` untuk pekerjaan berikutnya (`feature/<nama>`).
+4. Jangan ubah skema yang sudah dijalankan pemilik langsung; tambahkan migrasi baru `supabase/migrations/000N_*.sql`.
 5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
 6. Push branch dan berikan link PR kepada pengguna.
 7. **Perbarui bagian "Riwayat Pekerjaan Selesai" dan "Status Terkini" di file `AGENTS.md` ini.**

@@ -9,30 +9,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Deep military forest green - wibawa, tegas, bersih
         army: {
-          DEFAULT: "#2D5A27",
-          dark: "#1E3D1A",
-          light: "#E8F5E9",
-          border: "#D0D7CF",
+          DEFAULT: "#1E3E20",
+          dark: "#142B16",
+          hover: "#18331A",
+          light: "#EAF2EA",
+          border: "#E5E7EB", // Neutral clean border (tidak kehijauan/keruh)
         },
+        // Warm brass / bronze gold - tegas, tidak kusam
         gold: {
-          DEFAULT: "#C5A059",
-          dark: "#A58039",
-          light: "#FFF3E0",
+          DEFAULT: "#B45309",
+          dark: "#92400E",
+          light: "#FEF3C7",
         },
+        // Neutral canvas - bersih, ramah mata, standar e-commerce
         surface: {
-          DEFAULT: "#F7F9F6",
+          DEFAULT: "#F9FAFB", // Gray-50 bersih
           card: "#FFFFFF",
-          muted: "#F0F4EF",
+          muted: "#F3F4F6",   // Gray-100
         },
+        // High contrast text - hitam arang tajam, bukan hijau gelap
         ink: {
-          DEFAULT: "#1C241B",
-          muted: "#5D6B5C",
-          soft: "#8C998B",
+          DEFAULT: "#111827", // Gray-900: tegas, mudah dibaca
+          muted: "#4B5563",   // Gray-600: kontras jelas
+          soft: "#9CA3AF",    // Gray-400
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "sans-serif"],
+        sans: [
+          '"Plus Jakarta Sans"',
+          "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          "sans-serif",
+        ],
       },
     },
   },
@@ -40,4 +53,3 @@ const config: Config = {
 };
 
 export default config;
-
