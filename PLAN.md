@@ -1,17 +1,24 @@
-# Fitur: Sinkronisasi Status Dokumentasi Setelah Merge Fase 5.1
+# Fitur: Supabase Lokal & Uji SQL/RLS (Fase 5.2)
 
 ## Tujuan
-- `AGENTS.md` masih menulis branch `feature/order-completed-action` "belum dipush" dan rantai branch "belum dimerge", padahal semuanya sudah dimerge ke `main` (PR #6, #7, #8). Perbarui agar agen berikutnya tidak salah konteks.
+- SQL Fase 5 belum pernah dijalankan. Jalankan di Postgres/Supabase lokal (Docker) dan buktikan aturan RLS/RPC benar sebelum dipakai di project cloud.
 
 ## Rencana
-1. Perbarui bagian "Status Terkini" dan langkah 2 "Instruksi untuk Agent Berikutnya" di `AGENTS.md`.
-2. Tidak ada perubahan kode atau skema.
+1. `npx supabase init` + `supabase start` (migrasi & seed otomatis diterapkan).
+2. Skrip uji `supabase/smoke-test.mjs` (supabase-js, peran anon / admin / user non-admin).
+3. Perbaiki bug yang ditemukan uji pada `0001_init.sql`.
+4. Skrip npm `db:start|db:stop|db:reset|db:test` (tanpa menambah dependency).
+5. `.env.local` lokal (di-gitignore) agar `npm run dev` langsung memakai DB lokal.
 
 ## Kriteria Selesai
-- [ ] `AGENTS.md` mencerminkan kondisi `main` yang sebenarnya.
-- [ ] CI hijau pada PR.
+- [x] Migrasi + seed berhasil diterapkan di Postgres 17 lokal.
+- [x] 31/31 skenario uji lulus setelah `db reset`.
+- [x] Bug `adjust_stock` terbuka untuk anon diperbaiki (revoke dari `anon, authenticated`).
+- [x] `npm run lint` dan `npm run build` lulus dengan env live.
+- [x] `AGENTS.md` diperbarui.
+- [ ] Setup cloud oleh pemilik; uji UI browser.
 
 ## Batasan
-- Hanya mengubah dokumentasi.
 - Jangan sentuh folder `figcraft/`.
-- Jangan commit secret.
+- Jangan commit secret: `.env.local` di-gitignore; kunci di dokumen hanyalah kunci default Supabase lokal.
+- Tidak menambah dependency npm.
