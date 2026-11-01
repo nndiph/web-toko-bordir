@@ -31,7 +31,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 24,
     status: "TERSEDIA",
     rackLocation: "Rak A-02 (Etalase Depan)",
-    imageUrl: "https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "2",
@@ -42,7 +42,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 15,
     status: "TERSEDIA",
     rackLocation: "Rak B-01 (Aksesoris)",
-    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "3",
@@ -53,7 +53,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 0,
     status: "HABIS",
     rackLocation: "Gudang Belakang",
-    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "4",
@@ -64,7 +64,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 100,
     status: "CUSTOM",
     rackLocation: "Mesin Bordir Toko",
-    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "5",
@@ -75,7 +75,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 8,
     status: "TERSEDIA",
     rackLocation: "Rak C-03 (Topi & Baret)",
-    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "6",
@@ -86,7 +86,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 12,
     status: "TERSEDIA",
     rackLocation: "Rak B-02 (Sisi Depan)",
-    imageUrl: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "7",
@@ -97,7 +97,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 18,
     status: "TERSEDIA",
     rackLocation: "Rak A-03 (Pangkat Perwira)",
-    imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "8",
@@ -108,7 +108,7 @@ const INITIAL_PRODUCTS: Product[] = [
     stock: 45,
     status: "TERSEDIA",
     rackLocation: "Rak A-01 (Badge Lokasi)",
-    imageUrl: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=400&q=70",
   },
 ];
 
@@ -119,7 +119,7 @@ const FEATURED_CATEGORIES = [
     desc: "Bordir timbul rapi & presisi",
     count: "24+ Model",
     icon: Award,
-    imageUrl: "https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "seragam",
@@ -127,7 +127,7 @@ const FEATURED_CATEGORIES = [
     desc: "Kain loreng standar TNI",
     count: "Standar Mabes",
     icon: Shirt,
-    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "sabuk",
@@ -135,7 +135,7 @@ const FEATURED_CATEGORIES = [
     desc: "Kopel dinas & kepala kuningan",
     count: "Kuat & Tahan Dinas",
     icon: ShieldCheck,
-    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "topi",
@@ -143,7 +143,7 @@ const FEATURED_CATEGORIES = [
     desc: "Kostrad, Kopassus & emblem",
     count: "Lengkap Kesatuan",
     icon: Tag,
-    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "bordir",
@@ -151,7 +151,7 @@ const FEATURED_CATEGORIES = [
     desc: "Nama dada & lokasi 1-2 hari",
     count: "Antrean Terjadwal",
     icon: Scissors,
-    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=70",
   },
 ];
 
@@ -279,8 +279,10 @@ export default function HomePage() {
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=600&q=80"
+                    src="https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=500&q=75"
                     alt="Pangkat Bordir TNI AD - Serda (Timbul)"
+                    loading="eager"
+                    decoding="async"
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute top-3 left-3">
@@ -376,6 +378,7 @@ export default function HomePage() {
                       src={cat.imageUrl}
                       alt={cat.name}
                       loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
@@ -493,6 +496,7 @@ export default function HomePage() {
                           src={product.imageUrl}
                           alt={product.name}
                           loading="lazy"
+                          decoding="async"
                           onError={() => handleImageError(product.id)}
                           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                         />
