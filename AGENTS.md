@@ -124,8 +124,8 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/order-completed-action` (dibuat dari `feature/supabase-integration`, belum dipush). Rantai branch belum dimerge: `feature/ui-ux-enhancement` → `feature/supabase-integration` → `feature/order-completed-action`.
-- **Kondisi Working Directory:** Bersih setelah commit Fase 5.1.
+- **Branch Aktif:** `main`. Semua fase sampai 5.1 sudah dimerge ke `main` (PR #6, #7, #8).
+- **Kondisi Working Directory:** Bersih.
 - **Menunggu dari Pemilik:** buat project Supabase, isi `.env.local` (lihat `.env.example`), jalankan `0001_init.sql` lalu `seed.sql`, buat & tandai akun admin, lalu uji alur live.
 - **Tugas Selanjutnya:** Verifikasi end-to-end dengan Supabase nyata (termasuk tombol "Sudah Diambil").
 
@@ -135,7 +135,7 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah berikut:
 1. Baca file ini (`AGENTS.md`) dan [`PLAN.md`](./PLAN.md) untuk memahami status terakhir.
-2. Pastikan PR `feature/ui-ux-enhancement` lalu `feature/supabase-integration` sudah dimerge ke `main` (urut), lalu `git pull origin main`.
+2. Pastikan berada di `main` terbaru (`git pull origin main`).
 3. Buat branch baru dari `main` untuk pekerjaan berikutnya (`feature/<nama>`).
 4. Jangan ubah skema yang sudah dijalankan pemilik langsung; tambahkan migrasi baru `supabase/migrations/000N_*.sql`.
 5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
