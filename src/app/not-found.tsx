@@ -3,22 +3,30 @@ import { ShieldAlert, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 text-center">
-      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-        <ShieldAlert className="w-8 h-8" />
+    <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 text-center font-sans">
+      <div className="bg-white border border-surface-border rounded-3xl p-8 sm:p-12 shadow-card max-w-md w-full space-y-5">
+        <div className="w-16 h-16 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <div className="space-y-1.5">
+          <span className="text-xs font-mono font-bold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            Error 404
+          </span>
+          <h1 className="text-2xl font-extrabold text-ink tracking-tight pt-1">Halaman Tidak Ditemukan</h1>
+          <p className="text-xs sm:text-sm text-ink-muted">
+            Halaman yang Anda tuju mungkin sudah dipindahkan atau alamat URL yang dimasukkan salah.
+          </p>
+        </div>
+        <div className="pt-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 bg-army hover:bg-army-dark active:scale-[0.98] text-white text-xs sm:text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-army/20"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Kembali ke Beranda Toko</span>
+          </Link>
+        </div>
       </div>
-      <h2 className="text-2xl font-bold text-ink">Halaman Tidak Ditemukan</h2>
-      <p className="text-sm text-ink-muted max-w-sm mt-2 mb-6">
-        Halaman yang Anda tuju mungkin sudah dipindahkan atau URL yang dimasukkan salah.
-      </p>
-      <Link
-        href="/"
-        className="inline-flex items-center gap-2 bg-army hover:bg-army-dark text-white text-xs font-bold px-5 py-2.5 rounded-lg transition-colors shadow"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Kembali ke Beranda</span>
-      </Link>
     </div>
   );
 }
-
