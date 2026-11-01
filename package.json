@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:start": "npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime,storage-api,mailpit,supavisor",
+    "db:stop": "npx supabase stop",
+    "db:reset": "npx supabase db reset",
+    "db:test": "node supabase/smoke-test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
