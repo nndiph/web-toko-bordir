@@ -33,7 +33,7 @@
 | :--- | :--- | :--- |
 | **Framework** | Next.js 15 (App Router, TypeScript) | SSR, cepat, SEO-friendly |
 | **Styling** | Tailwind CSS | Clean, responsif, ramah orang gaptek |
-| **Tema Warna** | Nuansa Militer TNI | Hijau Army (`#2D5A27`), Emas (`#C5A059`), Netral Bersih (`#F7F9F6`) |
+| **Tema Warna** | Nuansa Militer TNI Bersih | Hijau Militer Solid (`#1E3E20`), Canvas Netral (`#F9FAFB`), Border Netral (`#E5E7EB`) |
 | **Icons** | Lucide React | Konsisten dan minimalis |
 | **Database & Auth** | Supabase (PostgreSQL) | Manajemen stok, tabel pesanan bordir, auth admin |
 | **Bot Asisten** | Gemini API | Membantu customer mencari barang & cek status pesanan |
@@ -93,14 +93,20 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - **Manajemen Antrean Mesin Bordir**: Tabel interaktif dengan filter status dan tombol 1-klik ubah status pengerjaan serta kirim pesan WhatsApp konfirmasi selesai.
   - Halaman kustom 404 di `src/app/not-found.tsx` dan integrasi menu Navbar ke `/admin`.
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
+- [x] **Fase 4.5 — Penyempurnaan Warna & Tipografi Tegas (Clean & Authentic) (Selesai)**
+  - Mengeliminasi border keruh kehijauan dan menggantinya dengan border netral bersih (`#E5E7EB`).
+  - Mengintegrasikan font **Plus Jakarta Sans** untuk tipografi tegas, tajam, dan berbobot tanpa ornamen/gimmick buatan (tanpa fake icon frames atau marketing buzzwords).
+  - Menyelaraskan warna brand dengan hijau militer solid (`#1E3E20`) dan teks berbobot kontras tinggi Gray-900 (`#111827`).
+  - Memastikan kartu katalog produk tampil bersih, jujur, dan mudah dilihat oleh mata.
+  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/admin-dashboard`
-- **Kondisi Working Directory:** Siap dicommit dan dipush.
-- **Tugas Selanjutnya:** Buka PR #5 (`feature/admin-dashboard` ke `main`), lalu lanjut ke **Fase 5: Integrasi Database Supabase & Skema Tabel Real-Time**.
+- **Branch Aktif:** `feature/ui-ux-enhancement`
+- **Kondisi Working Directory:** Bersih dan siap dipush.
+- **Tugas Selanjutnya:** Lanjut ke **Fase 5: Integrasi Database Supabase & Skema Tabel Real-Time**.
 
 ---
 
@@ -108,7 +114,7 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah berikut:
 1. Baca file ini (`AGENTS.md`) dan [`PLAN.md`](./PLAN.md) untuk memahami status terakhir.
-2. Pastikan branch `feature/admin-dashboard` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
+2. Pastikan branch `feature/ui-ux-enhancement` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
 3. Buat branch baru untuk fitur berikutnya:
    ```bash
    git checkout -b feature/supabase-integration

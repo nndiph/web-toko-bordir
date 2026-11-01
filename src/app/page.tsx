@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Clock, CheckCircle2, AlertTriangle, MapPin } from "lucide-react";
+import { Search, Clock, CheckCircle2, AlertTriangle, MapPin, ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { formatRupiah } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -69,34 +69,35 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col font-sans">
       {/* ─── Navbar ─── */}
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 w-full">
         {/* ─── Hero Banner ─── */}
-        <section className="bg-army text-white rounded-2xl p-6 sm:p-10 lg:p-12 relative overflow-hidden shadow-sm">
+        <section className="bg-army text-white rounded-xl p-6 sm:p-10 lg:p-12 shadow-sm">
           <div className="max-w-3xl space-y-4">
-            <span className="inline-flex items-center gap-1.5 bg-army-dark/80 text-gold text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              Layanan Resmi & Terpercaya
+            <span className="inline-flex items-center gap-1.5 bg-black/25 text-amber-300 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+              Layanan Resmi Toko Fisik & Bordir
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
               Cek Ketersediaan Stok & Pesan Bordir Dinas Tanpa Antre
-            </h2>
-            <p className="text-sm sm:text-base text-gray-200 leading-relaxed">
+            </h1>
+            <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-2xl">
               Khusus anggota dinas, komando satuan, dan calon prajurit. Pantau sisa stok barang sebelum
               berangkat ke toko atau ajukan pesanan custom bordir nama & pangkat secara online.
             </p>
-            <div className="pt-2 flex flex-wrap gap-4">
+            <div className="pt-2 flex flex-wrap gap-3">
               <Link
                 href="/pesan"
-                className="bg-gold hover:bg-gold-dark text-ink font-bold px-6 py-3 rounded-lg text-sm transition-colors shadow"
+                className="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-army font-bold px-5 py-2.5 rounded-lg text-sm transition-colors shadow-sm"
               >
-                Pesan Custom Bordir
+                <span>Pesan Custom Bordir</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
               <a
                 href="#katalog"
-                className="border border-white/80 hover:bg-white/10 text-white font-medium px-6 py-3 rounded-lg text-sm transition-colors"
+                className="border border-white/70 hover:bg-white/10 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition-colors"
               >
                 Lihat Stok Barang
               </a>
@@ -108,76 +109,93 @@ export default function HomePage() {
         <section id="katalog" className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-ink">Katalog Ketersediaan Barang</h3>
-              <p className="text-sm text-ink-muted">Data stok sinkron langsung dengan inventaris toko fisik</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+                Katalog Ketersediaan Barang
+              </h2>
+              <p className="text-sm text-gray-500">
+                Data stok sinkron langsung dengan inventaris toko fisik Gaperta
+              </p>
             </div>
 
             {/* Search Input */}
-            <div className="relative w-full md:w-96">
-              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-ink-soft" />
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Cari barang (misal: Pangkat Serda, Kopel)..."
+                placeholder="Cari barang (Pangkat, Kopel, PDL)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-army-border pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army text-ink placeholder:text-ink-soft shadow-sm"
+                className="w-full bg-white border border-gray-300 pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 placeholder:text-gray-400 shadow-xs"
               />
             </div>
           </div>
 
           {/* Category Filter Pills */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`text-xs sm:text-sm px-4 py-2 rounded-full font-medium whitespace-nowrap transition-colors ${
-                  selectedCategory === cat.id
-                    ? "bg-army text-white shadow-sm"
-                    : "bg-white text-ink border border-army-border hover:bg-surface-muted"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {CATEGORIES.map((cat) => {
+              const isSelected = selectedCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`text-xs sm:text-sm px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                    isSelected
+                      ? "bg-army text-white shadow-sm font-semibold"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-white border border-army-border/80 rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-shadow"
+                className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between hover:border-gray-300 hover:shadow-sm transition-all"
               >
                 <div className="space-y-3">
                   {/* Status Badge */}
                   <div>
                     {product.status === "TERSEDIA" && (
-                      <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-bold px-2.5 py-1 rounded-md">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        TERSEDIA ({product.stock} pcs)
+                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold px-2.5 py-1 rounded-md">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        Tersedia ({product.stock} pcs)
                       </span>
                     )}
                     {product.status === "HABIS" && (
-                      <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs font-bold px-2.5 py-1 rounded-md">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        STOK HABIS
+                      <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-800 border border-rose-200 text-xs font-semibold px-2.5 py-1 rounded-md">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                        Stok Habis
                       </span>
                     )}
                     {product.status === "CUSTOM" && (
-                      <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-md">
-                        <Clock className="w-3.5 h-3.5" />
-                        CUSTOM ORDER (1-2 Hari)
+                      <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-200 text-xs font-semibold px-2.5 py-1 rounded-md">
+                        <Clock className="w-3.5 h-3.5 text-amber-700" />
+                        Custom Order (1-2 Hari)
                       </span>
                     )}
                   </div>
 
-                  <h4 className="font-bold text-ink text-base line-clamp-2">{product.name}</h4>
-                  <p className="text-lg font-extrabold text-army">{formatRupiah(product.price)}</p>
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                      {product.category}
+                    </span>
+                    <h3 className="font-bold text-gray-900 text-base line-clamp-2 mt-0.5 leading-snug">
+                      {product.name}
+                    </h3>
+                  </div>
 
-                  <div className="flex items-center gap-1.5 text-xs text-ink-muted bg-surface p-2 rounded-lg">
-                    <MapPin className="w-3.5 h-3.5 text-army" />
+                  <p className="text-lg font-bold text-gray-900 tabular-nums">
+                    {formatRupiah(product.price)}
+                  </p>
+
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-200 p-2 rounded-lg">
+                    <MapPin className="w-3.5 h-3.5 text-army shrink-0" />
                     <span>{product.rackLocation}</span>
                   </div>
                 </div>
@@ -185,17 +203,19 @@ export default function HomePage() {
                 <div className="pt-4">
                   {product.status === "TERSEDIA" ? (
                     <a
-                      href={`https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20apakah%20${encodeURIComponent(product.name)}%20masih%20tersedia?`}
+                      href={`https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20apakah%20${encodeURIComponent(
+                        product.name
+                      )}%20masih%20tersedia?`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center bg-army hover:bg-army-dark text-white text-xs font-bold py-2.5 rounded-lg transition-colors"
+                      className="block w-full text-center bg-army hover:bg-army-dark text-white text-xs font-bold py-2.5 rounded-lg transition-colors shadow-sm"
                     >
                       Beli / Pesan via WA
                     </a>
                   ) : product.status === "CUSTOM" ? (
                     <Link
                       href="/pesan"
-                      className="block w-full text-center bg-gold hover:bg-gold-dark text-ink text-xs font-bold py-2.5 rounded-lg transition-colors"
+                      className="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 rounded-lg transition-colors shadow-sm"
                     >
                       Isi Form Bordir Custom
                     </Link>
@@ -203,7 +223,7 @@ export default function HomePage() {
                     <button
                       type="button"
                       disabled
-                      className="w-full text-center bg-gray-100 text-gray-400 text-xs font-bold py-2.5 rounded-lg cursor-not-allowed"
+                      className="w-full text-center bg-gray-100 text-gray-400 text-xs font-semibold py-2.5 rounded-lg cursor-not-allowed"
                     >
                       Bisa Pre-Order di Toko
                     </button>
@@ -216,7 +236,7 @@ export default function HomePage() {
       </main>
 
       {/* ─── Footer ─── */}
-      <footer className="bg-white border-t border-army-border/60 py-6 text-center text-xs text-ink-muted">
+      <footer className="bg-white border-t border-gray-200 py-6 text-center text-xs text-gray-500 mt-12">
         <p>© 2026 Toko Gaperta — Atribut Dinas & Bordir Komputer. Semua hak dilindungi.</p>
       </footer>
     </div>
