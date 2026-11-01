@@ -10,7 +10,8 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
-  category: string;
+  category: string; // slug kategori, contoh: "pangkat"
+  categoryName: string; // nama tampilan, contoh: "Badge & Pangkat"
   price: number;
   stock: number;
   status: StockStatus;
@@ -20,6 +21,7 @@ export interface Product {
 }
 
 export type OrderStatus = "PENDING" | "IN_PROGRESS" | "READY" | "COMPLETED";
+export type OrderType = "NAMA_DADA" | "PANGKAT" | "LOKASI" | "EMBLEM" | "LAINNYA";
 
 export interface CustomOrder {
   id: string;
@@ -27,11 +29,33 @@ export interface CustomOrder {
   customerName: string;
   customerRank?: string; // pangkat (Serka, Kopda, dll)
   whatsappNumber: string;
-  orderType: "NAMA_DADA" | "PANGKAT" | "LOKASI" | "EMBLEM" | "LAINNYA";
+  orderType: OrderType;
   quantity: number;
   notes: string;
   status: OrderStatus;
-  createdAt: string;
+  createdAt: string; // ISO 8601
   estimatedDone?: string;
 }
 
+/** Input form pemesanan publik. */
+export interface NewOrderInput {
+  customerName: string;
+  customerRank?: string;
+  whatsappNumber: string;
+  orderType: OrderType;
+  quantity: number;
+  notes: string;
+}
+
+/** Hasil pelacakan publik. Sengaja tanpa nomor WhatsApp. */
+export interface TrackedOrder {
+  orderNumber: string;
+  customerName: string;
+  customerRank?: string;
+  orderType: OrderType;
+  quantity: number;
+  notes: string;
+  status: OrderStatus;
+  estimatedDone?: string;
+  createdAt: string; // ISO 8601
+}

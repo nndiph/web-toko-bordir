@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -18,99 +18,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
+import { getProducts } from "@/lib/data/products";
 import { formatRupiah } from "@/lib/utils";
 import type { Product } from "@/types";
-
-const INITIAL_PRODUCTS: Product[] = [
-  {
-    id: "1",
-    name: "Pangkat Bordir TNI AD - Serda (Timbul)",
-    slug: "pangkat-serda-tni-ad",
-    category: "pangkat",
-    price: 35000,
-    stock: 24,
-    status: "TERSEDIA",
-    rackLocation: "Rak A-02 (Etalase Depan)",
-    imageUrl: "https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=400&q=70",
-  },
-  {
-    id: "2",
-    name: "Kopel Rim Hitam Standard TNI",
-    slug: "kopel-rim-hitam-tni",
-    category: "sabuk",
-    price: 75000,
-    stock: 15,
-    status: "TERSEDIA",
-    rackLocation: "Rak B-01 (Aksesoris)",
-    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=70",
-  },
-  {
-    id: "3",
-    name: "Seragam PDL Loreng Malvinas Size L",
-    slug: "seragam-pdl-malvinas-l",
-    category: "seragam",
-    price: 250000,
-    stock: 0,
-    status: "HABIS",
-    rackLocation: "Gudang Belakang",
-    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=400&q=70",
-  },
-  {
-    id: "4",
-    name: "Badge Nama Dada Bordir Komputer",
-    slug: "badge-nama-dada-bordir",
-    category: "bordir",
-    price: 15000,
-    stock: 100,
-    status: "CUSTOM",
-    rackLocation: "Mesin Bordir Toko",
-    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=70",
-  },
-  {
-    id: "5",
-    name: "Baret Hijau Kostrad + Emblem Logam",
-    slug: "baret-hijau-kostrad",
-    category: "topi",
-    price: 110000,
-    stock: 8,
-    status: "TERSEDIA",
-    rackLocation: "Rak C-03 (Topi & Baret)",
-    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=400&q=70",
-  },
-  {
-    id: "6",
-    name: "Sabuk Kopral Kepala Gesper Kuningan",
-    slug: "sabuk-kopral-gesper-kuningan",
-    category: "sabuk",
-    price: 45000,
-    stock: 12,
-    status: "TERSEDIA",
-    rackLocation: "Rak B-02 (Sisi Depan)",
-    imageUrl: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=400&q=70",
-  },
-  {
-    id: "7",
-    name: "Pangkat Bordir TNI AD - Kapten (Timbul Emas)",
-    slug: "pangkat-kapten-tni-ad",
-    category: "pangkat",
-    price: 45000,
-    stock: 18,
-    status: "TERSEDIA",
-    rackLocation: "Rak A-03 (Pangkat Perwira)",
-    imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=400&q=70",
-  },
-  {
-    id: "8",
-    name: "Badge Lokasi KODAM I / Bukit Barisan",
-    slug: "badge-lokasi-kodam-bb",
-    category: "bordir",
-    price: 12500,
-    stock: 45,
-    status: "TERSEDIA",
-    rackLocation: "Rak A-01 (Badge Lokasi)",
-    imageUrl: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=400&q=70",
-  },
-];
 
 const FEATURED_CATEGORIES = [
   {
@@ -168,12 +79,36 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isDemo, setIsDemo] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getProducts()
+      .then((result) => {
+        if (cancelled) return;
+        setProducts(result.data);
+        setIsDemo(result.demo);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setLoadError(err instanceof Error ? err.message : "Gagal memuat produk.");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleImageError = (id: string) => {
     setImgErrors((prev) => ({ ...prev, [id]: true }));
   };
 
-  const filteredProducts = INITIAL_PRODUCTS.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -350,7 +285,7 @@ export default function HomePage() {
                 onClick={() => setSelectedCategory("all")}
                 className="text-xs font-semibold text-army hover:underline"
               >
-                Reset ke Semua ({INITIAL_PRODUCTS.length})
+                Reset ke Semua ({products.length})
               </button>
             )}
           </div>
@@ -407,6 +342,8 @@ export default function HomePage() {
 
         {/* ─── Katalog Barang Section ─── */}
         <section id="katalog" className="space-y-6 pt-2">
+          {isDemo && <DemoBanner />}
+
           {/* Header & Controls */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-4">
             <div>
@@ -458,7 +395,13 @@ export default function HomePage() {
           </div>
 
           {/* ─── Grid Kartu Produk Bergaya Tokopedia / Uniqlo (Dengan Sampul Gambar) ─── */}
-          {filteredProducts.length === 0 ? (
+          {isLoading ? (
+            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-sm text-gray-500">
+              Memuat katalog produk...
+            </div>
+          ) : loadError ? (
+            <ErrorBanner message={`${loadError} Silakan muat ulang halaman atau hubungi toko via WhatsApp.`} />
+          ) : filteredProducts.length === 0 ? (
             <div className="bg-white border border-gray-200 rounded-xl p-12 text-center space-y-3">
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-400">
                 <Search className="w-6 h-6" />
