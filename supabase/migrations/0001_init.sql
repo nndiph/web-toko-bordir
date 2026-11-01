@@ -232,9 +232,11 @@ create policy "orders_admin_all" on public.orders
 -- order_counters: tanpa policy = tertutup untuk semua kecuali security definer.
 
 -- ─── Hak eksekusi fungsi ────────────────────────────────────────────────────
-revoke all on function public.create_order(text, text, text, public.order_type, integer, text) from public;
-revoke all on function public.track_order(text, text) from public;
-revoke all on function public.adjust_stock(uuid, integer) from public;
+-- Supabase memberi hak eksekusi ke anon/authenticated lewat default privileges,
+-- jadi cabut juga dari keduanya secara eksplisit sebelum grant ulang.
+revoke all on function public.create_order(text, text, text, public.order_type, integer, text) from public, anon, authenticated;
+revoke all on function public.track_order(text, text) from public, anon, authenticated;
+revoke all on function public.adjust_stock(uuid, integer) from public, anon, authenticated;
 
 grant execute on function public.create_order(text, text, text, public.order_type, integer, text) to anon, authenticated;
 grant execute on function public.track_order(text, text) to anon, authenticated;
