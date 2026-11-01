@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Shield,
@@ -16,191 +16,182 @@ import {
   Send,
   RefreshCw,
   SlidersHorizontal,
+  LogOut,
 } from "lucide-react";
-import { formatRupiah } from "@/lib/utils";
-import type { Product, CustomOrder } from "@/types";
+import { AdminLogin } from "@/components/AdminLogin";
+import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
+import { getDemoOrders } from "@/lib/demo-data";
+import {
+  getAdminAccess,
+  getAdminOrders,
+  updateOrderStatus as saveOrderStatus,
+} from "@/lib/data/orders";
+import { adjustStock, getProducts } from "@/lib/data/products";
+import { supabase } from "@/lib/supabase";
+import { daysSince, formatOrderDate, formatRupiah } from "@/lib/utils";
+import type { CustomOrder, OrderStatus, Product } from "@/types";
 
-// ─── Data Awal Inventaris Toko ───
-const INITIAL_INVENTORY: Product[] = [
-  {
-    id: "1",
-    name: "Pangkat Bordir TNI AD - Serda (Timbul)",
-    slug: "pangkat-serda-tni-ad",
-    category: "Badge & Pangkat",
-    price: 35000,
-    stock: 24,
-    status: "TERSEDIA",
-    rackLocation: "Rak A-02 (Etalase Depan)",
-  },
-  {
-    id: "2",
-    name: "Kopel Rim Hitam Standard TNI",
-    slug: "kopel-rim-hitam-tni",
-    category: "Sabuk & Kopel",
-    price: 75000,
-    stock: 15,
-    status: "TERSEDIA",
-    rackLocation: "Rak B-01 (Aksesoris)",
-  },
-  {
-    id: "3",
-    name: "Seragam PDL Loreng Malvinas Size L",
-    slug: "seragam-pdl-malvinas-l",
-    category: "Seragam",
-    price: 250000,
-    stock: 0,
-    status: "HABIS",
-    rackLocation: "Gudang Belakang Toko",
-  },
-  {
-    id: "4",
-    name: "Baret Hijau Kostrad + Emblem",
-    slug: "baret-hijau-kostrad",
-    category: "Topi & Baret",
-    price: 110000,
-    stock: 3, // < 5 (Stok Menipis)
-    status: "TERSEDIA",
-    rackLocation: "Rak C-03 (Topi/Baret)",
-  },
-  {
-    id: "5",
-    name: "Sabuk Kopral Kepala Gesper Kuningan",
-    slug: "sabuk-kopral-gesper-kuningan",
-    category: "Sabuk & Kopel",
-    price: 45000,
-    stock: 4, // < 5 (Stok Menipis)
-    status: "TERSEDIA",
-    rackLocation: "Rak B-02 (Sisi Depan)",
-  },
-];
+/** Batas hari sebelum pesanan belum selesai dianggap terlewat (Alert Kartu Merah). */
+const OVERDUE_DAYS = 3;
 
-// ─── Data Awal Pesanan Bordir Masuk ───
-interface AdminOrder extends CustomOrder {
-  daysAgo: number; // untuk menghitung alert kartu merah > 3 hari
-}
-
-const INITIAL_ORDERS: AdminOrder[] = [
-  {
-    id: "1",
-    orderNumber: "GPT-20261101-038",
-    customerName: "Lettu Danang",
-    customerRank: "Yonif 100",
-    whatsappNumber: "081198765432",
-    orderType: "PANGKAT",
-    quantity: 6,
-    notes: "Pangkat PDU & PDL timbul tebal, dasar hijau TNI benang emas.",
-    status: "PENDING",
-    daysAgo: 5, // ⚠️ Alert kartu merah! (> 3 hari)
-    createdAt: "5 hari yang lalu",
-  },
-  {
-    id: "2",
-    orderNumber: "GPT-20261101-040",
-    customerName: "Kapten Suryo",
-    customerRank: "Kodam I/BB",
-    whatsappNumber: "081288990011",
-    orderType: "LOKASI",
-    quantity: 10,
-    notes: "Bordir lokasi dinas timbul dasar loreng Malvinas.",
-    status: "PENDING",
-    daysAgo: 4, // ⚠️ Alert kartu merah! (> 3 hari)
-    createdAt: "4 hari yang lalu",
-  },
-  {
-    id: "3",
-    orderNumber: "GPT-20261101-042",
-    customerName: "Serka Bambang",
-    customerRank: "Kopassus",
-    whatsappNumber: "081234567890",
-    orderType: "PANGKAT",
-    quantity: 4,
-    notes: "Benang hitam timbul tebal, dasar kain loreng Malvinas.",
-    status: "IN_PROGRESS",
-    daysAgo: 1,
-    createdAt: "Kemarin, 14:20 WIB",
-    estimatedDone: "Hari ini pukul 16:30 WIB",
-  },
-  {
-    id: "4",
-    orderNumber: "GPT-20261101-045",
-    customerName: "Kopda Hendra",
-    customerRank: "Kodam I/BB",
-    whatsappNumber: "081311223344",
-    orderType: "NAMA_DADA",
-    quantity: 2,
-    notes: "Tulisan 'HENDRA S.', kain hijau standar dinas.",
-    status: "READY",
-    daysAgo: 0,
-    createdAt: "Hari ini, 09:00 WIB",
-    estimatedDone: "Sudah selesai — Siap diambil di toko",
-  },
-];
+type Gate = "checking" | "login" | "ready";
 
 export default function AdminDashboardPage() {
-  const [inventory, setInventory] = useState<Product[]>(INITIAL_INVENTORY);
-  const [orders, setOrders] = useState<AdminOrder[]>(INITIAL_ORDERS);
+  const [gate, setGate] = useState<Gate>("checking");
+  const [loginNotice, setLoginNotice] = useState<string | undefined>();
+  const [isDemo, setIsDemo] = useState(false);
+  const [inventory, setInventory] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<CustomOrder[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [cashierSearch, setCashierSearch] = useState("");
   const [orderFilter, setOrderFilter] = useState<"ALL" | "OVERDUE" | "PENDING" | "IN_PROGRESS" | "READY">("ALL");
 
+  const loadDashboard = useCallback(async () => {
+    setLoadError(null);
+    setActionError(null);
+
+    const access = await getAdminAccess();
+    if (!access.live) {
+      if (access.reason === "not-configured") {
+        const products = await getProducts();
+        setInventory(products.data);
+        setOrders(getDemoOrders());
+        setIsDemo(true);
+        setGate("ready");
+        return;
+      }
+      setLoginNotice(
+        access.reason === "not-admin"
+          ? "Akun ini bukan admin toko. Masuk dengan akun admin."
+          : undefined
+      );
+      setGate("login");
+      return;
+    }
+
+    try {
+      const [products, adminOrders] = await Promise.all([getProducts(), getAdminOrders()]);
+      setInventory(products.data);
+      setOrders(adminOrders);
+      setIsDemo(false);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Gagal memuat data dashboard.");
+    }
+    setGate("ready");
+  }, []);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setInventory([]);
+    setOrders([]);
+    setLoginNotice(undefined);
+    setGate("login");
+  };
+
   // ─── Kalkulasi KPI Stats ───
-  const overdueOrders = orders.filter((o) => o.status !== "COMPLETED" && o.daysAgo >= 3);
+  const isOverdue = (o: CustomOrder) => o.status !== "COMPLETED" && daysSince(o.createdAt) >= OVERDUE_DAYS;
+  const overdueOrders = orders.filter(isOverdue);
   const lowStockProducts = inventory.filter((p) => p.stock > 0 && p.stock < 5);
   const inProgressOrders = orders.filter((o) => o.status === "IN_PROGRESS");
   const readyOrders = orders.filter((o) => o.status === "READY");
 
   // ─── Fungsi Kasir Cepat Tambah/Kurang Stok ───
-  const updateStock = (productId: string, delta: number) => {
-    setInventory((prev) =>
-      prev.map((item) => {
-        if (item.id === productId) {
+  const updateStock = async (productId: string, delta: number) => {
+    setActionError(null);
+
+    if (isDemo) {
+      setInventory((prev) =>
+        prev.map((item) => {
+          if (item.id !== productId) return item;
           const newStock = Math.max(0, item.stock + delta);
+          const syncsWithStock = item.status === "TERSEDIA" || item.status === "HABIS";
           return {
             ...item,
             stock: newStock,
-            status: newStock === 0 ? "HABIS" : "TERSEDIA",
+            status: syncsWithStock ? (newStock === 0 ? "HABIS" : "TERSEDIA") : item.status,
           };
-        }
-        return item;
-      })
-    );
+        })
+      );
+      return;
+    }
+
+    setBusyId(productId);
+    try {
+      // Stok & status dihitung atomik oleh database, UI memakai hasilnya.
+      const updated = await adjustStock(productId, delta);
+      setInventory((prev) =>
+        prev.map((item) => (item.id === productId ? { ...item, ...updated } : item))
+      );
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Gagal mengubah stok.");
+    } finally {
+      setBusyId(null);
+    }
   };
 
   // ─── Fungsi Ubah Status Pesanan ───
-  const updateOrderStatus = (orderId: string, newStatus: AdminOrder["status"]) => {
+  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    const current = orders.find((o) => o.id === orderId);
+    if (!current) return;
+
+    setActionError(null);
+    const estimatedDone =
+      newStatus === "READY"
+        ? "Sudah selesai — Siap diambil di toko"
+        : newStatus === "IN_PROGRESS"
+        ? "Sedang dibordir di mesin"
+        : current.estimatedDone;
+
+    if (!isDemo) {
+      setBusyId(orderId);
+      try {
+        await saveOrderStatus(orderId, newStatus, estimatedDone);
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : "Gagal mengubah status pesanan.");
+        setBusyId(null);
+        return;
+      }
+      setBusyId(null);
+    }
+
     setOrders((prev) =>
-      prev.map((order) => {
-        if (order.id === orderId) {
-          return {
-            ...order,
-            status: newStatus,
-            estimatedDone:
-              newStatus === "READY"
-                ? "Sudah selesai — Siap diambil di toko"
-                : newStatus === "IN_PROGRESS"
-                ? "Sedang dibordir di mesin"
-                : order.estimatedDone,
-          };
-        }
-        return order;
-      })
+      prev.map((order) => (order.id === orderId ? { ...order, status: newStatus, estimatedDone } : order))
     );
   };
 
   // ─── Filter Pencarian Kasir ───
   const filteredInventory = inventory.filter((item) =>
     item.name.toLowerCase().includes(cashierSearch.toLowerCase()) ||
-    item.category.toLowerCase().includes(cashierSearch.toLowerCase()) ||
+    item.categoryName.toLowerCase().includes(cashierSearch.toLowerCase()) ||
     item.rackLocation.toLowerCase().includes(cashierSearch.toLowerCase())
   );
 
   // ─── Filter Pesanan ───
   const filteredOrders = orders.filter((order) => {
-    if (orderFilter === "OVERDUE") return order.status !== "COMPLETED" && order.daysAgo >= 3;
+    if (orderFilter === "OVERDUE") return isOverdue(order);
     if (orderFilter === "PENDING") return order.status === "PENDING";
     if (orderFilter === "IN_PROGRESS") return order.status === "IN_PROGRESS";
     if (orderFilter === "READY") return order.status === "READY";
     return true;
   });
+
+  if (gate === "checking") {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center text-sm text-gray-500 font-sans">
+        Memeriksa akses...
+      </div>
+    );
+  }
+
+  if (gate === "login") {
+    return <AdminLogin notice={loginNotice} onSuccess={loadDashboard} />;
+  }
 
   return (
     <div className="min-h-screen bg-surface flex flex-col font-sans">
@@ -223,6 +214,16 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            {!isDemo && (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors border border-white/20"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Keluar</span>
+              </button>
+            )}
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors border border-white/20"
@@ -235,6 +236,10 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 w-full">
+        {isDemo && <DemoBanner>Perubahan stok dan status di panel ini hanya contoh dan hilang saat halaman dimuat ulang.</DemoBanner>}
+        {loadError && <ErrorBanner message={loadError} />}
+        {actionError && <ErrorBanner message={actionError} />}
+
         {/* ─── 3 KPI Stats Cards ─── */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Card 1: Alert Kartu Merah (Masalah: Pesanan Terlewat > 3 Hari) */}
@@ -368,7 +373,7 @@ export default function AdminDashboardPage() {
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-gray-500 uppercase">{item.category}</span>
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase">{item.categoryName}</span>
                     {item.stock > 0 ? (
                       <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded">
                         Sisa: {item.stock} pcs
@@ -395,7 +400,8 @@ export default function AdminDashboardPage() {
                     <button
                       type="button"
                       onClick={() => updateStock(item.id, -1)}
-                      className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-rose-600 transition-colors"
+                      disabled={busyId === item.id}
+                      className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-rose-600 transition-colors disabled:opacity-40"
                       title="Kurang 1 stok (terjual)"
                     >
                       <Minus className="w-3.5 h-3.5" />
@@ -404,7 +410,8 @@ export default function AdminDashboardPage() {
                     <button
                       type="button"
                       onClick={() => updateStock(item.id, 1)}
-                      className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-emerald-600 transition-colors"
+                      disabled={busyId === item.id}
+                      className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-emerald-600 transition-colors disabled:opacity-40"
                       title="Tambah 1 stok (restock)"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -494,22 +501,23 @@ export default function AdminDashboardPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredOrders.map((order) => {
-                  const isOverdue = order.status !== "COMPLETED" && order.daysAgo >= 3;
+                  const overdue = isOverdue(order);
+                  const daysLate = daysSince(order.createdAt);
 
                   return (
                     <tr
                       key={order.id}
                       className={`hover:bg-gray-50 transition-colors ${
-                        isOverdue ? "bg-rose-50/50" : "bg-white"
+                        overdue ? "bg-rose-50/50" : "bg-white"
                       }`}
                     >
                       {/* Kolom Tiket */}
                       <td className="py-3 px-4">
                         <span className="font-mono font-bold text-army block">{order.orderNumber}</span>
-                        <span className="text-[11px] text-gray-500">{order.createdAt}</span>
-                        {isOverdue && (
+                        <span className="text-[11px] text-gray-500">{formatOrderDate(order.createdAt)}</span>
+                        {overdue && (
                           <span className="inline-block mt-1 bg-rose-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">
-                            TERLEWAT {order.daysAgo} HARI!
+                            TERLEWAT {daysLate} HARI!
                           </span>
                         )}
                       </td>
@@ -569,7 +577,8 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => updateOrderStatus(order.id, "IN_PROGRESS")}
-                            className="bg-army hover:bg-army-dark text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-xs"
+                            disabled={busyId === order.id}
+                            className="bg-army hover:bg-army-dark disabled:opacity-60 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-xs"
                           >
                             Mulai Bordir
                           </button>
@@ -578,7 +587,8 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => updateOrderStatus(order.id, "READY")}
-                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-xs"
+                            disabled={busyId === order.id}
+                            className="bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-xs"
                           >
                             Tandai Siap Diambil
                           </button>

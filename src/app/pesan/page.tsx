@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Copy, Send, ArrowRight, ShieldCheck } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-
-type OrderType = "NAMA_DADA" | "PANGKAT" | "LOKASI" | "EMBLEM" | "LAINNYA";
+import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
+import { createOrder } from "@/lib/data/orders";
+import type { OrderType } from "@/types";
 
 export default function OrderPage() {
   const [formData, setFormData] = useState({
@@ -19,16 +20,35 @@ export default function OrderPage() {
 
   const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const whatsappLast4 = formData.whatsapp.replace(/\D/g, "").slice(-4);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
-    // Generate Nomor Tiket Pesanan Otomatis
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const randomSuffix = Math.floor(100 + Math.random() * 900);
-    const newTicketNumber = `GPT-${dateStr}-${randomSuffix}`;
-
-    setSubmittedTicket(newTicketNumber);
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      // Nomor tiket dibuat oleh database (atau lokal bila Mode Demo)
+      const result = await createOrder({
+        customerName: formData.name,
+        customerRank: formData.rank,
+        whatsappNumber: formData.whatsapp,
+        orderType: formData.orderType,
+        quantity: Number(formData.quantity),
+        notes: formData.notes,
+      });
+      setIsDemo(result.demo);
+      setSubmittedTicket(result.ticket);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Pesanan gagal disimpan. Coba lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCopy = () => {
@@ -57,6 +77,11 @@ export default function OrderPage() {
         {submittedTicket ? (
           /* ─── Layar Konfirmasi Sukses ─── */
           <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-10 shadow-sm space-y-8 text-center">
+            {isDemo && (
+              <div className="text-left">
+                <DemoBanner>Pesanan ini hanya contoh dan tidak tersimpan di database.</DemoBanner>
+              </div>
+            )}
             <div className="w-14 h-14 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
@@ -90,6 +115,10 @@ export default function OrderPage() {
                 </button>
               </div>
               {copied && <p className="text-xs text-emerald-700 font-semibold">Tersalin ke clipboard!</p>}
+              <p className="text-xs text-gray-500">
+                Untuk melacak pesanan, siapkan nomor tiket ini dan 4 digit terakhir WhatsApp Anda
+                (<strong className="font-mono text-gray-900">{whatsappLast4}</strong>).
+              </p>
             </div>
 
             {/* Rincian Singkat */}
@@ -122,7 +151,7 @@ export default function OrderPage() {
               </a>
 
               <Link
-                href={`/tracking?ticket=${submittedTicket}`}
+                href={`/tracking?ticket=${submittedTicket}&wa=${whatsappLast4}`}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors shadow-xs"
               >
                 <span>Lacak Status Pesanan</span>
@@ -147,6 +176,7 @@ export default function OrderPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {submitError && <ErrorBanner message={submitError} />}
               {/* Row 1: Nama & Pangkat */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
@@ -157,6 +187,7 @@ export default function OrderPage() {
                     id="name"
                     type="text"
                     required
+                    maxLength={100}
                     placeholder="Contoh: Bambang Irawan"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -189,6 +220,8 @@ export default function OrderPage() {
                     id="whatsapp"
                     type="tel"
                     required
+                    minLength={8}
+                    maxLength={20}
                     placeholder="Contoh: 081234567890"
                     value={formData.whatsapp}
                     onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
@@ -252,6 +285,7 @@ export default function OrderPage() {
                 <textarea
                   id="notes"
                   required
+                  maxLength={1000}
                   rows={4}
                   placeholder="Contoh: Tulisan nama 'AHMAD FAUZI', benang hitam timbul tebal, dasar kain loreng Malvinas, ukuran standar PDL."
                   value={formData.notes}
@@ -273,9 +307,10 @@ export default function OrderPage() {
               {/* Tombol Submit */}
               <button
                 type="submit"
-                className="w-full bg-army hover:bg-army-dark active:scale-[0.98] text-white font-bold py-3 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full bg-army hover:bg-army-dark active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
               >
-                <span>Daftarkan Pesanan & Dapatkan Nomor Tiket</span>
+                <span>{isSubmitting ? "Menyimpan pesanan..." : "Daftarkan Pesanan & Dapatkan Nomor Tiket"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>

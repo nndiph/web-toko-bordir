@@ -14,96 +14,77 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
+import { trackOrder } from "@/lib/data/orders";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { formatOrderDate } from "@/lib/utils";
+import type { OrderType, TrackedOrder } from "@/types";
 
-interface OrderDetail {
-  orderNumber: string;
-  customerName: string;
-  rank?: string;
-  whatsapp: string;
-  orderType: string;
-  quantity: string;
-  notes: string;
-  status: "PENDING" | "IN_PROGRESS" | "READY" | "COMPLETED";
-  orderDate: string;
-  estimatedDone: string;
-}
-
-const SAMPLE_ORDERS: Record<string, OrderDetail> = {
-  "GPT-20261101-042": {
-    orderNumber: "GPT-20261101-042",
-    customerName: "Serka Bambang",
-    rank: "Kopassus",
-    whatsapp: "0812-3456-7890",
-    orderType: "Badge Pangkat Timbul",
-    quantity: "4 pasang",
-    notes: "Benang hitam timbul tebal, dasar kain loreng Malvinas.",
-    status: "IN_PROGRESS",
-    orderDate: "Kemarin, 14:20 WIB",
-    estimatedDone: "Hari ini pukul 16:30 WIB",
-  },
-  "GPT-20261101-038": {
-    orderNumber: "GPT-20261101-038",
-    customerName: "Lettu Danang",
-    rank: "Yonif 100",
-    whatsapp: "0811-9876-5432",
-    orderType: "Pangkat PDU & PDL",
-    quantity: "6 pasang",
-    notes: "Dasar hijau TNI, benang emas kuningan.",
-    status: "PENDING",
-    orderDate: "3 hari yang lalu",
-    estimatedDone: "Sedang dijadwalkan ulang oleh pemilik toko",
-  },
-  "GPT-20261101-045": {
-    orderNumber: "GPT-20261101-045",
-    customerName: "Kopda Hendra",
-    rank: "Kodam I/BB",
-    whatsapp: "0813-1122-3344",
-    orderType: "Nama Dada Bordir",
-    quantity: "2 pcs",
-    notes: "Tulisan 'HENDRA S.', kain hijau standar dinas.",
-    status: "READY",
-    orderDate: "Hari ini, 09:00 WIB",
-    estimatedDone: "Sudah selesai — Siap diambil di toko fisik",
-  },
+const ORDER_TYPE_LABEL: Record<OrderType, string> = {
+  PANGKAT: "Badge Pangkat",
+  NAMA_DADA: "Nama Dada Bordir",
+  LOKASI: "Badge Lokasi / Satuan",
+  EMBLEM: "Emblem / Logo",
+  LAINNYA: "Lainnya",
 };
+
+// Hanya ditampilkan di Mode Demo (cocok dengan getDemoOrders di src/lib/demo-data.ts)
+const DEMO_EXAMPLES = [
+  { ticket: "GPT-20261101-042", wa: "7890" },
+  { ticket: "GPT-20261101-038", wa: "5432" },
+  { ticket: "GPT-20261101-045", wa: "3344" },
+];
 
 function TrackingContent() {
   const searchParams = useSearchParams();
   const ticketParam = searchParams.get("ticket") || "";
+  const waParam = searchParams.get("wa") || "";
 
-  const [query, setQuery] = useState(ticketParam);
+  const [ticket, setTicket] = useState(ticketParam);
+  const [waLast4, setWaLast4] = useState(waParam);
   const [searched, setSearched] = useState(false);
-  const [result, setResult] = useState<OrderDetail | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchedTicket, setSearchedTicket] = useState("");
+  const [result, setResult] = useState<TrackedOrder | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = useCallback((ticketToSearch?: string) => {
-    const q = (ticketToSearch !== undefined ? ticketToSearch : query).trim().toUpperCase();
+  const stageStatus = result?.status === "COMPLETED" ? "READY" : result?.status;
+
+  const runSearch = useCallback(async (ticketToSearch: string, waToSearch: string) => {
+    const normalizedTicket = ticketToSearch.trim().toUpperCase();
+    const normalizedWa = waToSearch.replace(/\D/g, "");
+
     setSearched(true);
+    setSearchedTicket(normalizedTicket);
+    setResult(null);
 
-    if (SAMPLE_ORDERS[q]) {
-      setResult(SAMPLE_ORDERS[q]);
+    if (!normalizedTicket || normalizedWa.length !== 4) {
+      setError("Isi nomor tiket dan tepat 4 digit terakhir nomor WhatsApp yang Anda daftarkan.");
       return;
     }
 
-    const matchByWa = Object.values(SAMPLE_ORDERS).find((order) =>
-      order.whatsapp.replace(/[^0-9]/g, "").includes(q.replace(/[^0-9]/g, ""))
-    );
-
-    if (matchByWa) {
-      setResult(matchByWa);
-    } else {
-      setResult(null);
+    setIsSearching(true);
+    setError(null);
+    try {
+      const response = await trackOrder(normalizedTicket, normalizedWa);
+      setResult(response.order);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal melacak pesanan. Coba lagi.");
+    } finally {
+      setIsSearching(false);
     }
-  }, [query]);
+  }, []);
 
   useEffect(() => {
-    if (ticketParam) {
-      setQuery(ticketParam);
-      handleSearch(ticketParam);
+    if (ticketParam && waParam) {
+      runSearch(ticketParam, waParam);
     }
-  }, [ticketParam, handleSearch]);
+  }, [ticketParam, waParam, runSearch]);
 
   return (
     <div className="space-y-8 font-sans">
+      {!isSupabaseConfigured && <DemoBanner />}
+
       {/* Search Header Box */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-10 shadow-sm space-y-6">
         <div className="space-y-2">
@@ -111,56 +92,77 @@ function TrackingContent() {
             Lacak Status & Antrean Pesanan Bordir
           </h1>
           <p className="text-sm text-gray-600">
-            Ketikkan Nomor Tiket Pesanan (contoh: <code>GPT-20261101-042</code>) atau Nomor WhatsApp aktif
-            yang Anda daftarkan saat memesan.
+            Ketikkan Nomor Tiket Pesanan (contoh: <code>GPT-20261101-042</code>) dan 4 digit terakhir
+            Nomor WhatsApp yang Anda daftarkan saat memesan.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            runSearch(ticket, waLast4);
+          }}
+          className="flex flex-col sm:flex-row gap-3"
+        >
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
             <input
               type="text"
-              placeholder="Masukkan nomor tiket atau nomor WhatsApp..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              aria-label="Nomor tiket pesanan"
+              placeholder="Nomor tiket (GPT-YYYYMMDD-NNN)"
+              value={ticket}
+              onChange={(e) => setTicket(e.target.value)}
               className="w-full bg-white border border-gray-300 pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 placeholder:text-gray-400 shadow-xs"
             />
           </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={4}
+            aria-label="4 digit terakhir nomor WhatsApp"
+            placeholder="4 digit akhir WA"
+            value={waLast4}
+            onChange={(e) => setWaLast4(e.target.value.replace(/\D/g, ""))}
+            className="w-full sm:w-40 bg-white border border-gray-300 px-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 placeholder:text-gray-400 shadow-xs"
+          />
           <button
-            type="button"
-            onClick={() => handleSearch()}
-            className="bg-army hover:bg-army-dark active:scale-[0.98] text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+            type="submit"
+            disabled={isSearching}
+            className="bg-army hover:bg-army-dark active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4" />
-            <span>Lacak Pesanan</span>
+            <span>{isSearching ? "Mencari..." : "Lacak Pesanan"}</span>
           </button>
-        </div>
+        </form>
 
-        {/* Contoh Cepat Tiket */}
-        <div className="pt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-          <span>Contoh tiket:</span>
-          {Object.keys(SAMPLE_ORDERS).map((ticket) => (
-            <button
-              key={ticket}
-              type="button"
-              onClick={() => {
-                setQuery(ticket);
-                handleSearch(ticket);
-              }}
-              className="font-mono bg-gray-100 hover:bg-gray-200 border border-gray-300 px-2.5 py-1 rounded text-gray-900 font-semibold transition-colors"
-            >
-              {ticket}
-            </button>
-          ))}
-        </div>
+        {/* Contoh Cepat Tiket (Mode Demo) */}
+        {!isSupabaseConfigured && (
+          <div className="pt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span>Contoh tiket:</span>
+            {DEMO_EXAMPLES.map((example) => (
+              <button
+                key={example.ticket}
+                type="button"
+                onClick={() => {
+                  setTicket(example.ticket);
+                  setWaLast4(example.wa);
+                  runSearch(example.ticket, example.wa);
+                }}
+                className="font-mono bg-gray-100 hover:bg-gray-200 border border-gray-300 px-2.5 py-1 rounded text-gray-900 font-semibold transition-colors"
+              >
+                {example.ticket}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Hasil Pelacakan */}
-      {searched && (
+      {searched && !isSearching && (
         <div>
-          {result ? (
+          {error ? (
+            <ErrorBanner message={error} />
+          ) : result ? (
             <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
               {/* Header Hasil */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
@@ -169,23 +171,29 @@ function TrackingContent() {
                     Nomor Tiket Pesanan
                   </span>
                   <h2 className="text-2xl font-mono font-bold text-army">{result.orderNumber}</h2>
-                  <p className="text-xs text-gray-500">Dipesan pada: {result.orderDate}</p>
+                  <p className="text-xs text-gray-500">Dipesan pada: {formatOrderDate(result.createdAt)}</p>
                 </div>
 
                 <div>
-                  {result.status === "PENDING" && (
+                  {stageStatus === "PENDING" && (
                     <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold px-3 py-1.5 rounded-full">
                       <Clock className="w-4 h-4" />
                       MENUNGGU ANTREAN MESIN
                     </span>
                   )}
-                  {result.status === "IN_PROGRESS" && (
+                  {stageStatus === "IN_PROGRESS" && (
                     <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-800 border border-blue-200 text-xs font-bold px-3 py-1.5 rounded-full">
                       <Clock className="w-4 h-4 text-blue-600" />
                       SEDANG DIKERJAKAN DI MESIN
                     </span>
                   )}
-                  {result.status === "READY" && (
+                  {result.status === "COMPLETED" && (
+                    <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 border border-gray-300 text-xs font-bold px-3 py-1.5 rounded-full">
+                      <PackageCheck className="w-4 h-4" />
+                      SUDAH DIAMBIL
+                    </span>
+                  )}
+                  {stageStatus === "READY" && result.status !== "COMPLETED" && (
                     <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-full">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       SIAP DIAMBIL DI TOKO
@@ -204,7 +212,7 @@ function TrackingContent() {
                   {/* Step 1 */}
                   <div
                     className={`border rounded-lg p-4 flex items-start gap-3 ${
-                      result.status === "PENDING" || result.status === "IN_PROGRESS" || result.status === "READY"
+                      stageStatus === "PENDING" || stageStatus === "IN_PROGRESS" || stageStatus === "READY"
                         ? "bg-emerald-50/60 border-emerald-200"
                         : "bg-gray-50 border-gray-200"
                     }`}
@@ -219,18 +227,18 @@ function TrackingContent() {
                   {/* Step 2 */}
                   <div
                     className={`border rounded-lg p-4 flex items-start gap-3 ${
-                      result.status === "IN_PROGRESS"
+                      stageStatus === "IN_PROGRESS"
                         ? "bg-amber-50 border-amber-300 ring-2 ring-amber-400/30"
-                        : result.status === "READY"
+                        : stageStatus === "READY"
                         ? "bg-emerald-50/60 border-emerald-200"
                         : "bg-gray-50 border-gray-200 opacity-60"
                     }`}
                   >
                     <Clock
                       className={`w-5 h-5 shrink-0 mt-0.5 ${
-                        result.status === "IN_PROGRESS"
+                        stageStatus === "IN_PROGRESS"
                           ? "text-amber-700"
-                          : result.status === "READY"
+                          : stageStatus === "READY"
                           ? "text-emerald-700"
                           : "text-gray-400"
                       }`}
@@ -244,14 +252,14 @@ function TrackingContent() {
                   {/* Step 3 */}
                   <div
                     className={`border rounded-lg p-4 flex items-start gap-3 ${
-                      result.status === "READY"
+                      stageStatus === "READY"
                         ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-600/20"
                         : "bg-gray-50 border-gray-200 opacity-60"
                     }`}
                   >
                     <PackageCheck
                       className={`w-5 h-5 shrink-0 mt-0.5 ${
-                        result.status === "READY" ? "text-emerald-700" : "text-gray-400"
+                        stageStatus === "READY" ? "text-emerald-700" : "text-gray-400"
                       }`}
                     />
                     <div>
@@ -270,17 +278,19 @@ function TrackingContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                   <p>
                     <strong className="text-gray-900">Pemesan:</strong> {result.customerName}{" "}
-                    {result.rank && `(${result.rank})`}
+                    {result.customerRank && `(${result.customerRank})`}
                   </p>
                   <p>
-                    <strong className="text-gray-900">Jenis Barang:</strong> {result.orderType}
+                    <strong className="text-gray-900">Jenis Barang:</strong> {ORDER_TYPE_LABEL[result.orderType]}
                   </p>
                   <p>
-                    <strong className="text-gray-900">Jumlah:</strong> {result.quantity}
+                    <strong className="text-gray-900">Jumlah:</strong> {result.quantity} pcs
                   </p>
                   <p>
                     <strong className="text-gray-900">Estimasi Selesai:</strong>{" "}
-                    <span className="text-army font-bold">{result.estimatedDone}</span>
+                    <span className="text-army font-bold">
+                                          {result.estimatedDone ?? "Menunggu jadwal dari toko"}
+                                        </span>
                   </p>
                   <p className="sm:col-span-2">
                     <strong className="text-gray-900">Catatan Benang/Kain:</strong> {result.notes}
@@ -323,8 +333,8 @@ function TrackingContent() {
               <div className="space-y-1">
                 <h3 className="text-lg font-bold text-gray-900">Pesanan Tidak Ditemukan</h3>
                 <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
-                  Nomor tiket atau nomor WhatsApp <strong>{query}</strong> tidak terdaftar dalam sistem.
-                  Pastikan ejaan nomor tiket sudah sesuai dengan tanda strip (misal:{" "}
+                  Kombinasi nomor tiket <strong>{searchedTicket}</strong> dan 4 digit terakhir WhatsApp tidak
+                  ditemukan. Pastikan ejaan nomor tiket sudah sesuai dengan tanda strip (misal:{" "}
                   <code>GPT-20261101-042</code>).
                 </p>
               </div>
