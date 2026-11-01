@@ -100,6 +100,12 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Katalog diperkaya menjadi 8 produk dinas TNI nyata.
   - Sinkronisasi frame visual di Figma Desktop via Figcraft (`12:284`).
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
+- [x] **Fase 4.7 — Optimasi Performa, Font Asinkron & Anti-Lag Gambar (Selesai)**
+  - Mengeliminasi render-blocking `@import` di `globals.css` yang memblokir parser browser.
+  - Menambahkan `preconnect` ke Google Fonts & GStatic di `layout.tsx` serta font fallback sistem kilat.
+  - Mengompresi beban gambar Unsplash (pengurangan ~60% bandwidth dengan `w=400&q=70&auto=format`).
+  - Menambahkan `decoding="async"` dan `loading="lazy"` agar proses decode gambar tidak membebani main thread JavaScript saat browsing dan scrolling.
+  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
 
 ---
 
