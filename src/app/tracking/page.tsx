@@ -12,6 +12,7 @@ import {
   HelpCircle,
   Phone,
   ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 
@@ -63,7 +64,7 @@ const SAMPLE_ORDERS: Record<string, OrderDetail> = {
     notes: "Tulisan 'HENDRA S.', kain hijau standar dinas.",
     status: "READY",
     orderDate: "Hari ini, 09:00 WIB",
-    estimatedDone: "Sudah selesai — Siap diambil di toko fisik",
+    estimatedDone: "Sudah selesai — Siap diambil di etalase toko fisik",
   },
 };
 
@@ -104,16 +105,19 @@ function TrackingContent() {
   }, [ticketParam, handleSearch]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Search Header Box */}
-      <div className="bg-white border border-army-border/80 rounded-2xl p-6 sm:p-10 shadow-sm space-y-6">
+      <div className="bg-white border border-surface-border rounded-3xl p-6 sm:p-10 shadow-card space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-ink">
+          <div className="inline-flex items-center gap-1.5 bg-army/10 text-army text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Lacak Real-Time
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">
             Lacak Status & Antrean Pesanan Bordir
-          </h2>
+          </h1>
           <p className="text-sm text-ink-muted">
-            Ketikkan Nomor Tiket Pesanan (contoh: <code>GPT-20261101-042</code>) atau Nomor WhatsApp aktif
-            yang Anda daftarkan saat memesan.
+            Ketikkan Nomor Tiket Pesanan (contoh: <code>GPT-20261101-042</code>) atau Nomor WhatsApp yang Anda daftarkan.
           </p>
         </div>
 
@@ -122,24 +126,24 @@ function TrackingContent() {
             <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-ink-soft" />
             <input
               type="text"
-              placeholder="Masukkan nomor tiket atau nomor WhatsApp..."
+              placeholder="Masukkan nomor tiket (GPT-...) atau nomor WhatsApp..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full bg-white border border-army-border pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army text-ink placeholder:text-ink-soft shadow-sm"
+              className="w-full bg-white border border-surface-border pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-ink placeholder:text-ink-soft shadow-xs transition-all"
             />
           </div>
           <button
             type="button"
             onClick={() => handleSearch()}
-            className="bg-army hover:bg-army-dark text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow flex items-center justify-center gap-2"
+            className="bg-army hover:bg-army-dark active:scale-[0.98] text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-md shadow-army/20 flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4" />
             <span>Lacak Pesanan</span>
           </button>
         </div>
 
-        {/* Contoh Cepat */}
+        {/* Contoh Cepat Tiket */}
         <div className="pt-2 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
           <span>Contoh tiket pengujian:</span>
           {Object.keys(SAMPLE_ORDERS).map((ticket) => (
@@ -150,7 +154,7 @@ function TrackingContent() {
                 setQuery(ticket);
                 handleSearch(ticket);
               }}
-              className="font-mono bg-surface-muted hover:bg-surface border border-army-border px-2 py-0.5 rounded text-army font-semibold transition-colors"
+              className="font-mono bg-slate-50 hover:bg-slate-100 border border-surface-border px-2.5 py-1 rounded-lg text-army font-bold transition-all"
             >
               {ticket}
             </button>
@@ -162,33 +166,35 @@ function TrackingContent() {
       {searched && (
         <div className="animate-in fade-in duration-200">
           {result ? (
-            <div className="bg-white border border-army-border/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="bg-white border border-surface-border rounded-3xl p-6 sm:p-10 shadow-card space-y-8">
               {/* Header Hasil */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-army-border/60 pb-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-ink-muted">
                     Nomor Tiket Pesanan
                   </span>
-                  <h3 className="text-2xl font-mono font-extrabold text-army">{result.orderNumber}</h3>
-                  <p className="text-xs text-ink-muted">Dipesan pada: {result.orderDate}</p>
+                  <h2 className="text-2xl sm:text-3xl font-mono font-extrabold text-army tracking-wide">
+                    {result.orderNumber}
+                  </h2>
+                  <p className="text-xs text-ink-muted mt-1">Didaftarkan: {result.orderDate}</p>
                 </div>
 
                 <div>
                   {result.status === "PENDING" && (
-                    <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold px-3 py-1.5 rounded-full">
-                      <Clock className="w-4 h-4" />
-                      MENUNGGU ANTRIAN MESIN
+                    <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200/80 text-xs font-bold px-3.5 py-1.5 rounded-full">
+                      <Clock className="w-4 h-4 text-amber-600" />
+                      MENUNGGU ANTREAN MESIN
                     </span>
                   )}
                   {result.status === "IN_PROGRESS" && (
-                    <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-800 border border-blue-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                    <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-800 border border-blue-200/80 text-xs font-bold px-3.5 py-1.5 rounded-full">
                       <Clock className="w-4 h-4 animate-spin text-blue-600" />
                       SEDANG DIKERJAKAN DI MESIN
                     </span>
                   )}
                   {result.status === "READY" && (
-                    <span className="inline-flex items-center gap-1.5 bg-green-50 text-green-800 border border-green-200 text-xs font-bold px-3 py-1.5 rounded-full">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-bold px-3.5 py-1.5 rounded-full">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       SIAP DIAMBIL DI TOKO
                     </span>
                   )}
@@ -197,142 +203,151 @@ function TrackingContent() {
 
               {/* Visual Timeline 3 Langkah */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
                   Perkembangan Proses Pengerjaan
-                </h4>
+                </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Step 1 */}
                   <div
-                    className={`border rounded-xl p-4 flex items-start gap-3 ${
+                    className={`border rounded-2xl p-4 flex items-start gap-3 transition-all ${
                       result.status === "PENDING" || result.status === "IN_PROGRESS" || result.status === "READY"
-                        ? "bg-green-50/60 border-green-200"
-                        : "bg-surface-muted border-army-border"
+                        ? "bg-emerald-50/50 border-emerald-200"
+                        : "bg-slate-50 border-surface-border"
                     }`}
                   >
-                    <CheckCircle2 className="w-5 h-5 text-green-700 shrink-0 mt-0.5" />
+                    <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
                     <div>
-                      <h5 className="font-bold text-xs text-ink">1. Pesanan Diterima</h5>
-                      <p className="text-xs text-ink-muted">Data & bahan kain telah disiapkan</p>
+                      <h4 className="font-bold text-xs text-ink">1. Pesanan Diterima</h4>
+                      <p className="text-[11px] text-ink-muted">Data & bahan kain telah disiapkan</p>
                     </div>
                   </div>
 
                   {/* Step 2 */}
                   <div
-                    className={`border rounded-xl p-4 flex items-start gap-3 ${
+                    className={`border rounded-2xl p-4 flex items-start gap-3 transition-all ${
                       result.status === "IN_PROGRESS"
-                        ? "bg-amber-50/80 border-amber-300 ring-2 ring-gold/40"
+                        ? "bg-blue-50/60 border-blue-300 ring-2 ring-blue-500/20"
                         : result.status === "READY"
-                        ? "bg-green-50/60 border-green-200"
-                        : "bg-surface-muted border-army-border opacity-60"
+                        ? "bg-emerald-50/50 border-emerald-200"
+                        : "bg-slate-50 border-surface-border opacity-60"
                     }`}
                   >
-                    <Clock
-                      className={`w-5 h-5 shrink-0 mt-0.5 ${
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
                         result.status === "IN_PROGRESS"
-                          ? "text-amber-700 animate-spin"
+                          ? "bg-blue-100 text-blue-700"
                           : result.status === "READY"
-                          ? "text-green-700"
-                          : "text-ink-soft"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-slate-200 text-slate-500"
                       }`}
-                    />
+                    >
+                      <Clock className={`w-4 h-4 ${result.status === "IN_PROGRESS" ? "animate-spin" : ""}`} />
+                    </div>
                     <div>
-                      <h5 className="font-bold text-xs text-ink">2. Pengerjaan Bordir</h5>
-                      <p className="text-xs text-ink-muted">Sedang dibordir komputer dengan benang timbul</p>
+                      <h4 className="font-bold text-xs text-ink">2. Pengerjaan Bordir</h4>
+                      <p className="text-[11px] text-ink-muted">Sedang dibordir komputer dengan benang timbul</p>
                     </div>
                   </div>
 
                   {/* Step 3 */}
                   <div
-                    className={`border rounded-xl p-4 flex items-start gap-3 ${
+                    className={`border rounded-2xl p-4 flex items-start gap-3 transition-all ${
                       result.status === "READY"
-                        ? "bg-green-50 border-green-300 ring-2 ring-green-600/30"
-                        : "bg-surface-muted border-army-border opacity-60"
+                        ? "bg-emerald-50/80 border-emerald-300 ring-2 ring-emerald-600/20"
+                        : "bg-slate-50 border-surface-border opacity-60"
                     }`}
                   >
-                    <PackageCheck
-                      className={`w-5 h-5 shrink-0 mt-0.5 ${
-                        result.status === "READY" ? "text-green-700" : "text-ink-soft"
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                        result.status === "READY" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"
                       }`}
-                    />
+                    >
+                      <PackageCheck className="w-4 h-4" />
+                    </div>
                     <div>
-                      <h5 className="font-bold text-xs text-ink">3. Siap Diambil</h5>
-                      <p className="text-xs text-ink-muted">Tersimpan di etalase pick-up toko fisik</p>
+                      <h4 className="font-bold text-xs text-ink">3. Siap Diambil</h4>
+                      <p className="text-[11px] text-ink-muted">Tersimpan di etalase pick-up toko fisik</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Rincian Pesanan Box */}
-              <div className="bg-surface rounded-xl p-5 space-y-3 border border-army-border/60">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  Rincian Pesanan
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                  <p>
-                    <strong className="text-ink">Pemesan:</strong> {result.customerName}{" "}
-                    {result.rank && `(${result.rank})`}
-                  </p>
-                  <p>
-                    <strong className="text-ink">Jenis Barang:</strong> {result.orderType}
-                  </p>
-                  <p>
-                    <strong className="text-ink">Jumlah:</strong> {result.quantity}
-                  </p>
-                  <p>
-                    <strong className="text-ink">Estimasi Selesai:</strong>{" "}
-                    <span className="text-army font-bold">{result.estimatedDone}</span>
-                  </p>
-                  <p className="sm:col-span-2">
-                    <strong className="text-ink">Catatan Benang/Kain:</strong> {result.notes}
-                  </p>
+              <div className="bg-slate-50/70 rounded-2xl p-6 space-y-4 border border-surface-border">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
+                  Rincian Informasi Pesanan
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                  <div>
+                    <span className="text-ink-muted block text-xs">Pemesan:</span>
+                    <strong className="text-ink text-sm">
+                      {result.customerName} {result.rank && `(${result.rank})`}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-ink-muted block text-xs">Jenis Barang:</span>
+                    <strong className="text-ink text-sm">{result.orderType}</strong>
+                  </div>
+                  <div>
+                    <span className="text-ink-muted block text-xs">Jumlah:</span>
+                    <strong className="text-ink text-sm">{result.quantity}</strong>
+                  </div>
+                  <div>
+                    <span className="text-ink-muted block text-xs">Estimasi Selesai:</span>
+                    <span className="text-army font-bold text-sm">{result.estimatedDone}</span>
+                  </div>
+                  <div className="sm:col-span-2 pt-2 border-t border-surface-border/60">
+                    <span className="text-ink-muted block text-xs mb-1">Catatan Khusus Benang & Bahan:</span>
+                    <p className="bg-white p-3 rounded-xl border border-surface-border text-ink text-xs font-medium">
+                      {result.notes}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Petunjuk Pengambilan */}
-              <div className="bg-army-light/80 border border-army/30 rounded-xl p-4 flex items-start gap-3 text-xs text-army-dark">
-                <HelpCircle className="w-5 h-5 text-army shrink-0 mt-0.5" />
+              <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3 text-xs text-emerald-900">
+                <HelpCircle className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="font-bold text-army">Petunjuk Pengambilan Pesanan:</p>
-                  <p>
-                    Jika komandan atau satuan Anda mengutus perwakilan/bawahan untuk mengambil pesanan,
-                    cukup tunjukkan atau sebutkan <strong>Nomor Tiket {result.orderNumber}</strong> ke kasir
-                    Toko Gaperta.
+                  <p className="font-bold text-emerald-800">Petunjuk Pengambilan Pesanan:</p>
+                  <p className="leading-relaxed">
+                    Jika komandan atau satuan Anda mengutus perwakilan/bawahan untuk mengambil pesanan, cukup tunjukkan atau sebutkan <strong>Nomor Tiket {result.orderNumber}</strong> kepada kasir Toko Gaperta.
                   </p>
                 </div>
               </div>
 
-              {/* Tombol Bantuan */}
+              {/* Tombol Bantuan WA */}
               <div className="pt-2 flex justify-end">
                 <a
-                  href={`https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20saya%20ingin%20menanyakan%20tiket%20${result.orderNumber}`}
+                  href={`https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20saya%20ingin%20menanyakan%20status%20tiket%20${result.orderNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white border border-army-border hover:bg-surface text-ink text-xs font-bold px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+                  className="inline-flex items-center gap-2 bg-white border border-surface-border hover:bg-slate-50 text-ink text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-xs"
                 >
                   <Phone className="w-4 h-4 text-army" />
-                  <span>Ada Pertanyaan? Chat WhatsApp Pemilik</span>
+                  <span>Ada Pertanyaan? Chat WhatsApp Pemilik Toko</span>
                 </a>
               </div>
             </div>
           ) : (
             /* Jika Tiket Tidak Ditemukan */
-            <div className="bg-white border border-army-border/80 rounded-2xl p-8 shadow-sm text-center space-y-4">
-              <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-                <AlertCircle className="w-6 h-6" />
+            <div className="bg-white border border-surface-border rounded-3xl p-10 shadow-card text-center space-y-4">
+              <div className="w-14 h-14 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl flex items-center justify-center mx-auto">
+                <AlertCircle className="w-7 h-7" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <h3 className="text-lg font-bold text-ink">Pesanan Tidak Ditemukan</h3>
                 <p className="text-xs sm:text-sm text-ink-muted max-w-md mx-auto">
-                  Nomor tiket atau nomor WhatsApp <strong>{query}</strong> tidak terdaftar dalam sistem.
-                  Pastikan ejaan nomor tiket sudah sesuai dengan tanda strip (misal:{" "}
-                  <code>GPT-20261101-042</code>).
+                  Nomor tiket atau nomor WhatsApp <strong>&quot;{query}&quot;</strong> tidak terdaftar dalam sistem. Pastikan format penulisan nomor tiket sesuai (misal: <code>GPT-20261101-042</code>).
                 </p>
               </div>
               <div className="pt-2">
                 <Link
                   href="/pesan"
-                  className="inline-flex items-center gap-2 bg-army text-white text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-army-dark transition-colors"
+                  className="inline-flex items-center gap-2 bg-army hover:bg-army-dark active:scale-[0.98] text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm shadow-army/20"
                 >
                   <span>Daftarkan Pesanan Bordir Baru</span>
                   <ArrowRight className="w-4 h-4" />
@@ -348,14 +363,14 @@ function TrackingContent() {
 
 export default function TrackingPage() {
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col font-sans">
       <Navbar />
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
         <Suspense fallback={<div className="text-center py-10 text-sm text-ink-muted">Memuat data pelacakan...</div>}>
           <TrackingContent />
         </Suspense>
       </main>
-      <footer className="bg-white border-t border-army-border/60 py-6 text-center text-xs text-ink-muted">
+      <footer className="bg-white border-t border-surface-border py-6 text-center text-xs text-ink-muted">
         <p>© 2026 Toko Gaperta — Atribut Dinas & Bordir Komputer. Semua hak dilindungi.</p>
       </footer>
     </div>

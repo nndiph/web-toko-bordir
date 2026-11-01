@@ -203,31 +203,31 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      {/* ─── Header Admin ─── */}
-      <header className="bg-army-dark text-white border-b border-army sticky top-0 z-40">
+    <div className="min-h-screen bg-surface flex flex-col font-sans">
+      {/* ─── Header Admin Modern ─── */}
+      <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-army rounded-xl flex items-center justify-center border border-white/20">
-              <Shield className="w-6 h-6 text-gold" />
+            <div className="w-10 h-10 bg-army rounded-xl flex items-center justify-center border border-white/10 shadow-xs">
+              <Shield className="w-5 h-5 text-gold-light" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-bold tracking-tight">PANEL PEMILIK TOKO GAPERTA</h1>
-                <span className="hidden sm:inline-block bg-green-500/20 text-green-300 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/40">
-                  KASIR AKTIF
+                <h1 className="text-base sm:text-lg font-extrabold tracking-tight">PANEL PEMILIK TOKO GAPERTA</h1>
+                <span className="hidden sm:inline-block bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/30 uppercase tracking-wider">
+                  Sistem Kasir Aktif
                 </span>
               </div>
-              <p className="text-xs text-gray-300">Manajemen Antrean Bordir & Kontrol Stok Fisik</p>
+              <p className="text-xs text-slate-400">Manajemen Antrean Mesin Bordir & Kontrol Stok Fisik</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors border border-white/20"
+              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 active:scale-[0.98] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all border border-white/10"
             >
-              <span>Toko Publik</span>
+              <span>Katalog Publik</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -239,26 +239,26 @@ export default function AdminDashboardPage() {
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Card 1: Alert Kartu Merah (Masalah: Pesanan Terlewat > 3 Hari) */}
           <div
-            className={`rounded-2xl p-6 border shadow-sm flex flex-col justify-between transition-all ${
+            className={`rounded-3xl p-6 border shadow-card flex flex-col justify-between transition-all ${
               overdueOrders.length > 0
-                ? "bg-red-50/90 border-red-300 ring-2 ring-red-500/20"
-                : "bg-white border-army-border/80"
+                ? "bg-rose-50/70 border-rose-200 ring-2 ring-rose-500/20"
+                : "bg-white border-surface-border"
             }`}
           >
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-red-700 inline-flex items-center gap-1">
-                  <AlertTriangle className="w-4 h-4 text-red-600 animate-pulse" />
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-800 inline-flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 animate-pulse" />
                   PERHATIAN SEGERA (KARTU MERAH)
                 </span>
-                <span className="bg-red-600 text-white text-xs font-extrabold px-2 py-0.5 rounded-full">
+                <span className="bg-rose-600 text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">
                   {overdueOrders.length} Pesanan
                 </span>
               </div>
-              <h3 className="text-2xl font-extrabold text-red-900">
+              <h3 className="text-2xl font-extrabold text-rose-950">
                 {overdueOrders.length > 0 ? "Pesanan Belum Selesai > 3 Hari!" : "Semua Pesanan Tepat Waktu"}
               </h3>
-              <p className="text-xs text-red-800 leading-relaxed">
+              <p className="text-xs text-rose-800/90 leading-relaxed">
                 {overdueOrders.length > 0
                   ? "Ada pesanan bordir yang terselip/terlewat. Segera dahulukan di mesin bordir agar customer tidak komplain!"
                   : "Bagus! Tidak ada pesanan bordir yang tertahan lebih dari 3 hari."}
@@ -269,7 +269,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setOrderFilter("OVERDUE")}
-                className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 rounded-lg transition-colors shadow-sm"
+                className="mt-4 w-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-xs"
               >
                 Tampilkan Pesanan Terlewat
               </button>
@@ -277,72 +277,74 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Card 2: Pesanan Bordir Aktif */}
-          <div className="bg-white border border-army-border/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-            <div className="space-y-2">
+          <div className="bg-white border border-surface-border rounded-3xl p-6 shadow-card flex flex-col justify-between">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-ink-muted inline-flex items-center gap-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-ink-muted inline-flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-army" />
                   STATUS ANTREAN MESIN
                 </span>
-                <span className="bg-army-light text-army text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-army/10 text-army text-xs font-bold px-2.5 py-0.5 rounded-full">
                   {orders.length} Total
                 </span>
               </div>
-              <h3 className="text-2xl font-extrabold text-army">{inProgressOrders.length} Sedang Dibordir</h3>
-              <p className="text-xs text-ink-muted">
+              <h3 className="text-2xl font-extrabold text-ink">{inProgressOrders.length} Sedang Dibordir</h3>
+              <p className="text-xs text-ink-muted leading-relaxed">
                 {readyOrders.length} pesanan siap diambil di toko • {orders.filter((o) => o.status === "PENDING").length} menunggu bahan.
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-army-border/60 flex items-center justify-between text-xs text-ink-muted">
+            <div className="mt-4 pt-3 border-t border-surface-border flex items-center justify-between text-xs text-ink-muted">
               <span>Etalase Pick-up Toko:</span>
-              <strong className="text-green-700 font-bold">{readyOrders.length} Barang Siap Serah</strong>
+              <strong className="text-emerald-700 font-bold">{readyOrders.length} Barang Siap Serah</strong>
             </div>
           </div>
 
           {/* Card 3: Alert Stok Menipis (Masalah: Stok Habis saat Customer Datang) */}
           <div
-            className={`rounded-2xl p-6 border shadow-sm flex flex-col justify-between ${
+            className={`rounded-3xl p-6 border shadow-card flex flex-col justify-between ${
               lowStockProducts.length > 0
-                ? "bg-amber-50/80 border-amber-300"
-                : "bg-white border-army-border/80"
+                ? "bg-amber-50/70 border-amber-200 ring-2 ring-amber-500/20"
+                : "bg-white border-surface-border"
             }`}
           >
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-800 inline-flex items-center gap-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-800 inline-flex items-center gap-1.5">
                   <Package className="w-4 h-4 text-amber-700" />
                   KONTROL INVENTARIS
                 </span>
-                <span className="bg-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-amber-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs">
                   {lowStockProducts.length} Menipis
                 </span>
               </div>
-              <h3 className="text-2xl font-extrabold text-amber-900">
+              <h3 className="text-2xl font-extrabold text-amber-950">
                 {lowStockProducts.length} Barang Stok &lt; 5 Pcs
               </h3>
-              <p className="text-xs text-amber-800 leading-relaxed">
-                Stok barang ini hampir habis di toko fisik. Segera pesan kembali sebelum customer datang mencari.
+              <p className="text-xs text-amber-900/90 leading-relaxed">
+                Stok barang ini hampir habis di toko fisik. Segera restock sebelum pembeli datang mencari.
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-amber-200/80 text-xs text-amber-900 font-medium truncate">
+            <div className="mt-4 pt-3 border-t border-amber-200/60 text-xs text-amber-900 font-medium truncate">
               {lowStockProducts.map((p) => p.name).join(", ")}
             </div>
           </div>
         </section>
 
         {/* ─── Fitur Kasir Quick-Check (Cari Stok & Lokasi Rak Kilat) ─── */}
-        <section className="bg-white border border-army-border/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-army-border/60 pb-4">
+        <section className="bg-white border border-surface-border rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-5">
             <div>
               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-army uppercase tracking-wider">
                 <Search className="w-3.5 h-3.5" />
                 Fitur Kasir Quick-Check
               </div>
-              <h2 className="text-xl font-bold text-ink">Cari Sisa Stok & Letak Rak Barang</h2>
+              <h2 className="text-xl font-extrabold text-ink tracking-tight mt-0.5">
+                Cari Sisa Stok & Letak Rak Barang
+              </h2>
               <p className="text-xs text-ink-muted">
-                Saat pembeli datang menanyakan barang, ketik namanya di bawah untuk langsung tahu sisa stok dan posisi raknya di toko.
+                Saat pembeli datang menanyakan barang, ketik namanya di bawah untuk langsung tahu sisa stok dan letak rak fisiknya.
               </p>
             </div>
 
@@ -351,10 +353,10 @@ export default function AdminDashboardPage() {
               <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-ink-soft" />
               <input
                 type="text"
-                placeholder="Ketik nama barang (mis: Kopel, Baret)..."
+                placeholder="Ketik nama barang (Kopel, Baret, Pangkat)..."
                 value={cashierSearch}
                 onChange={(e) => setCashierSearch(e.target.value)}
-                className="w-full bg-surface border border-army-border pl-10 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army text-ink placeholder:text-ink-soft"
+                className="w-full bg-slate-50 border border-surface-border pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-ink placeholder:text-ink-soft shadow-xs transition-all"
               />
             </div>
           </div>
@@ -364,47 +366,47 @@ export default function AdminDashboardPage() {
             {filteredInventory.map((item) => (
               <div
                 key={item.id}
-                className="border border-army-border/80 rounded-xl p-4 bg-surface/50 hover:bg-white transition-colors flex flex-col justify-between space-y-3"
+                className="border border-surface-border rounded-2xl p-4 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between space-y-3 shadow-xs"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-ink-muted uppercase">{item.category}</span>
+                    <span className="text-[11px] font-bold text-ink-muted uppercase">{item.category}</span>
                     {item.stock > 0 ? (
-                      <span className="bg-green-100 text-green-800 text-[11px] font-bold px-2 py-0.5 rounded">
+                      <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold px-2 py-0.5 rounded-md">
                         Sisa: {item.stock} pcs
                       </span>
                     ) : (
-                      <span className="bg-red-100 text-red-800 text-[11px] font-bold px-2 py-0.5 rounded">
+                      <span className="bg-rose-50 text-rose-800 border border-rose-200 text-[11px] font-bold px-2 py-0.5 rounded-md">
                         HABIS
                       </span>
                     )}
                   </div>
-                  <h4 className="font-bold text-sm text-ink mt-1 line-clamp-1">{item.name}</h4>
-                  <p className="text-sm font-extrabold text-army">{formatRupiah(item.price)}</p>
+                  <h4 className="font-bold text-sm text-ink mt-1.5 line-clamp-1">{item.name}</h4>
+                  <p className="text-base font-extrabold text-ink tabular-nums">{formatRupiah(item.price)}</p>
                 </div>
 
                 {/* Lokasi Rak Fisik di Toko */}
-                <div className="bg-white border border-army-border/60 rounded-lg p-2.5 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 text-ink">
+                <div className="bg-white border border-surface-border rounded-xl p-2.5 flex items-center justify-between text-xs shadow-xs">
+                  <div className="flex items-center gap-1.5 text-ink font-semibold">
                     <MapPin className="w-4 h-4 text-army shrink-0" />
-                    <span className="font-semibold">{item.rackLocation}</span>
+                    <span>{item.rackLocation}</span>
                   </div>
 
                   {/* Tombol Cepat Tambah/Kurang Stok di Kasir */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5 bg-slate-50 border border-surface-border px-1.5 py-1 rounded-lg">
                     <button
                       type="button"
                       onClick={() => updateStock(item.id, -1)}
-                      className="p-1 hover:bg-gray-100 rounded text-ink-muted hover:text-red-600 transition-colors"
+                      className="p-1 hover:bg-white rounded text-ink-muted hover:text-rose-600 transition-colors"
                       title="Kurang 1 stok (terjual)"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="font-bold text-xs px-1 text-ink">{item.stock}</span>
+                    <span className="font-bold text-xs px-1 text-ink tabular-nums">{item.stock}</span>
                     <button
                       type="button"
                       onClick={() => updateStock(item.id, 1)}
-                      className="p-1 hover:bg-gray-100 rounded text-ink-muted hover:text-green-600 transition-colors"
+                      className="p-1 hover:bg-white rounded text-ink-muted hover:text-emerald-700 transition-colors"
                       title="Tambah 1 stok (restock)"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -417,16 +419,18 @@ export default function AdminDashboardPage() {
         </section>
 
         {/* ─── Manajemen Antrean Pesanan Bordir ─── */}
-        <section className="bg-white border border-army-border/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-army-border/60 pb-4">
+        <section className="bg-white border border-surface-border rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-5">
             <div>
               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-army uppercase tracking-wider">
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 Antrean Mesin Bordir Komputer
               </div>
-              <h2 className="text-xl font-bold text-ink">Kelola Status Pesanan Masuk</h2>
+              <h2 className="text-xl font-extrabold text-ink tracking-tight mt-0.5">
+                Kelola Status Pesanan Masuk
+              </h2>
               <p className="text-xs text-ink-muted">
-                Ubah status pesanan agar otomatis terbarui di halaman tracking yang dipantau pelanggan/bawahan.
+                Ubah status pengerjaan pesanan agar langsung sinkron di halaman tracking pembeli.
               </p>
             </div>
 
@@ -435,10 +439,10 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setOrderFilter("ALL")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
+                className={`px-3.5 py-2 rounded-xl font-bold transition-all ${
                   orderFilter === "ALL"
-                    ? "bg-army text-white"
-                    : "bg-surface text-ink hover:bg-surface-muted border border-army-border"
+                    ? "bg-army text-white shadow-xs"
+                    : "bg-white text-ink-body hover:bg-surface-muted border border-surface-border"
                 }`}
               >
                 Semua ({orders.length})
@@ -446,10 +450,10 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setOrderFilter("OVERDUE")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
+                className={`px-3.5 py-2 rounded-xl font-bold transition-all ${
                   orderFilter === "OVERDUE"
-                    ? "bg-red-600 text-white"
-                    : "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+                    ? "bg-rose-600 text-white shadow-xs"
+                    : "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200"
                 }`}
               >
                 🔴 Terlewat ({overdueOrders.length})
@@ -457,10 +461,10 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setOrderFilter("IN_PROGRESS")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
+                className={`px-3.5 py-2 rounded-xl font-bold transition-all ${
                   orderFilter === "IN_PROGRESS"
-                    ? "bg-amber-600 text-white"
-                    : "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
                 }`}
               >
                 🟡 Sedang Dibordir ({inProgressOrders.length})
@@ -468,10 +472,10 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setOrderFilter("READY")}
-                className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
+                className={`px-3.5 py-2 rounded-xl font-bold transition-all ${
                   orderFilter === "READY"
-                    ? "bg-green-700 text-white"
-                    : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                    ? "bg-emerald-700 text-white shadow-xs"
+                    : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
                 }`}
               >
                 🟢 Siap Diambil ({readyOrders.length})
@@ -479,43 +483,43 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Tabel Pesanan */}
-          <div className="overflow-x-auto">
+          {/* Tabel Pesanan Modern */}
+          <div className="overflow-x-auto rounded-2xl border border-surface-border">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-army-border/60 text-ink-muted uppercase tracking-wider bg-surface/50">
-                  <th className="py-3 px-4 font-bold">Tiket & Waktu Masuk</th>
-                  <th className="py-3 px-4 font-bold">Pemesan & WhatsApp</th>
-                  <th className="py-3 px-4 font-bold">Jenis & Jumlah</th>
-                  <th className="py-3 px-4 font-bold">Catatan Bahan/Benang</th>
-                  <th className="py-3 px-4 font-bold">Status Saat Ini</th>
-                  <th className="py-3 px-4 font-bold text-right">Aksi Cepat</th>
+                <tr className="border-b border-surface-border text-ink-muted uppercase tracking-wider bg-slate-50/80">
+                  <th className="py-3.5 px-4 font-bold">Tiket & Waktu Masuk</th>
+                  <th className="py-3.5 px-4 font-bold">Pemesan & WhatsApp</th>
+                  <th className="py-3.5 px-4 font-bold">Jenis & Jumlah</th>
+                  <th className="py-3.5 px-4 font-bold">Catatan Bahan/Benang</th>
+                  <th className="py-3.5 px-4 font-bold">Status Saat Ini</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Aksi Cepat</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-army-border/40">
+              <tbody className="divide-y divide-surface-border">
                 {filteredOrders.map((order) => {
                   const isOverdue = order.status !== "COMPLETED" && order.daysAgo >= 3;
 
                   return (
                     <tr
                       key={order.id}
-                      className={`hover:bg-surface/60 transition-colors ${
-                        isOverdue ? "bg-red-50/50" : ""
+                      className={`hover:bg-slate-50/70 transition-colors ${
+                        isOverdue ? "bg-rose-50/40" : "bg-white"
                       }`}
                     >
                       {/* Kolom Tiket */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <span className="font-mono font-bold text-army block">{order.orderNumber}</span>
                         <span className="text-[11px] text-ink-muted">{order.createdAt}</span>
                         {isOverdue && (
-                          <span className="inline-block mt-1 bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">
+                          <span className="inline-block mt-1 bg-rose-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">
                             TERLEWAT {order.daysAgo} HARI!
                           </span>
                         )}
                       </td>
 
                       {/* Kolom Pemesan */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <strong className="text-ink block">
                           {order.customerName} {order.customerRank && `(${order.customerRank})`}
                         </strong>
@@ -523,7 +527,7 @@ export default function AdminDashboardPage() {
                           href={`https://wa.me/62${order.whatsappNumber.replace(/^0/, "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-army hover:underline mt-0.5"
+                          className="inline-flex items-center gap-1 text-[11px] text-army hover:underline mt-0.5 font-medium"
                         >
                           <Send className="w-3 h-3" />
                           <span>{order.whatsappNumber}</span>
@@ -531,45 +535,45 @@ export default function AdminDashboardPage() {
                       </td>
 
                       {/* Kolom Jenis & Qty */}
-                      <td className="py-3 px-4">
-                        <span className="font-semibold text-ink block">{order.orderType}</span>
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold text-ink block">{order.orderType}</span>
                         <span className="text-ink-muted">{order.quantity} Pcs/Pasang</span>
                       </td>
 
                       {/* Kolom Catatan */}
-                      <td className="py-3 px-4 max-w-xs">
-                        <p className="text-ink text-xs line-clamp-2">{order.notes}</p>
+                      <td className="py-3.5 px-4 max-w-xs">
+                        <p className="text-ink-body text-xs line-clamp-2">{order.notes}</p>
                       </td>
 
                       {/* Kolom Status Badge */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         {order.status === "PENDING" && (
-                          <span className="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
+                          <span className="bg-amber-50 text-amber-800 border border-amber-200/80 font-bold px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-amber-600" />
                             Antre Bahan
                           </span>
                         )}
                         {order.status === "IN_PROGRESS" && (
-                          <span className="bg-blue-100 text-blue-800 font-bold px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1">
-                            <RefreshCw className="w-3 h-3 animate-spin" />
+                          <span className="bg-blue-50 text-blue-800 border border-blue-200/80 font-bold px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin text-blue-600" />
                             Sedang Dibordir
                           </span>
                         )}
                         {order.status === "READY" && (
-                          <span className="bg-green-100 text-green-800 font-bold px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
+                          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                             Siap Diambil
                           </span>
                         )}
                       </td>
 
                       {/* Kolom Tombol Aksi Cepat */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3.5 px-4 text-right">
                         {order.status === "PENDING" && (
                           <button
                             type="button"
                             onClick={() => updateOrderStatus(order.id, "IN_PROGRESS")}
-                            className="bg-army hover:bg-army-dark text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm"
+                            className="bg-army hover:bg-army-dark active:scale-[0.98] text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-xs"
                           >
                             Mulai Bordir
                           </button>
@@ -578,7 +582,7 @@ export default function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => updateOrderStatus(order.id, "READY")}
-                            className="bg-gold hover:bg-gold-dark text-ink font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm"
+                            className="bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-xs"
                           >
                             Tandai Siap Diambil
                           </button>
@@ -595,7 +599,7 @@ export default function AdminDashboardPage() {
                             }%20sudah%20selesai%20dan%20siap%20diambil%20di%20Toko%20Gaperta.`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 bg-green-700 hover:bg-green-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm"
+                            className="inline-flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all shadow-xs"
                           >
                             <Send className="w-3 h-3" />
                             <span>Kirim WA Selesai</span>
@@ -612,10 +616,9 @@ export default function AdminDashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-army-border/60 py-6 text-center text-xs text-ink-muted">
+      <footer className="bg-white border-t border-surface-border py-6 text-center text-xs text-ink-muted">
         <p>© 2026 Toko Gaperta — Panel Kontrol Pemilik & Inventaris Toko Fisik.</p>
       </footer>
     </div>
   );
 }
-
