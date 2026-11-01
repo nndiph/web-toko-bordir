@@ -76,14 +76,19 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Pull Request #2 (`feature/design-ui-figma`) sukses dimerge ke `main`.
 - [x] **Fase 1.5 — Dokumentasi Memori Agen (Selesai)**
   - Dibuat file `AGENTS.md` sebagai memori abadi antar-agen.
+- [x] **Fase 2 — Inisialisasi Kode Web App Next.js 15 + Tailwind CSS (Selesai)**
+  - Setup Next.js 15, TypeScript, Tailwind CSS dengan palet warna militer TNI.
+  - Setup library pendukung (`lucide-react`, `clsx`, `tailwind-merge`, `@supabase/supabase-js`).
+  - Implementasi halaman utama `src/app/page.tsx` sesuai desain Figma (Katalog stok real-time, pencarian instan, filter kategori, badge stok jelas).
+  - Build check (`npm run build`) dan lint check (`npm run lint`) terverifikasi 100% lulus (0 errors, 0 warnings).
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `main` (Up-to-date dengan `origin/main`).
-- **Kondisi Working Directory:** Bersih.
-- **Tugas Selanjutnya:** Memulai **Fase 2: Inisialisasi Kode Web App (Next.js 15 + Tailwind CSS)**.
+- **Branch Aktif:** `feature/init-web-app`
+- **Kondisi Working Directory:** Siap dicommit dan dipush.
+- **Tugas Selanjutnya:** Buka PR #3 (`feature/init-web-app` ke `main`), lalu lanjut ke **Fase 3: Form Pemesanan Custom Bordir & Halaman Tracking Pesanan**.
 
 ---
 
@@ -91,13 +96,12 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah berikut:
 1. Baca file ini (`AGENTS.md`) dan [`PLAN.md`](./PLAN.md) untuk memahami status terakhir.
-2. Buat branch baru dari `main` terbaru:
+2. Pastikan branch `feature/init-web-app` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
+3. Buat branch baru untuk fitur berikutnya:
    ```bash
-   git checkout -b feature/init-web-app
+   git checkout -b feature/order-and-tracking
    ```
-3. Eksekusi setup kode Next.js 15, TypeScript, Tailwind CSS, dan struktur folder `src/`.
-4. Jalankan pengujian lokal: `npm run build` dan `npm run lint`.
-5. Buat commit bertahap sesuai aturan di `WORKFLOW.md`.
+4. Kembangkan halaman form pemesanan custom bordir online (`src/app/pesan/page.tsx`) dan halaman tracking status pesanan (`src/app/tracking/page.tsx`).
+5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
 6. Push branch dan berikan link PR kepada pengguna.
 7. **Perbarui bagian "Riwayat Pekerjaan Selesai" dan "Status Terkini" di file `AGENTS.md` ini.**
-
