@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Phone, Shield, Clock, CheckCircle2, AlertTriangle, MapPin } from "lucide-react";
+import Link from "next/link";
+import { Search, Clock, CheckCircle2, AlertTriangle, MapPin } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 import { formatRupiah } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -69,39 +71,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       {/* ─── Navbar ─── */}
-      <header className="bg-white border-b border-army-border/60 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-6 h-6 text-army" />
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-army">TOKO GAPERTA</h1>
-            </div>
-            <p className="text-xs text-ink-muted">Atribut Dinas & Bordir Komputer TNI</p>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-muted">
-            <a href="#katalog" className="text-army font-bold hover:underline">
-              Katalog Stok
-            </a>
-            <a href="#pesan-bordir" className="hover:text-army transition-colors">
-              Pesan Custom Bordir
-            </a>
-            <a href="#cek-status" className="hover:text-army transition-colors">
-              Cek Status Pesanan
-            </a>
-          </nav>
-
-          <a
-            href="https://wa.me/6281234567890"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-army text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-army-dark transition-colors shadow-sm"
-          >
-            <Phone className="w-4 h-4" />
-            <span>Hubungi WhatsApp</span>
-          </a>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 w-full">
         {/* ─── Hero Banner ─── */}
@@ -118,12 +88,12 @@ export default function HomePage() {
               berangkat ke toko atau ajukan pesanan custom bordir nama & pangkat secara online.
             </p>
             <div className="pt-2 flex flex-wrap gap-4">
-              <a
-                href="#pesan-bordir"
+              <Link
+                href="/pesan"
                 className="bg-gold hover:bg-gold-dark text-ink font-bold px-6 py-3 rounded-lg text-sm transition-colors shadow"
               >
                 Pesan Custom Bordir
-              </a>
+              </Link>
               <a
                 href="#katalog"
                 className="border border-white/80 hover:bg-white/10 text-white font-medium px-6 py-3 rounded-lg text-sm transition-colors"
@@ -223,12 +193,12 @@ export default function HomePage() {
                       Beli / Pesan via WA
                     </a>
                   ) : product.status === "CUSTOM" ? (
-                    <a
-                      href="#pesan-bordir"
+                    <Link
+                      href="/pesan"
                       className="block w-full text-center bg-gold hover:bg-gold-dark text-ink text-xs font-bold py-2.5 rounded-lg transition-colors"
                     >
                       Isi Form Bordir Custom
-                    </a>
+                    </Link>
                   ) : (
                     <button
                       type="button"
@@ -252,4 +222,3 @@ export default function HomePage() {
     </div>
   );
 }
-

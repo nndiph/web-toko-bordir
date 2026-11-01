@@ -79,16 +79,21 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 - [x] **Fase 2 — Inisialisasi Kode Web App Next.js 15 + Tailwind CSS (Selesai)**
   - Setup Next.js 15, TypeScript, Tailwind CSS dengan palet warna militer TNI.
   - Setup library pendukung (`lucide-react`, `clsx`, `tailwind-merge`, `@supabase/supabase-js`).
-  - Implementasi halaman utama `src/app/page.tsx` sesuai desain Figma (Katalog stok real-time, pencarian instan, filter kategori, badge stok jelas).
-  - Build check (`npm run build`) dan lint check (`npm run lint`) terverifikasi 100% lulus (0 errors, 0 warnings).
+  - Implementasi halaman utama `src/app/page.tsx` sesuai desain Figma.
+  - Pull Request #3 (`feature/init-web-app`) sukses dimerge ke `main`.
+- [x] **Fase 3 — Form Pemesanan Custom Bordir & Tracking Status Pesanan (Selesai)**
+  - Dibuat komponen reusable `src/components/Navbar.tsx` dengan link navigasi aktif.
+  - Halaman form pemesanan custom bordir di `src/app/pesan/page.tsx` (auto-generate tiket `GPT-YYYYMMDD-XXX`, validasi WhatsApp, copy clipboard, kirim pesan WA otomatis).
+  - Halaman tracking status pesanan di `src/app/tracking/page.tsx` (pencarian tiket & WhatsApp, visual timeline 3 langkah: Diterima → Sedang Dibordir → Siap Diambil, petunjuk pengambilan di toko).
+  - Verifikasi build (`npm run build`) dan lint check (`npm run lint`) 100% lulus (0 errors, 0 warnings).
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/init-web-app`
+- **Branch Aktif:** `feature/order-and-tracking`
 - **Kondisi Working Directory:** Siap dicommit dan dipush.
-- **Tugas Selanjutnya:** Buka PR #3 (`feature/init-web-app` ke `main`), lalu lanjut ke **Fase 3: Form Pemesanan Custom Bordir & Halaman Tracking Pesanan**.
+- **Tugas Selanjutnya:** Buka PR #4 (`feature/order-and-tracking` ke `main`), lalu lanjut ke **Fase 4: Dashboard Manajemen Pemilik Toko (Alert Pesanan Terlewat > 3 Hari, Kasir Quick-Check Stok, & Manajemen Antrean Mesin)**.
 
 ---
 
@@ -96,12 +101,15 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah berikut:
 1. Baca file ini (`AGENTS.md`) dan [`PLAN.md`](./PLAN.md) untuk memahami status terakhir.
-2. Pastikan branch `feature/init-web-app` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
+2. Pastikan branch `feature/order-and-tracking` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
 3. Buat branch baru untuk fitur berikutnya:
    ```bash
-   git checkout -b feature/order-and-tracking
+   git checkout -b feature/admin-dashboard
    ```
-4. Kembangkan halaman form pemesanan custom bordir online (`src/app/pesan/page.tsx`) dan halaman tracking status pesanan (`src/app/tracking/page.tsx`).
+4. Kembangkan halaman Dashboard Pemilik Toko di `src/app/admin/page.tsx`:
+   - Ringkasan KPI (Pesanan Aktif, Alert > 3 Hari, Stok Menipis).
+   - Fitur Kasir Quick-Check (cari barang langsung keluar sisa stok & lokasi rak).
+   - Tabel update status pesanan bordir antrean mesin.
 5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
 6. Push branch dan berikan link PR kepada pengguna.
 7. **Perbarui bagian "Riwayat Pekerjaan Selesai" dan "Status Terkini" di file `AGENTS.md` ini.**

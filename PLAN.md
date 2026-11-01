@@ -1,30 +1,34 @@
-# Fitur: Setup & Inisialisasi Web App Next.js 15 + Tailwind CSS
+# Fitur: Form Pemesanan Custom Bordir & Tracking Status Pesanan
 
 ## Tujuan
-- Melakukan inisialisasi arsitektur proyek web Toko Bordir Gaperta menggunakan Next.js 15 (App Router), TypeScript, Tailwind CSS, Lucide Icons, dan library helper yang siap terhubung ke database.
+- Membangun halaman form pemesanan bordir custom online (`/pesan`) dan halaman tracking status pesanan (`/tracking`) yang mudah digunakan, menghasilkan nomor tiket pesanan, dan memiliki visual timeline progres pengerjaan sesuai prototipe Figma.
 
 ## Kriteria Selesai
-- [x] Inisialisasi `package.json` dengan dependencies (Next.js, React, Tailwind CSS, Lucide React, Supabase)
-- [x] Konfigurasi `tsconfig.json`, `tailwind.config.ts`, `postcss.config.mjs`, dan `next.config.ts`
-- [x] Konfigurasi Tailwind dengan palet tema warna TNI:
-  - `army-primary`: `#2D5A27`
-  - `army-dark`: `#1E3D1A`
-  - `army-gold`: `#C5A059`
-  - `surface-light`: `#F7F9F6`
-- [x] Struktur folder `src/app`, `src/components`, `src/lib`, `src/types`
-- [x] Halaman `src/app/layout.tsx` dan `src/app/page.tsx` dasar yang berjalan lancar
-- [x] Perintah build lokal `npm run build` dan lint `npm run lint` lulus tanpa error
+- [x] Komponen Navbar reusable di `src/components/Navbar.tsx` dengan link navigasi aktif ke semua halaman (`/`, `/pesan`, `/tracking`)
+- [x] Halaman Form Pemesanan Custom Bordir di `src/app/pesan/page.tsx`:
+  - Input Nama & Pangkat Pemesan
+  - Input No. WhatsApp (Validasi format)
+  - Pilihan Jenis Bordir (Nama Dada, Badge Pangkat, Lokasi Satuan, Emblem)
+  - Jumlah & Catatan warna benang / kain
+  - Generate otomatis Nomor Tiket Pesanan (format: `GPT-YYYYMMDD-XXX`)
+  - Konfirmasi pemesanan sukses dengan tombol simpan & salin tiket
+- [x] Halaman Tracking Status Pesanan di `src/app/tracking/page.tsx`:
+  - Form pencarian berdasarkan No. Tiket atau No. WhatsApp
+  - Visual timeline 3 langkah (Pesanan Diterima → Sedang Dibordir → Siap Diambil)
+  - Rincian pesanan dan estimasi waktu selesai
+- [x] Build check (`npm run build`) dan lint check (`npm run lint`) lulus 100%
 
 ## Batasan
 - Jangan sentuh folder `figcraft/`
-- Jangan buat transaksi online/payment gateway (fokus katalog ketersediaan stok & pesanan custom)
+- Jangan buat transaksi online/payment gateway (pengambilan & transaksi langsung di toko)
 - Jangan commit secret / credential database
 
 ## Langkah
-1. [x] Buat branch baru `feature/init-web-app` dari `main`
-2. [x] Konfigurasi `package.json`, scripts build/lint, dan install dependencies
-3. [x] Konfigurasi TypeScript dan Tailwind CSS (termasuk custom warna militer TNI)
-4. [x] Buat layout utama dan halaman beranda preview
-5. [x] Verifikasi build lokal `npm run build` dan `npm run lint`
-6. [x] Commit bertahap sesuai konvensi commit
-7. [ ] Push branch `feature/init-web-app` dan buka Pull Request ke `main`
+1. [x] Buat branch baru `feature/order-and-tracking` dari `main`
+2. [x] Buat komponen reusable `Navbar.tsx`
+3. [x] Kembangkan halaman form bordir `src/app/pesan/page.tsx`
+4. [x] Kembangkan halaman tracking pesanan `src/app/tracking/page.tsx`
+5. [x] Hubungkan navigasi di `src/app/page.tsx` ke halaman `/pesan` dan `/tracking`
+6. [x] Jalankan pengujian lokal `npm run build` dan `npm run lint`
+7. [ ] Commit bertahap, push branch, dan buka PR ke `main`
+8. [ ] Perbarui `AGENTS.md`
