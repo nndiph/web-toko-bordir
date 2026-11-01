@@ -1,22 +1,22 @@
-# Fitur: Perbaikan Warna Menyatu & Tipografi Tegas (Clean & Authentic)
+# Fitur: Peningkatan Visual E-Commerce (Sampul Gambar Produk & Departemen Visual ala Tokopedia/Uniqlo)
 
 ## Tujuan
-- Memperbaiki ketidakharmonisan warna (menghilangkan border keruh kehijauan, menggunakan canvas netral bersih Gray-50/White, teks kontras tajam Gray-900, dan aksen hijau militer solid).
-- Mengintegrasikan font Google Plus Jakarta Sans via `@import` di `globals.css` agar tipografi tegas, berwibawa, dan rapi layaknya katalog toko profesional.
-- Menjaga desain tetap bersih, fungsional, dan jujur tanpa elemen "AI slop" (tanpa icon placeholder buatan, tanpa kartu marketing palsu, tanpa ornamen berlebih).
+- Meningkatkan visual etalase web Toko Gaperta agar tidak sekadar teks, melainkan memiliki sampul gambar produk yang jelas dan mengundang selera belanja (seperti Tokopedia & Uniqlo).
+- Membangun sistem pengkategorian visual ("Jelajahi Departemen Produk") dengan 5 kartu departemen interaktif yang memudahkan dan membetahkan pelanggan saat menjelajah barang dinas.
+- Memperluas katalog produk awal menjadi 8 item nyata dengan foto sampul beresolusi tinggi dan fallback SVG elegan.
+- Memanfaatkan Figcraft MCP untuk sinkronisasi layout visual ke canvas Figma Desktop.
 
 ## Kriteria Selesai
-- [x] Font Plus Jakarta Sans aktif dan tajam di seluruh aplikasi.
-- [x] Border seluruh kartu dan input dinetralisir ke Gray-200/300 bersih (tidak kusam/kehijauan).
-- [x] Teks judul dan harga menggunakan Gray-900 kontras tinggi (`tabular-nums` untuk nominal).
-- [x] Warna brand hijau militer solid `#1E3E20` pada tombol utama dan elemen penting.
-- [x] Halaman Katalog Beranda (`src/app/page.tsx`) bersih, jujur, dan mudah dibaca.
-- [x] Form Pemesanan (`src/app/pesan/page.tsx`) rapi dan intuitif.
-- [x] Tracking Status (`src/app/tracking/page.tsx`) bersih dan mudah dipahami.
-- [x] Dashboard Pemilik (`src/app/admin/page.tsx`) fungsional dengan data inventaris dan antrean yang jelas.
-- [x] Pengujian build (`npm run build`) dan linting (`npm run lint`) lulus 100%.
+- [x] Sampul gambar produk (*Aspect 4:3 Image Cover*) terintegrasi di setiap kartu produk dengan efek hover zoom halus.
+- [x] Badge status stok (*Tersedia*, *Stok Habis*, *Custom Order*) dan tag kategori mengambang di atas sampul gambar.
+- [x] Fallback grafis otomatis jika foto belum termuat atau jaringan offline.
+- [x] Seksi pengkategorian visual (*Featured Departments*) dengan 5 departemen (Badge & Pangkat, Seragam PDL/PDH, Sabuk & Kopel, Topi & Baret, Pesanan Custom).
+- [x] Interaksi 1-klik: Mengklik kartu departemen langsung memfilter katalog dan melakukan scroll halus ke etalase.
+- [x] Etalase produk diperluas menjadi 8 produk dinas TNI nyata.
+- [x] Sinergi dengan FigCraft di Figma Desktop (`01 - Beranda & Katalog (Visual E-Commerce Showcase)`).
+- [x] Pengujian build (`npm run build`) dan linting (`npm run lint`) lulus 100% tanpa error/warning.
 
 ## Batasan
 - Jangan sentuh folder `figcraft/`.
-- Jangan tambahkan ornamen/gimmick tidak perlu (no AI slop).
-- Jangan ubah logika fungsional bisnis.
+- Jangan ubah alur transaksi fisik toko (tetap via WhatsApp & pengambilan di toko).
+- Pertahankan palet warna militer bersih dan font Plus Jakarta Sans.

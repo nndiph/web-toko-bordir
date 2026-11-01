@@ -37,7 +37,7 @@
 | **Icons** | Lucide React | Konsisten dan minimalis |
 | **Database & Auth** | Supabase (PostgreSQL) | Manajemen stok, tabel pesanan bordir, auth admin |
 | **Bot Asisten** | Gemini API | Membantu customer mencari barang & cek status pesanan |
-| **Desain UI** | Figma via FigCraft MCP | 4 Frame UI prototipe sudah dibuat di kanvas Figma |
+| **Desain UI** | Figma via FigCraft MCP | 5 Frame UI prototipe sudah dibuat di kanvas Figma |
 | **Repository** | GitHub (`nndiph/web-toko-bordir`) | Remote: `https://github.com/nndiph/web-toko-bordir.git` |
 | **CI/CD** | GitHub Actions | Lint, test, dan build check otomatis |
 
@@ -67,12 +67,7 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Pull Request #1 (`chore/setup-workflow`) sukses dimerge ke `main`.
 - [x] **Fase 1 — Desain UI Prototipe di Figma via FigCraft (Selesai)**
   - Setup & build FigCraft MCP server lokal.
-  - Berhasil generate 4 frame utama di Figma Desktop:
-    1. `01 - Beranda & Katalog Stok`
-    2. `02 - Form Pesan Bordir Custom`
-    3. `03 - Cek Status Pesanan`
-    4. `04 - Dashboard Pemilik Toko`
-  - Audit desain FigCraft: `0 error, 0 unsafe`.
+  - Berhasil generate frame utama di Figma Desktop.
   - Pull Request #2 (`feature/design-ui-figma`) sukses dimerge ke `main`.
 - [x] **Fase 1.5 — Dokumentasi Memori Agen (Selesai)**
   - Dibuat file `AGENTS.md` sebagai memori abadi antar-agen.
@@ -95,9 +90,14 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
 - [x] **Fase 4.5 — Penyempurnaan Warna & Tipografi Tegas (Clean & Authentic) (Selesai)**
   - Mengeliminasi border keruh kehijauan dan menggantinya dengan border netral bersih (`#E5E7EB`).
-  - Mengintegrasikan font **Plus Jakarta Sans** untuk tipografi tegas, tajam, dan berbobot tanpa ornamen/gimmick buatan (tanpa fake icon frames atau marketing buzzwords).
+  - Mengintegrasikan font **Plus Jakarta Sans** untuk tipografi tegas, tajam, dan berbobot tanpa ornamen/gimmick buatan.
   - Menyelaraskan warna brand dengan hijau militer solid (`#1E3E20`) dan teks berbobot kontras tinggi Gray-900 (`#111827`).
-  - Memastikan kartu katalog produk tampil bersih, jujur, dan mudah dilihat oleh mata.
+- [x] **Fase 4.6 — Visual E-Commerce: Sampul Gambar & Departemen ala Tokopedia/Uniqlo (Selesai)**
+  - Menambahkan **Sampul Gambar Produk (*Aspect 4:3 Image Showcase*)** dengan zoom hover halus dan fallback grafis otomatis.
+  - Badge ketersediaan stok dan kategori mengambang di atas foto sampul.
+  - Seksi visual **Jelajahi Departemen Produk** (Badge & Pangkat, Seragam PDL, Sabuk Kopel, Topi Baret, Custom Bordir) dengan interaksi klik filter 1-langkah.
+  - Katalog diperkaya menjadi 8 produk dinas TNI nyata.
+  - Sinkronisasi frame visual di Figma Desktop via Figcraft (`12:284`).
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
 
 ---
