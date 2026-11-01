@@ -93,9 +93,10 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Mengintegrasikan font **Plus Jakarta Sans** untuk tipografi tegas, tajam, dan berbobot tanpa ornamen/gimmick buatan.
   - Menyelaraskan warna brand dengan hijau militer solid (`#1E3E20`) dan teks berbobot kontras tinggi Gray-900 (`#111827`).
 - [x] **Fase 4.6 — Visual E-Commerce: Sampul Gambar & Departemen ala Tokopedia/Uniqlo (Selesai)**
-  - Menambahkan **Sampul Gambar Produk (*Aspect 4:3 Image Showcase*)** dengan zoom hover halus dan fallback grafis otomatis.
-  - Badge ketersediaan stok dan kategori mengambang di atas foto sampul.
-  - Seksi visual **Jelajahi Departemen Produk** (Badge & Pangkat, Seragam PDL, Sabuk Kopel, Topi Baret, Custom Bordir) dengan interaksi klik filter 1-langkah.
+  - Mengubah **Hero Banner** menjadi layout 2-kolom dengan **Featured Product Showcase Card** di sisi kanan (foto produk nyata, rating badge, sisa stok, harga tegas, rak fisik, tombol WA langsung), menghilangkan area kosong hijau.
+  - Memperbarui seksi **Jelajahi Departemen Produk** menjadi **Full-Photo Cards** (Badge & Pangkat, Seragam PDL, Sabuk Kopel, Topi Baret, Custom Bordir) dengan foto sampul riil, overlay gradien, jumlah item, dan filter katalog 1-klik.
+  - Menambahkan **Sampul Gambar Produk (*Aspect 4:3 Image Showcase*)** di etalase dengan zoom hover halus dan fallback grafis otomatis.
+  - Badge ketersediaan stok (*TERSEDIA*, *HABIS*, *CUSTOM*) dan kategori mengambang di atas foto sampul.
   - Katalog diperkaya menjadi 8 produk dinas TNI nyata.
   - Sinkronisasi frame visual di Figma Desktop via Figcraft (`12:284`).
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
