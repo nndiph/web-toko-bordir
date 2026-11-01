@@ -17,11 +17,11 @@
 
 ### 3 Masalah Nyata yang Harus Diselesaikan Web Ini:
 1. **Chat Bertumpuk di 3 HP:** Pemilik kewalahan menerima pesanan via WhatsApp tanpa rekapan terpusat.  
-   👉 *Solusi:* Form pemesanan custom bordir online yang rapi & otomatis generate Nomor Tiket Pesanan.
+   👉 *Solusi:* Form pemesanan custom bordir online yang rapi & otomatis generate Nomor Tiket Pesanan (`/pesan`).
 2. **Pesanan Bordir Sering Terlewat:** Ada bordiran yang sudah seminggu belum dikerjakan karena lupa/terselip.  
-   👉 *Solusi:* Dashboard pemilik dengan fitur **Alert Kartu Merah** untuk pesanan yang sudah > 3 hari belum selesai.
+   👉 *Solusi:* Dashboard pemilik dengan fitur **Alert Kartu Merah** untuk pesanan yang sudah > 3 hari belum selesai (`/admin`).
 3. **Kewalahan Cek Stok:** Saat pembeli datang langsung ke toko, pemilik bingung mencari barang dan ternyata stok kosong.  
-   👉 *Solusi:* Katalog ketersediaan stok transparan (`TERSEDIA` / `KOSONG`) dan fitur **Kasir Quick-Check** (cari barang langsung keluar sisa stok & lokasi rak).
+   👉 *Solusi:* Katalog ketersediaan stok transparan (`TERSEDIA` / `KOSONG`) dan fitur **Kasir Quick-Check** (cari barang langsung keluar sisa stok & lokasi rak fisik).
 
 > **Catatan Batasan:** Web ini **BUKAN** e-commerce antar barang / payment gateway online. Transaksi dan pengambilan barang tetap dilakukan langsung di toko fisik.
 
@@ -68,10 +68,10 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 - [x] **Fase 1 — Desain UI Prototipe di Figma via FigCraft (Selesai)**
   - Setup & build FigCraft MCP server lokal.
   - Berhasil generate 4 frame utama di Figma Desktop:
-    1. `01 - Beranda & Katalog Stok` (Hero TNI, Search, Filter Kategori, Card Stok).
-    2. `02 - Form Pesan Bordir Custom` (Form pemesan, jenis bordir, catatan, upload).
-    3. `03 - Cek Status Pesanan` (Input No. WA/Tiket, Visual Timeline 3 langkah).
-    4. `04 - Dashboard Pemilik Toko` (KPI stats, Alert > 3 hari, Kasir Quick-Check, Tabel Antrean).
+    1. `01 - Beranda & Katalog Stok`
+    2. `02 - Form Pesan Bordir Custom`
+    3. `03 - Cek Status Pesanan`
+    4. `04 - Dashboard Pemilik Toko`
   - Audit desain FigCraft: `0 error, 0 unsafe`.
   - Pull Request #2 (`feature/design-ui-figma`) sukses dimerge ke `main`.
 - [x] **Fase 1.5 — Dokumentasi Memori Agen (Selesai)**
@@ -83,17 +83,24 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Pull Request #3 (`feature/init-web-app`) sukses dimerge ke `main`.
 - [x] **Fase 3 — Form Pemesanan Custom Bordir & Tracking Status Pesanan (Selesai)**
   - Dibuat komponen reusable `src/components/Navbar.tsx` dengan link navigasi aktif.
-  - Halaman form pemesanan custom bordir di `src/app/pesan/page.tsx` (auto-generate tiket `GPT-YYYYMMDD-XXX`, validasi WhatsApp, copy clipboard, kirim pesan WA otomatis).
-  - Halaman tracking status pesanan di `src/app/tracking/page.tsx` (pencarian tiket & WhatsApp, visual timeline 3 langkah: Diterima → Sedang Dibordir → Siap Diambil, petunjuk pengambilan di toko).
-  - Verifikasi build (`npm run build`) dan lint check (`npm run lint`) 100% lulus (0 errors, 0 warnings).
+  - Halaman form pemesanan custom bordir di `src/app/pesan/page.tsx`.
+  - Halaman tracking status pesanan di `src/app/tracking/page.tsx`.
+  - Pull Request #4 (`feature/order-and-tracking`) sukses dimerge ke `main`.
+- [x] **Fase 4 — Dashboard Manajemen Pemilik Toko (Selesai)**
+  - Halaman Dashboard Admin di `src/app/admin/page.tsx`.
+  - Ringkasan KPI: Total Pesanan Aktif, **Alert Kartu Merah (> 3 Hari)**, dan **Alert Stok Menipis (< 5 pcs)**.
+  - **Fitur Kasir Quick-Check**: Pencarian instan sisa stok nyata & lokasi rak fisik barang, dengan tombol cepat update stok (+/-).
+  - **Manajemen Antrean Mesin Bordir**: Tabel interaktif dengan filter status dan tombol 1-klik ubah status pengerjaan serta kirim pesan WhatsApp konfirmasi selesai.
+  - Halaman kustom 404 di `src/app/not-found.tsx` dan integrasi menu Navbar ke `/admin`.
+  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/order-and-tracking`
+- **Branch Aktif:** `feature/admin-dashboard`
 - **Kondisi Working Directory:** Siap dicommit dan dipush.
-- **Tugas Selanjutnya:** Buka PR #4 (`feature/order-and-tracking` ke `main`), lalu lanjut ke **Fase 4: Dashboard Manajemen Pemilik Toko (Alert Pesanan Terlewat > 3 Hari, Kasir Quick-Check Stok, & Manajemen Antrean Mesin)**.
+- **Tugas Selanjutnya:** Buka PR #5 (`feature/admin-dashboard` ke `main`), lalu lanjut ke **Fase 5: Integrasi Database Supabase & Skema Tabel Real-Time**.
 
 ---
 
@@ -101,15 +108,12 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah berikut:
 1. Baca file ini (`AGENTS.md`) dan [`PLAN.md`](./PLAN.md) untuk memahami status terakhir.
-2. Pastikan branch `feature/order-and-tracking` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
+2. Pastikan branch `feature/admin-dashboard` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
 3. Buat branch baru untuk fitur berikutnya:
    ```bash
-   git checkout -b feature/admin-dashboard
+   git checkout -b feature/supabase-integration
    ```
-4. Kembangkan halaman Dashboard Pemilik Toko di `src/app/admin/page.tsx`:
-   - Ringkasan KPI (Pesanan Aktif, Alert > 3 Hari, Stok Menipis).
-   - Fitur Kasir Quick-Check (cari barang langsung keluar sisa stok & lokasi rak).
-   - Tabel update status pesanan bordir antrean mesin.
+4. Kembangkan skema tabel database Supabase (tabel `products`, `orders`, `categories`), buat file migrasi/seed di folder `supabase/`, dan hubungkan klien Supabase di `src/lib/supabase.ts` ke UI.
 5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
 6. Push branch dan berikan link PR kepada pengguna.
 7. **Perbarui bagian "Riwayat Pekerjaan Selesai" dan "Status Terkini" di file `AGENTS.md` ini.**
