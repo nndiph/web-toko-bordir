@@ -20,17 +20,22 @@
 6. **Verifikasi**: `npm run lint` dan `npm run build` harus lulus; update `AGENTS.md`.
 
 ## Kriteria Selesai
-- [ ] Migrasi + seed SQL siap dijalankan di Supabase SQL Editor.
-- [ ] RLS aktif di semua tabel dengan kebijakan seperti di atas.
-- [ ] Katalog, pesan, tracking, dan admin membaca/menulis ke Supabase.
-- [ ] Mode demo berjalan bila env kosong.
-- [ ] `npm run lint` dan `npm run build` lulus 100%.
-- [ ] `AGENTS.md` diperbarui.
+- [x] Migrasi + seed SQL siap dijalankan di Supabase SQL Editor (**belum diuji di Postgres/Supabase nyata**).
+- [x] RLS aktif di semua tabel dengan kebijakan seperti di atas.
+- [x] Katalog, pesan, tracking, dan admin membaca/menulis ke Supabase (kode siap; belum diuji end-to-end tanpa project Supabase).
+- [x] Mode demo berjalan bila env kosong.
+- [x] `npm run lint` dan `npm run build` lulus 100%.
+- [x] `AGENTS.md` diperbarui.
 
 ## Hal yang Dibutuhkan dari Pemilik Proyek
 - Membuat project Supabase dan mengisi `.env.local` dengan `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` (tidak boleh di-commit).
 - Menjalankan `0001_init.sql` lalu `seed.sql` di Supabase SQL Editor.
-- Membuat 1 akun admin (Supabase Auth). Halaman login admin **di luar cakupan fase ini** — sementara `/admin` memakai fallback data demo bila belum login.
+- Membuat 1 akun admin (Supabase Auth) dan menandainya admin lewat SQL (lihat komentar di `0001_init.sql`).
+
+## Penyimpangan dari Rencana Awal
+- Form login admin minimal ditambahkan di `/admin` (`src/components/AdminLogin.tsx`). Tanpa login, mode live tidak mungkin dipakai.
+- Bila Supabase sudah dikonfigurasi tetapi belum login, `/admin` menampilkan form login (bukan data demo) agar data pelanggan tidak terbuka. Data demo hanya muncul bila env kosong.
+- Tracking kini mewajibkan nomor tiket + 4 digit terakhir WhatsApp (pencarian hanya dengan nomor WA dihapus) agar data pelanggan tidak bisa ditebak.
 
 ## Batasan
 - Jangan sentuh folder `figcraft/`.

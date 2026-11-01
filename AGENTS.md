@@ -107,13 +107,22 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Menambahkan `decoding="async"` dan `loading="lazy"` agar proses decode gambar tidak membebani main thread JavaScript saat browsing dan scrolling.
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
 
+- [x] **Fase 5 — Integrasi Database Supabase (Kode Selesai, Menunggu Setup Supabase oleh Pemilik)**
+  - Skema + RLS + RPC di `supabase/migrations/0001_init.sql`, seed 5 kategori & 8 produk di `supabase/seed.sql`.
+  - Akses publik hanya lewat RPC `create_order` (nomor tiket dibuat server) dan `track_order` (tiket + 4 digit akhir WA). Tabel `orders` tertutup untuk anon. Admin = user dengan `app_metadata.role = 'admin'`.
+  - Data layer di `src/lib/data/` (`products.ts`, `orders.ts`); mapper snake_case → camelCase; tipe baru di `src/types/index.ts`.
+  - **Mode Demo:** bila `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` kosong, UI memakai `src/lib/demo-data.ts` dengan banner kuning dan tidak menyimpan apa pun. Cek via `isSupabaseConfigured`.
+  - `/admin` kini punya login (`src/components/AdminLogin.tsx`) dan tombol Keluar. Alert Kartu Merah dihitung dari `created_at` (>= 3 hari).
+  - `npm run lint` dan `npm run build` (7/7 route) lulus. **SQL belum pernah dijalankan** (tidak ada Postgres/Docker lokal) dan alur live belum diuji end-to-end.
+
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/ui-ux-enhancement`
-- **Kondisi Working Directory:** Bersih dan siap dipush.
-- **Tugas Selanjutnya:** Lanjut ke **Fase 5: Integrasi Database Supabase & Skema Tabel Real-Time**.
+- **Branch Aktif:** `feature/supabase-integration` (dibuat dari `feature/ui-ux-enhancement`, yang belum dimerge ke `main`).
+- **Kondisi Working Directory:** Bersih setelah commit Fase 5.
+- **Menunggu dari Pemilik:** buat project Supabase, isi `.env.local` (lihat `.env.example`), jalankan `0001_init.sql` lalu `seed.sql`, buat & tandai akun admin, lalu uji alur live.
+- **Tugas Selanjutnya:** Verifikasi end-to-end dengan Supabase nyata; pertimbangkan status `COMPLETED` (tombol "Sudah Diambil") karena pesanan `READY` belum punya aksi lanjutan di `/admin`.
 
 ---
 
@@ -121,12 +130,9 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah berikut:
 1. Baca file ini (`AGENTS.md`) dan [`PLAN.md`](./PLAN.md) untuk memahami status terakhir.
-2. Pastikan branch `feature/ui-ux-enhancement` sudah dimerge ke `main`, lalu tarik `main` terbaru (`git pull origin main`).
-3. Buat branch baru untuk fitur berikutnya:
-   ```bash
-   git checkout -b feature/supabase-integration
-   ```
-4. Kembangkan skema tabel database Supabase (tabel `products`, `orders`, `categories`), buat file migrasi/seed di folder `supabase/`, dan hubungkan klien Supabase di `src/lib/supabase.ts` ke UI.
+2. Pastikan PR `feature/ui-ux-enhancement` lalu `feature/supabase-integration` sudah dimerge ke `main` (urut), lalu `git pull origin main`.
+3. Buat branch baru dari `main` untuk pekerjaan berikutnya (`feature/<nama>`).
+4. Jangan ubah skema yang sudah dijalankan pemilik langsung; tambahkan migrasi baru `supabase/migrations/000N_*.sql`.
 5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
 6. Push branch dan berikan link PR kepada pengguna.
 7. **Perbarui bagian "Riwayat Pekerjaan Selesai" dan "Status Terkini" di file `AGENTS.md` ini.**
