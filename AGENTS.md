@@ -119,8 +119,8 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/supabase-integration` (dibuat dari `feature/ui-ux-enhancement`, yang belum dimerge ke `main`).
-- **Kondisi Working Directory:** Bersih setelah commit Fase 5.
+- **Branch Aktif:** `feature/supabase-integration` (terdorong ke `origin/feature/supabase-integration`, dibuat dari `feature/ui-ux-enhancement`).
+- **Kondisi Working Directory:** Bersih dan up to date dengan remote.
 - **Menunggu dari Pemilik:** buat project Supabase, isi `.env.local` (lihat `.env.example`), jalankan `0001_init.sql` lalu `seed.sql`, buat & tandai akun admin, lalu uji alur live.
 - **Tugas Selanjutnya:** Verifikasi end-to-end dengan Supabase nyata; pertimbangkan status `COMPLETED` (tombol "Sudah Diambil") karena pesanan `READY` belum punya aksi lanjutan di `/admin`.
 
