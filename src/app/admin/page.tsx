@@ -46,7 +46,7 @@ export default function AdminDashboardPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [cashierSearch, setCashierSearch] = useState("");
-  const [orderFilter, setOrderFilter] = useState<"ALL" | "OVERDUE" | "PENDING" | "IN_PROGRESS" | "READY">("ALL");
+  const [orderFilter, setOrderFilter] = useState<"ALL" | "OVERDUE" | "PENDING" | "IN_PROGRESS" | "READY" | "COMPLETED">("ALL");
 
   const loadDashboard = useCallback(async () => {
     setLoadError(null);
@@ -100,6 +100,7 @@ export default function AdminDashboardPage() {
   const lowStockProducts = inventory.filter((p) => p.stock > 0 && p.stock < 5);
   const inProgressOrders = orders.filter((o) => o.status === "IN_PROGRESS");
   const readyOrders = orders.filter((o) => o.status === "READY");
+  const completedOrders = orders.filter((o) => o.status === "COMPLETED");
 
   // ─── Fungsi Kasir Cepat Tambah/Kurang Stok ───
   const updateStock = async (productId: string, delta: number) => {
@@ -146,6 +147,8 @@ export default function AdminDashboardPage() {
         ? "Sudah selesai — Siap diambil di toko"
         : newStatus === "IN_PROGRESS"
         ? "Sedang dibordir di mesin"
+        : newStatus === "COMPLETED"
+        ? "Sudah diambil pemesan"
         : current.estimatedDone;
 
     if (!isDemo) {
@@ -178,7 +181,9 @@ export default function AdminDashboardPage() {
     if (orderFilter === "PENDING") return order.status === "PENDING";
     if (orderFilter === "IN_PROGRESS") return order.status === "IN_PROGRESS";
     if (orderFilter === "READY") return order.status === "READY";
-    return true;
+    if (orderFilter === "COMPLETED") return order.status === "COMPLETED";
+    // "Semua" = antrean aktif; pesanan yang sudah diambil dilihat lewat filter sendiri.
+    return order.status !== "COMPLETED";
   });
 
   if (gate === "checking") {
@@ -483,6 +488,17 @@ export default function AdminDashboardPage() {
               >
                 🟢 Siap Diambil ({readyOrders.length})
               </button>
+              <button
+                type="button"
+                onClick={() => setOrderFilter("COMPLETED")}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
+                  orderFilter === "COMPLETED"
+                    ? "bg-gray-700 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                }`}
+              >
+                ✔ Sudah Diambil ({completedOrders.length})
+              </button>
             </div>
           </div>
 
@@ -569,6 +585,12 @@ export default function AdminDashboardPage() {
                             Siap Diambil
                           </span>
                         )}
+                        {order.status === "COMPLETED" && (
+                          <span className="bg-gray-100 text-gray-700 font-bold px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1">
+                            <Package className="w-3 h-3" />
+                            Sudah Diambil
+                          </span>
+                        )}
                       </td>
 
                       {/* Kolom Tombol Aksi Cepat */}
@@ -594,6 +616,7 @@ export default function AdminDashboardPage() {
                           </button>
                         )}
                         {order.status === "READY" && (
+                          <div className="inline-flex items-center gap-2">
                           <a
                             href={`https://wa.me/62${order.whatsappNumber.replace(
                               /^0/,
@@ -610,6 +633,20 @@ export default function AdminDashboardPage() {
                             <Send className="w-3 h-3" />
                             <span>Kirim WA Selesai</span>
                           </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Tandai pesanan ${order.orderNumber} sudah diambil pemesan?`)) {
+                                updateOrderStatus(order.id, "COMPLETED");
+                              }
+                            }}
+                            disabled={busyId === order.id}
+                            className="inline-flex items-center gap-1 bg-white hover:bg-gray-50 disabled:opacity-60 text-gray-900 border border-gray-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-xs"
+                          >
+                            <Package className="w-3 h-3" />
+                            <span>Sudah Diambil</span>
+                          </button>
+                          </div>
                         )}
                       </td>
                     </tr>

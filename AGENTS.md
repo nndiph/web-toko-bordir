@@ -114,15 +114,20 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - **Mode Demo:** bila `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` kosong, UI memakai `src/lib/demo-data.ts` dengan banner kuning dan tidak menyimpan apa pun. Cek via `isSupabaseConfigured`.
   - `/admin` kini punya login (`src/components/AdminLogin.tsx`) dan tombol Keluar. Alert Kartu Merah dihitung dari `created_at` (>= 3 hari).
   - `npm run lint` dan `npm run build` (7/7 route) lulus. **SQL belum pernah dijalankan** (tidak ada Postgres/Docker lokal) dan alur live belum diuji end-to-end.
+- [x] **Fase 5.1 — Aksi "Sudah Diambil" di `/admin` (Selesai)**
+  - Pesanan `READY` punya tombol "Sudah Diambil" (dengan konfirmasi) yang mengubah status ke `COMPLETED`.
+  - Filter "Semua" hanya menampilkan antrean aktif; pesanan selesai dilihat lewat filter baru "Sudah Diambil".
+  - Tanpa perubahan SQL (RLS admin sudah mengizinkan update). `/tracking` sudah menangani `COMPLETED`.
+  - `npm run lint` dan `npm run build` (7/7 route) lulus; belum diuji dengan Supabase nyata.
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/supabase-integration` (terdorong ke `origin/feature/supabase-integration`, dibuat dari `feature/ui-ux-enhancement`).
-- **Kondisi Working Directory:** Bersih dan up to date dengan remote.
+- **Branch Aktif:** `feature/order-completed-action` (dibuat dari `feature/supabase-integration`, belum dipush). Rantai branch belum dimerge: `feature/ui-ux-enhancement` → `feature/supabase-integration` → `feature/order-completed-action`.
+- **Kondisi Working Directory:** Bersih setelah commit Fase 5.1.
 - **Menunggu dari Pemilik:** buat project Supabase, isi `.env.local` (lihat `.env.example`), jalankan `0001_init.sql` lalu `seed.sql`, buat & tandai akun admin, lalu uji alur live.
-- **Tugas Selanjutnya:** Verifikasi end-to-end dengan Supabase nyata; pertimbangkan status `COMPLETED` (tombol "Sudah Diambil") karena pesanan `READY` belum punya aksi lanjutan di `/admin`.
+- **Tugas Selanjutnya:** Verifikasi end-to-end dengan Supabase nyata (termasuk tombol "Sudah Diambil").
 
 ---
 
