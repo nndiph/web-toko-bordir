@@ -1,26 +1,25 @@
-# Fitur: Setup Workflow & Inisialisasi Toko Gaperta
+# Fitur: Desain UI Prototipe Web Toko Bordir (Figma via FigCraft)
 
 ## Tujuan
-- Menerapkan workflow Git profesional dan mendokumentasikan spesifikasi awal sistem Toko Gaperta (katalog stok, pesanan custom bordir, dashboard manajemen, chatbot asisten).
+- Merancang antarmuka (UI) web toko perlengkapan dinas & bordir custom di Figma dengan tema militer/TNI yang rapi, bersih, kontras tinggi, dan ramah pengguna (mudah dipahami orang awam/gaptek).
 
 ## Kriteria Selesai
-- [x] Audit repo dan inisialisasi git dengan branch `main`
-- [x] File `.gitignore` dikonfigurasi
-- [ ] File `PLAN.md` terdokumentasi
-- [ ] File `.github/pull_request_template.md` dibuat
-- [ ] File `.github/workflows/ci.yml` dibuat
-- [ ] File `WORKFLOW.md` dibuat sebagai pedoman permanen
-- [ ] Desain UI di Figma via FigCraft selesai & disetujui
-- [ ] Setup project Next.js + Tailwind + Supabase
+- [ ] Section Design Tokens & Palet Warna (Hijau Army TNI `#2D5A27`, Aksen Emas Pangkat `#C5A059`, Netral Gelap `#1A201A`, Netral Terang `#F8FAF6`)
+- [ ] Frame 1: Beranda & Katalog Ketersediaan Stok (Navbar, Filter Cepat, Status Stok Jelas: TERSEDIA / HABIS)
+- [ ] Frame 2: Formulir Pesanan Custom Bordir (Input Nama, No. WA, Jenis Bordir, Panduan Langkah Pesan)
+- [ ] Frame 3: Cek Status / Tracking Pesanan (Input No. WA / ID Pesanan, Timeline: Diterima → Dikerjakan → Siap Diambil)
+- [ ] Frame 4: Dashboard Manajemen Pemilik Toko (Alert pesanan belum selesai > 3 hari, Tabel Update Status, Quick Search Stok & Lokasi Rak)
 
 ## Batasan
-- Jangan ubah: file konfigurasi FigCraft (`figcraft/`)
-- Jangan commit file secret (`.env`, `.env.local`, API keys)
-- Jangan push/merge langsung ke `main` tanpa PR
+- Jangan ubah file konfigurasi dan kode server figcraft (`figcraft/`)
+- Desain dibuat langsung pada dokumen Figma yang sedang terhubung melalui FigCraft
+- Tidak menggunakan elemen UI yang rumit/membingungkan pengguna awam
 
 ## Langkah
-1. Buat file `PLAN.md`
-2. Buat template PR `.github/pull_request_template.md`
-3. Buat GitHub Action CI `.github/workflows/ci.yml`
-4. Buat pedoman kerja `WORKFLOW.md`
-5. Commit bertahap sesuai aturan konvensi commit
+1. Buat branch baru `feature/design-ui-figma` dari `main`
+2. Generate Design Tokens & Style Guide di Figma
+3. Generate Frame Halaman Utama (Katalog & Ketersediaan Stok)
+4. Generate Frame Formulir Pesanan Custom Bordir
+5. Generate Frame Tracking Status Pesanan
+6. Generate Frame Dashboard Admin Pemilik Toko
+7. Verifikasi dan review tampilan langsung di Figma Desktop
