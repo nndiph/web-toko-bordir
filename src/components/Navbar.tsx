@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, Phone } from "lucide-react";
+import { Shield, Phone, LayoutDashboard } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export function Navbar() {
     { href: "/", label: "Katalog Stok" },
     { href: "/pesan", label: "Pesan Custom Bordir" },
     { href: "/tracking", label: "Cek Status Pesanan" },
+    { href: "/admin", label: "Dashboard Pemilik", icon: LayoutDashboard },
   ];
 
   return (
@@ -26,20 +27,24 @@ export function Navbar() {
           <span className="text-xs text-ink-muted">Atribut Dinas & Bordir Komputer TNI</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
+            const Icon = link.icon;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-colors ${
+                className={`inline-flex items-center gap-1.5 transition-colors ${
                   isActive
                     ? "text-army font-bold underline decoration-2 underline-offset-4"
+                    : link.href === "/admin"
+                    ? "text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 hover:bg-amber-100"
                     : "text-ink-muted hover:text-army"
                 }`}
               >
-                {link.label}
+                {Icon && <Icon className="w-3.5 h-3.5" />}
+                <span>{link.label}</span>
               </Link>
             );
           })}
@@ -58,4 +63,3 @@ export function Navbar() {
     </header>
   );
 }
-
