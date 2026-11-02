@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { Shield, LogIn } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isNetworkError } from "@/lib/supabase";
 import { ErrorBanner } from "@/components/StatusBanner";
 
 interface AdminLoginProps {
-  /** Pesan tambahan, mis. akun yang login bukan admin. */
   notice?: string;
   onSuccess: () => void;
 }
@@ -28,7 +27,7 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
       setIsSubmitting(false);
 
       if (signInError) {
-        if (signInError.message?.toLowerCase().includes("failed to fetch") || signInError.status === 0) {
+        if (isNetworkError(signInError) || signInError.status === 0) {
           setError("Gagal terhubung ke server database (offline atau connection refused). Periksa server Supabase Anda.");
         } else {
           setError("Email atau kata sandi salah.");
@@ -43,18 +42,18 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center px-4 font-sans">
+    <div className="min-h-screen bg-tactical-950 text-gray-100 flex items-center justify-center px-4 font-sans">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm space-y-5"
+        className="w-full max-w-sm bg-tactical-900 border border-tactical-700 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 relative overflow-hidden"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-army text-white flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5" />
+        <div className="flex items-center gap-3.5 border-b border-tactical-800 pb-5">
+          <div className="w-11 h-11 rounded-xl bg-tactical-850 border border-tactical-600/70 text-gold flex items-center justify-center shrink-0 shadow-lg">
+            <Shield className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-tight">Panel Pemilik Toko</h1>
-            <p className="text-xs text-gray-500">Masuk dengan akun admin Gaperta</p>
+            <h1 className="text-base font-black uppercase tracking-wider text-white">Panel Pemilik Toko</h1>
+            <p className="text-[11px] text-gray-400">Masuk dengan akun admin Gaperta</p>
           </div>
         </div>
 
@@ -62,8 +61,8 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
         {error && <ErrorBanner message={error} />}
 
         <div className="space-y-1.5">
-          <label htmlFor="admin-email" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
-            Email
+          <label htmlFor="admin-email" className="block text-xs font-black uppercase tracking-wider text-gray-300">
+            Email Admin
           </label>
           <input
             id="admin-email"
@@ -72,12 +71,12 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-white border border-gray-300 px-3.5 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 shadow-xs"
+            className="w-full bg-tactical-950 border border-tactical-700 focus:border-gold px-3.5 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/20 shadow-inner"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="admin-password" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+          <label htmlFor="admin-password" className="block text-xs font-black uppercase tracking-wider text-gray-300">
             Kata Sandi
           </label>
           <input
@@ -87,17 +86,17 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-white border border-gray-300 px-3.5 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 shadow-xs"
+            className="w-full bg-tactical-950 border border-tactical-700 focus:border-gold px-3.5 py-2.5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold/20 shadow-inner"
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-army hover:bg-army-dark active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-gold-dark via-gold to-amber-500 hover:brightness-110 active:scale-[0.98] disabled:opacity-50 text-white font-black py-3 rounded-xl text-sm transition-all shadow-lg shadow-amber-950/40 uppercase tracking-wider flex items-center justify-center gap-2"
         >
           <LogIn className="w-4 h-4" />
-          <span>{isSubmitting ? "Memeriksa..." : "Masuk"}</span>
+          <span>{isSubmitting ? "Memeriksa..." : "Masuk Dashboard"}</span>
         </button>
       </form>
     </div>

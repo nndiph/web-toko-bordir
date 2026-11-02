@@ -9,31 +9,35 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Deep tactical military dark - arang kehijauan pekat & tegas
+        tactical: {
+          950: "#080E09", // Background paling pekat
+          900: "#0D170E", // Background utama halaman
+          850: "#132115", // Card background
+          800: "#1A2C1D", // Elevated surface / Border
+          700: "#263F2A", // Active / Highlight border
+          600: "#385B3C", // Accent border
+        },
         // Deep military forest green - wibawa, tegas, bersih
         army: {
           DEFAULT: "#1E3E20",
           dark: "#142B16",
-          hover: "#18331A",
+          hover: "#254C28",
           light: "#EAF2EA",
-          border: "#E5E7EB", // Neutral clean border (tidak kehijauan/keruh)
+          border: "#263F2A",
         },
-        // Warm brass / bronze gold - tegas, tidak kusam
+        // Military brass / Bronze gold - tegas, maskulin, lencana
         gold: {
-          DEFAULT: "#B45309",
-          dark: "#92400E",
-          light: "#FEF3C7",
+          DEFAULT: "#D97706",
+          dark: "#B45309",
+          light: "#FDE68A",
+          muted: "#92400E",
         },
-        // Neutral canvas - bersih, ramah mata, standar e-commerce
-        surface: {
-          DEFAULT: "#F9FAFB", // Gray-50 bersih
-          card: "#FFFFFF",
-          muted: "#F3F4F6",   // Gray-100
-        },
-        // High contrast text - hitam arang tajam, bukan hijau gelap
+        // High contrast text
         ink: {
-          DEFAULT: "#111827", // Gray-900: tegas, mudah dibaca
-          muted: "#4B5563",   // Gray-600: kontras jelas
-          soft: "#9CA3AF",    // Gray-400
+          DEFAULT: "#111827",
+          muted: "#4B5563",
+          soft: "#9CA3AF",
         },
       },
       fontFamily: {
