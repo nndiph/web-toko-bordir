@@ -22,6 +22,20 @@ export function formatOrderDate(iso: string): string {
   return `${text} WIB`;
 }
 
+/** "Hari ini", "Kemarin", atau "N hari lalu". */
+export function ageLabel(days: number): string {
+  if (days <= 0) return "Hari ini";
+  if (days === 1) return "Kemarin";
+  return `${days} hari lalu`;
+}
+
+/** Nomor WhatsApp lokal (08xx, boleh ada strip/spasi) atau 62xx menjadi format wa.me (62xx). */
+export function toWaNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("62")) return digits;
+  return `62${digits.replace(/^0+/, "")}`;
+}
+
 export function formatRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
