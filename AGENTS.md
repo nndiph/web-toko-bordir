@@ -129,16 +129,16 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Mengimplementasikan **auto-fallback ke Mode Demo yang mulus** di `getProducts()`, `createOrder()`, dan `trackOrder()` ketika server offline, sehingga halaman web **tidak pernah melempar layar merah / crash** bagi pengguna.
   - Menambahkan penanganan pesan error yang informatif di `AdminLogin` dan `AdminDashboard` jika backend offline.
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
-- [x] **Fase 7 — Merombak Total Desain UI ke Konsep Taktis & Militer Modern (Selesai)**
-  - **Arsitektur Warna Baru:** Membuat palet warna `tactical-950` hingga `tactical-600` untuk nuansa hijau militer pekat/charcoal, dengan aksen `gold` militer sebagai highlight.
-  - **Navbar Taktis:** Gelap (`tactical-950/95`), border halus `tactical-800`, logo dengan gradient `army` ke `tactical-850`, badge TNI emas, navigasi dengan border `tactical-700`, tombol `gradient-gold` yang mencolok untuk CTA Bordir.
-  - **Hero Banner Militer Modern:** Background gradient tactical, headline raksasa & uppercase, teks emas gradient, stats ticker dengan card tactical, tombol emas glowing (`shadow-amber-950/40`).
-  - **Kategori Unggulan:** Dark card dengan foto overlay pekat, border tactical yang lembut, hover glow, indikator `tactical-950/90` dengan angka `gold`.
-  - **Katalog Stok Imersif:** Search bar dark dengan border focus gold, filter pills uppercase beraksen emas, kartu produk `bg-tactical-900` dengan border halus, status badge neon (hijau, merah, kuning), lokasi rak dalam card tactical, harga tebal `amber-400`, tombol aksi WhatsApp yang jelas.
-  - **Halaman Formulir Pemesanan:** Form tactical gelap, input focus border gold, stepper taktis, tombol `gradient-gold`, kartu konfirmasi tiket dengan badge `emerald-500/40`, tombol WA hijau.
-  - **Halaman Lacak Status:** Search box tactical, timeline 3 tahap (Antre → Dibordir → Siap Diambil), status badge sesuai progress, rincian pesanan dalam card tactical, action clear.
-  - **Admin Login:** Dark tactical form, button gradient gold, error handling informatif.
-  - **Footer Tactical:** Background gelap, border tactical, informasi toko fisik Medan.
+- [x] **Fase 7 — Rombak Visual (Versi 1, Deprecated) — Digantikan oleh Fase 7.5**
+- [x] **Fase 7.5 — Transformasi Total: Technical Console Militer Otentik via pen.dev (Selesai)**
+  - Mengintegrasikan **pen.dev Canvas MCP** langsung dengan archetype **Technical Console 1** (Drafting Sheet System) dari library gaya open-source pen.dev.
+  - Mengeliminasi total pola generic AI-slop: tidak ada bubble card mengambang, tidak ada border berlapis berlebihan, tidak ada neon glow sintetis, tidak ada stat ticker palsu.
+  - **Sistem Tipografi Baku:** `Rajdhani` (display 700 berbobot tegas), `IBM Plex Sans` (body text bersih), `IBM Plex Mono` (readout data teknikal & anotasi operasional).
+  - **Palet Warna Industrial Militer:** `console-ground` (`#0A0F0B`), `console-surface` (`#111812`), `console-rule` (`#233626`), `console-gold` (`#D97706`), `console-green` (`#22C55E`).
+  - **Top Utility Spec Bar:** Koordinat riil Jl. Gaperta Medan (`03.5952° N, 98.6722° E`) dan status sinkronisasi inventaris fisik.
+  - **Continuous Hero Stage:** Satu panggung headline monumental tanpa split box acak, dipadukan dengan **Action Ledger Strip** (CTA solid + 3 metrik operasional presisi).
+  - **Dual-View Status Rak Toko:** Mode Tabel Logistik Resmi + Mode Grid Pelat Spesimen grayscale dengan hover reveal.
+  - **Formulir Requisition Teknis & Terminal Tiket:** Standar formulir dinas dengan konfirmasi tiket langsung + notifikasi WhatsApp.
   - **Build & Lint:** Terverifikasi sukses 100% (7/7 static routes, 0 warnings, 0 errors).
 
 ---

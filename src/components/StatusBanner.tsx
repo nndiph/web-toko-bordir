@@ -2,12 +2,14 @@ import { AlertTriangle, FlaskConical } from "lucide-react";
 
 export function DemoBanner({ children }: { children?: React.ReactNode }) {
   return (
-    <div className="bg-amber-950/40 border border-amber-600/40 text-amber-200 rounded-xl px-4 py-3 flex items-start gap-3 text-xs sm:text-sm backdrop-blur-xs">
-      <FlaskConical className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
-      <p>
-        <strong className="text-amber-300">Mode Demo:</strong>{" "}
-        {children ?? "Supabase belum terhubung, data di halaman ini adalah simulasi dan tidak tersimpan di server."}
-      </p>
+    <div className="bg-console-surface border border-console-gold/40 text-console-textPrimary px-4 py-3 flex items-start gap-3 text-xs font-mono">
+      <FlaskConical className="w-4 h-4 mt-0.5 shrink-0 text-console-gold" />
+      <div>
+        <span className="text-console-gold font-bold uppercase tracking-wider">MODE DEMO OPERASIONAL: </span>
+        <span className="text-console-textSecondary">
+          {children ?? "Database offline / belum terhubung. Seluruh data pada tampilan ini adalah simulasi stok fisik."}
+        </span>
+      </div>
     </div>
   );
 }
@@ -16,10 +18,13 @@ export function ErrorBanner({ message }: { message: string }) {
   return (
     <div
       role="alert"
-      className="bg-rose-950/40 border border-rose-600/40 text-rose-200 rounded-xl px-4 py-3 flex items-start gap-3 text-xs sm:text-sm backdrop-blur-xs"
+      className="bg-console-surface border border-console-red/60 text-console-textPrimary px-4 py-3 flex items-start gap-3 text-xs font-mono"
     >
-      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
-      <p>{message}</p>
+      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-console-red" />
+      <div>
+        <span className="text-console-red font-bold uppercase tracking-wider">SYSTEM ALERT: </span>
+        <span className="text-console-textSecondary">{message}</span>
+      </div>
     </div>
   );
 }

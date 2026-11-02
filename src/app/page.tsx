@@ -5,21 +5,11 @@ import Link from "next/link";
 import {
   Search,
   Clock,
-  CheckCircle2,
-  AlertTriangle,
-  MapPin,
   ArrowRight,
-  Phone,
-  Award,
-  Shirt,
-  ShieldCheck,
-  Tag,
-  Scissors,
-  ChevronRight,
-  Sparkles,
-  Zap,
-  Shield,
-  Layers,
+  LayoutList,
+  LayoutGrid,
+  MapPin,
+  ArrowUpRight,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
@@ -27,62 +17,19 @@ import { getProducts } from "@/lib/data/products";
 import { formatRupiah } from "@/lib/utils";
 import type { Product } from "@/types";
 
-const FEATURED_CATEGORIES = [
-  {
-    id: "pangkat",
-    name: "Badge & Pangkat",
-    desc: "Bordir timbul rapi & presisi standar mabes",
-    count: "24+ Model",
-    icon: Award,
-    imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=75",
-  },
-  {
-    id: "seragam",
-    name: "Seragam PDL / PDH",
-    desc: "Kain loreng resmi TNI & dinas lapangan",
-    count: "Standar Dinas",
-    icon: Shirt,
-    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=75",
-  },
-  {
-    id: "sabuk",
-    name: "Sabuk & Kopel Rim",
-    desc: "Kopel dinas kuningan & sabuk taktis kuat",
-    count: "Bahan Tebal",
-    icon: ShieldCheck,
-    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=75",
-  },
-  {
-    id: "topi",
-    name: "Topi & Baret",
-    desc: "Baret semua korps & lencana kesatuan lengkap",
-    count: "Semua Korps",
-    icon: Tag,
-    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=600&q=75",
-  },
-  {
-    id: "bordir",
-    name: "Custom Bordir Komputer",
-    desc: "Nama dada timbul & lambang satuan 1-2 hari",
-    count: "Mesin Digital",
-    icon: Scissors,
-    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=75",
-  },
-];
-
 const FILTER_TABS = [
-  { id: "all", label: "Semua Produk" },
-  { id: "pangkat", label: "Pangkat Dinas" },
-  { id: "seragam", label: "Seragam PDL/PDH" },
-  { id: "sabuk", label: "Sabuk & Kopel" },
-  { id: "topi", label: "Topi & Baret" },
-  { id: "bordir", label: "Badge & Bordir" },
+  { id: "all", label: "SEMUA ITEM" },
+  { id: "pangkat", label: "PANGKAT DINAS" },
+  { id: "seragam", label: "SERAGAM PDL/PDH" },
+  { id: "sabuk", label: "SABUK & KOPEL" },
+  { id: "topi", label: "TOPI & BARET" },
+  { id: "bordir", label: "BADGE & BORDIR" },
 ];
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [products, setProducts] = useState<Product[]>([]);
   const [isDemo, setIsDemo] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +45,7 @@ export default function HomePage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setLoadError(err instanceof Error ? err.message : "Gagal memuat produk.");
+        setLoadError(err instanceof Error ? err.message : "Gagal memuat katalog barang.");
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -108,425 +55,328 @@ export default function HomePage() {
     };
   }, []);
 
-  const handleImageError = (id: string) => {
-    setImgErrors((prev) => ({ ...prev, [id]: true }));
-  };
-
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    const catalogElement = document.getElementById("katalog");
-    if (catalogElement) {
-      catalogElement.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const renderFallbackCover = (category: string) => {
-    return (
-      <div className="w-full h-full bg-gradient-to-br from-tactical-800 to-tactical-950 flex flex-col items-center justify-center text-white p-4">
-        <Shield className="w-10 h-10 text-gold mb-2 opacity-80" />
-        <span className="text-[10px] font-black tracking-widest uppercase text-gray-400">
-          {category}
-        </span>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-tactical-950 text-gray-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-console-ground text-console-textPrimary flex flex-col font-body">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16 w-full">
-        {/* ─── HERO BANNER MILITER TAKTIS ─── */}
-        <section className="relative rounded-3xl overflow-hidden border border-tactical-700 bg-gradient-to-b from-tactical-900 via-tactical-900 to-tactical-950 shadow-2xl p-6 sm:p-10 lg:p-14">
-          {/* Subtle tactical ambient glow */}
-          <div className="absolute -top-32 -left-32 w-96 h-96 bg-army/40 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute top-1/2 -right-32 w-80 h-80 bg-gold/15 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-            {/* Headline Area */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 bg-tactical-850 border border-tactical-600/80 text-gold-light text-xs font-black px-3.5 py-1.5 rounded-full uppercase tracking-widest shadow-inner">
-                <Shield className="w-3.5 h-3.5 text-gold" />
-                <span>Pusat Perlengkapan Dinas TNI & Instansi</span>
-              </div>
-
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1] uppercase">
-                Tegas. Presisi. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold to-amber-300">
-                  Siap Tugas.
-                </span>
-              </h1>
-
-              <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-xl font-normal">
-                Katalog ketersediaan fisik seragam, sabuk kopel, baret, dan antrean bordir komputer
-                nama dada serta pangkat timbul. Pastikan stok tersedia di rak toko sebelum datang.
-              </p>
-
-              {/* Ticker / Highlights */}
-              <div className="grid grid-cols-3 gap-3 pt-2 max-w-lg">
-                <div className="bg-tactical-850/80 border border-tactical-700 p-3 rounded-xl">
-                  <div className="text-xl font-black text-white">1-2 Hari</div>
-                  <div className="text-[11px] font-medium text-gray-400">Bordir Selesai</div>
-                </div>
-                <div className="bg-tactical-850/80 border border-tactical-700 p-3 rounded-xl">
-                  <div className="text-xl font-black text-gold">100%</div>
-                  <div className="text-[11px] font-medium text-gray-400">Standar Mabes</div>
-                </div>
-                <div className="bg-tactical-850/80 border border-tactical-700 p-3 rounded-xl">
-                  <div className="text-xl font-black text-emerald-400">Live</div>
-                  <div className="text-[11px] font-medium text-gray-400">Stok Rak Fisik</div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 flex flex-wrap gap-4">
-                <Link
-                  href="/pesan"
-                  className="inline-flex items-center gap-2.5 bg-gradient-to-r from-gold-dark via-gold to-amber-500 hover:brightness-110 active:scale-[0.98] text-white font-extrabold px-6 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-amber-950/40 uppercase tracking-wider"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Pesan Custom Bordir</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <a
-                  href="#katalog"
-                  className="inline-flex items-center gap-2 bg-tactical-800 hover:bg-tactical-700 border border-tactical-600 text-gray-200 font-bold px-6 py-3.5 rounded-xl text-sm transition-all"
-                >
-                  <Layers className="w-4 h-4 text-gray-400" />
-                  <span>Jelajahi Stok Rak</span>
-                </a>
-              </div>
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        {/* ─── CONTINUOUS HERO STAGE (Technical Console Archetype) ─── */}
+        <section className="w-full border border-console-rule bg-console-surface p-6 sm:p-10 lg:p-12 space-y-8">
+          <div className="space-y-4">
+            <div className="font-mono text-xs text-console-gold tracking-widest uppercase">
+              STANDAR DINAS MABES // REKAYASA BORDIR TIMBUL DIGITAL
             </div>
 
-            {/* Featured Hero Product Card */}
-            <div className="lg:col-span-5">
-              <div className="bg-tactical-850 border border-tactical-700 rounded-2xl overflow-hidden shadow-2xl relative group">
-                <div className="relative aspect-[16/11] w-full overflow-hidden bg-tactical-950">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=650&q=80"
-                    alt="Pangkat Bordir TNI AD - Serda"
-                    loading="eager"
-                    decoding="async"
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-tactical-850 via-transparent to-black/30" />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-gold-dark text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-md border border-gold/40">
-                      ★ Favorit Satuan
-                    </span>
-                  </div>
-                  <div className="absolute top-3 right-3">
-                    <span className="bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 text-[11px] font-bold px-2.5 py-1 rounded shadow-md">
-                      ● Stok Tersedia (24 pcs)
-                    </span>
-                  </div>
-                </div>
+            <h1 className="font-heading font-extrabold text-4xl sm:text-6xl lg:text-7xl text-console-textPrimary tracking-tight uppercase leading-[1.05]">
+              PRESISI BORDIR KOMPUTER &amp; LOGISTIK DINAS LAPANGAN.
+            </h1>
 
-                <div className="p-5 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-gold">
-                        Pangkat Dinas Timbul
-                      </span>
-                      <h3 className="font-extrabold text-white text-lg leading-tight mt-0.5">
-                        Pangkat Bordir TNI AD - Serda (Bordir Timbul)
-                      </h3>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">Harga</span>
-                      <p className="text-xl font-black text-amber-400 tabular-nums">Rp 35.000</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-tactical-700 text-xs">
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <MapPin className="w-4 h-4 text-gold shrink-0" />
-                      <span className="font-medium">Rak A-02 (Etalase Depan)</span>
-                    </div>
-                    <a
-                      href="https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20saya%20ingin%20cek%20Pangkat%20Serda"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 bg-tactical-700 hover:bg-tactical-600 border border-tactical-600 text-white font-bold px-3.5 py-2 rounded-lg text-xs transition-colors"
-                    >
-                      <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Cek via WA</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p className="font-body text-sm sm:text-base text-console-textSecondary max-w-3xl leading-relaxed">
+              Sistem verifikasi ketersediaan fisik seragam, sabuk kopel rim, baret dinas, dan antrean mesin bordir nama
+              dada serta pangkat timbul. Transparan, terukur, dan siap diambil langsung di toko fisik Gaperta Medan.
+            </p>
           </div>
-        </section>
 
-        {/* ─── KATEGORI PILIHAN TAKTIS ─── */}
-        <section className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-tactical-800 pb-4">
-            <div>
-              <div className="flex items-center gap-2 text-gold text-xs font-black uppercase tracking-widest">
-                <Zap className="w-3.5 h-3.5" />
-                <span>Navigasi Cepat</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
-                Departemen Perlengkapan
-              </h2>
-            </div>
-            {selectedCategory !== "all" && (
-              <button
-                type="button"
-                onClick={() => setSelectedCategory("all")}
-                className="text-xs font-bold text-gold hover:text-amber-300 transition-colors uppercase tracking-wider"
+          {/* Action Ledger Strip (Opposing Key / Value Composition) */}
+          <div className="w-full border border-console-rule bg-console-ground p-4 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/pesan"
+                className="bg-console-gold hover:bg-console-goldDark text-black font-heading font-bold text-sm tracking-wider uppercase px-6 py-3 transition-colors inline-flex items-center gap-2"
               >
-                Reset ke Semua ({products.length} Item)
-              </button>
-            )}
-          </div>
+                <span>DAFTARKAN PESANAN BORDIR</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {FEATURED_CATEGORIES.map((cat) => {
-              const isSelected = selectedCategory === cat.id;
-              const Icon = cat.icon;
+              <a
+                href="#katalog"
+                className="border border-console-rule hover:border-console-textSecondary bg-console-surface text-console-textPrimary font-heading font-semibold text-sm tracking-wider uppercase px-5 py-3 transition-colors"
+              >
+                LIHAT DATA STOK RAK
+              </a>
+            </div>
 
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`group text-left rounded-2xl border overflow-hidden bg-tactical-900 transition-all duration-300 flex flex-col justify-between shadow-md relative ${
-                    isSelected
-                      ? "border-gold ring-2 ring-gold/40 shadow-gold/10"
-                      : "border-tactical-800 hover:border-tactical-600 hover:bg-tactical-850"
-                  }`}
-                >
-                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-tactical-950">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={cat.imageUrl}
-                      alt={cat.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-tactical-900 via-tactical-900/40 to-transparent" />
-                    <div className="absolute top-2.5 left-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-tactical-950/90 border border-tactical-700 flex items-center justify-center text-gold">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-white">
-                      <span className="text-[10px] font-black uppercase tracking-wider bg-tactical-950/90 text-gold-light border border-tactical-700 px-2 py-0.5 rounded">
-                        {cat.count}
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-gold group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 space-y-1">
-                    <h3 className="font-extrabold text-white text-sm leading-snug group-hover:text-gold transition-colors">
-                      {cat.name}
-                    </h3>
-                    <p className="text-[11px] text-gray-400 line-clamp-1 leading-normal">
-                      {cat.desc}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
+            {/* Readout Metrics */}
+            <div className="grid grid-cols-3 gap-6 sm:gap-10 border-t lg:border-t-0 lg:border-l border-console-rule pt-4 lg:pt-0 lg:pl-8">
+              <div>
+                <div className="font-heading font-bold text-xl sm:text-2xl text-console-textPrimary">24-48 JAM</div>
+                <div className="font-mono text-[10px] text-console-textMuted uppercase tracking-wider">
+                  LEAD TIME BORDIR
+                </div>
+              </div>
+              <div>
+                <div className="font-heading font-bold text-xl sm:text-2xl text-console-gold">100%</div>
+                <div className="font-mono text-[10px] text-console-textMuted uppercase tracking-wider">
+                  AKURASI BENANG
+                </div>
+              </div>
+              <div>
+                <div className="font-heading font-bold text-xl sm:text-2xl text-console-green">RAK A-G</div>
+                <div className="font-mono text-[10px] text-console-textMuted uppercase tracking-wider">
+                  LOKASI RAK FISIK
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* ─── ETALASE KATALOG RAK FISIK ─── */}
+        {/* ─── STATUS KETERSEDIAAN RAK TOKO (OPERATIONAL LEDGER) ─── */}
         <section id="katalog" className="space-y-6 pt-4">
           {isDemo && <DemoBanner />}
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-tactical-800 pb-5">
+          {/* Section Header */}
+          <div className="border-b border-console-rule pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
-                  Etalase Rak Fisik Toko
-                </h2>
-                <span className="text-xs font-black bg-tactical-800 text-gold px-3 py-1 rounded-full border border-tactical-700">
-                  {filteredProducts.length} Produk
-                </span>
+              <div className="font-mono text-xs text-console-gold tracking-widest uppercase">
+                LEDGER // 01 // FISIK ETALASE
               </div>
-              <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                Ketersediaan stok sinkron langsung dengan fisik rak toko Gaperta Medan
-              </p>
+              <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-console-textPrimary tracking-tight uppercase mt-0.5">
+                STATUS KETERSEDIAAN RAK TOKO
+              </h2>
             </div>
 
-            {/* Tactical Search Bar */}
-            <div className="relative w-full md:w-88">
-              <Search className="w-4 h-4 absolute left-4 top-3.5 text-gray-400" />
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-xs text-console-textMuted hidden sm:inline">
+                TOTAL {filteredProducts.length} ITEM // TERVERIFIKASI RAK FISIK
+              </span>
+
+              {/* View Switcher */}
+              <div className="flex border border-console-rule bg-console-surface p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`p-1.5 transition-colors ${
+                    viewMode === "table" ? "bg-console-elevated text-console-gold" : "text-console-textMuted hover:text-white"
+                  }`}
+                  title="Tampilan Tabel Ledger"
+                >
+                  <LayoutList className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  className={`p-1.5 transition-colors ${
+                    viewMode === "grid" ? "bg-console-elevated text-console-gold" : "text-console-textMuted hover:text-white"
+                  }`}
+                  title="Tampilan Pelat Spesimen"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Bar & Search Strip */}
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+              {FILTER_TABS.map((tab) => {
+                const isSelected = selectedCategory === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(tab.id)}
+                    className={`font-mono text-xs px-3.5 py-2 whitespace-nowrap transition-colors uppercase border ${
+                      isSelected
+                        ? "bg-console-surface border-console-gold text-console-gold font-bold"
+                        : "border-console-rule text-console-textSecondary hover:text-white hover:border-console-textSecondary"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Technical Search */}
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-console-textMuted" />
               <input
                 type="text"
-                placeholder="Cari barang (Pangkat, Kopel, PDL, Topi)..."
+                placeholder="CARI NAMA ATAU KODE RAK..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-tactical-900 border border-tactical-700 focus:border-gold pl-11 pr-4 py-2.5 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gold/20 shadow-inner"
+                className="w-full bg-console-surface border border-console-rule focus:border-console-gold pl-9 pr-3 py-2 text-xs font-mono text-console-textPrimary placeholder:text-console-textMuted focus:outline-none tracking-wider uppercase"
               />
             </div>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {FILTER_TABS.map((tab) => {
-              const isSelected = selectedCategory === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(tab.id)}
-                  className={`text-xs sm:text-sm px-4 py-2.5 rounded-xl font-bold whitespace-nowrap transition-all uppercase tracking-wider ${
-                    isSelected
-                      ? "bg-gold text-white shadow-lg shadow-amber-950/30"
-                      : "bg-tactical-900 text-gray-300 border border-tactical-800 hover:border-tactical-600 hover:text-white"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Grid Produk Taktis */}
+          {/* Content Views */}
           {isLoading ? (
-            <div className="bg-tactical-900 border border-tactical-800 rounded-2xl p-16 text-center text-sm text-gray-400">
-              Memuat katalog stok fisik...
+            <div className="border border-console-rule bg-console-surface p-12 text-center font-mono text-xs text-console-textSecondary">
+              MEMUAT DATA INVENTARIS TOKO...
             </div>
           ) : loadError ? (
-            <ErrorBanner message={`${loadError} Silakan hubungi kasir via WhatsApp.`} />
+            <ErrorBanner message={loadError} />
           ) : filteredProducts.length === 0 ? (
-            <div className="bg-tactical-900 border border-tactical-800 rounded-2xl p-14 text-center space-y-3">
-              <div className="w-12 h-12 bg-tactical-800 border border-tactical-700 rounded-full flex items-center justify-center mx-auto text-gold">
-                <Search className="w-6 h-6" />
+            <div className="border border-console-rule bg-console-surface p-12 text-center space-y-2 font-mono text-xs">
+              <div className="text-console-gold font-bold uppercase">TIDAK ADA DATA DITEMUKAN</div>
+              <div className="text-console-textMuted">
+                Kata kunci &quot;{searchQuery}&quot; tidak cocok dengan daftar stok fisik.
               </div>
-              <h3 className="text-base font-extrabold text-white">Barang Tidak Ditemukan</h3>
-              <p className="text-xs text-gray-400 max-w-sm mx-auto">
-                Tidak ada produk dengan kata kunci &quot;{searchQuery}&quot;. Hubungi toko langsung untuk cek pesanan khusus.
-              </p>
               <button
                 type="button"
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategory("all");
                 }}
-                className="inline-block mt-2 text-xs font-bold text-gold uppercase tracking-wider hover:underline"
+                className="mt-2 text-console-gold hover:underline font-bold"
               >
-                Tampilkan Semua Barang
+                RESET PENCARIAN
               </button>
             </div>
+          ) : viewMode === "table" ? (
+            /* ─── DRAFTING LEDGER TABLE (Mode 1: Presisi & Terstruktur) ─── */
+            <div className="border border-console-rule bg-console-surface overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-console-rule bg-console-elevated font-mono text-[11px] text-console-textSecondary uppercase tracking-wider">
+                    <th className="py-3 px-4 font-semibold">KODE &amp; NAMA BARANG</th>
+                    <th className="py-3 px-4 font-semibold">KATEGORI DINAS</th>
+                    <th className="py-3 px-4 font-semibold">LOKASI RAK FISIK</th>
+                    <th className="py-3 px-4 font-semibold">HARGA SATUAN</th>
+                    <th className="py-3 px-4 font-semibold">STATUS / KETERSEDIAAN</th>
+                    <th className="py-3 px-4 font-semibold text-right">AKSI</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-console-rule font-mono text-xs">
+                  {filteredProducts.map((product) => (
+                    <tr
+                      key={product.id}
+                      className="hover:bg-console-elevated/60 transition-colors group"
+                    >
+                      <td className="py-3.5 px-4 font-heading font-semibold text-sm sm:text-base text-console-textPrimary group-hover:text-console-gold transition-colors">
+                        {product.name}
+                      </td>
+                      <td className="py-3.5 px-4 text-console-textSecondary uppercase text-[11px]">
+                        {product.category}
+                      </td>
+                      <td className="py-3.5 px-4 text-console-gold font-medium">
+                        {product.rackLocation}
+                      </td>
+                      <td className="py-3.5 px-4 font-heading font-bold text-base text-console-textPrimary">
+                        {formatRupiah(product.price)}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        {product.status === "TERSEDIA" && (
+                          <span className="inline-flex items-center gap-1.5 text-console-green font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-console-green" />
+                            TERSEDIA ({product.stock} PCS)
+                          </span>
+                        )}
+                        {product.status === "HABIS" && (
+                          <span className="inline-flex items-center gap-1.5 text-console-red font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-console-red" />
+                            KOSONG DI RAK
+                          </span>
+                        )}
+                        {product.status === "CUSTOM" && (
+                          <span className="inline-flex items-center gap-1.5 text-console-gold font-medium">
+                            <Clock className="w-3.5 h-3.5 text-console-gold" />
+                            CUSTOM (1-2 HARI)
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        {product.status === "TERSEDIA" ? (
+                          <a
+                            href={`https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20saya%20ingin%20cek%20stok%20${encodeURIComponent(
+                              product.name
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 border border-console-rule hover:border-console-gold text-console-textPrimary px-2.5 py-1 text-[11px] transition-colors"
+                          >
+                            <span>CEK WA</span>
+                            <ArrowUpRight className="w-3 h-3 text-console-gold" />
+                          </a>
+                        ) : product.status === "CUSTOM" ? (
+                          <Link
+                            href="/pesan"
+                            className="inline-flex items-center gap-1 bg-console-gold hover:bg-console-goldDark text-black font-heading font-bold px-3 py-1 text-xs uppercase tracking-wider transition-colors"
+                          >
+                            <span>PESAN</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        ) : (
+                          <span className="text-console-textMuted text-[11px]">PRE-ORDER</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            /* ─── SPECIMEN PLATE GRID (Mode 2: Foto Dokumen Fisik Teratur) ─── */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-tactical-900 border border-tactical-800 hover:border-tactical-600 rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 group shadow-lg hover:shadow-xl hover:shadow-black/50"
+                  className="border border-console-rule bg-console-surface flex flex-col justify-between hover:border-console-textSecondary transition-colors"
                 >
                   <div>
-                    {/* Cover Image Showcase */}
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-tactical-950 border-b border-tactical-800">
-                      {imgErrors[product.id] || !product.imageUrl ? (
-                        renderFallbackCover(product.category)
-                      ) : (
+                    {/* Specimen Photo Frame */}
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-console-ground border-b border-console-rule">
+                      {product.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={product.imageUrl}
                           alt={product.name}
                           loading="lazy"
-                          decoding="async"
-                          onError={() => handleImageError(product.id)}
-                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-85 group-hover:opacity-100"
+                          className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-300 opacity-90"
                         />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center font-mono text-xs text-console-textMuted uppercase">
+                          NO SPECIMEN IMAGE
+                        </div>
                       )}
-
-                      {/* Status Badges */}
-                      <div className="absolute top-3 left-3">
-                        {product.status === "TERSEDIA" && (
-                          <span className="inline-flex items-center gap-1 bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 text-[10px] font-black px-2.5 py-1 rounded shadow-md uppercase tracking-wider">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                            Stok: {product.stock} pcs
-                          </span>
-                        )}
-                        {product.status === "HABIS" && (
-                          <span className="inline-flex items-center gap-1 bg-rose-950/90 text-rose-300 border border-rose-500/50 text-[10px] font-black px-2.5 py-1 rounded shadow-md uppercase tracking-wider">
-                            <AlertTriangle className="w-3 h-3 text-rose-400" />
-                            Stok Habis
-                          </span>
-                        )}
-                        {product.status === "CUSTOM" && (
-                          <span className="inline-flex items-center gap-1 bg-amber-950/90 text-amber-300 border border-amber-500/50 text-[10px] font-black px-2.5 py-1 rounded shadow-md uppercase tracking-wider">
-                            <Clock className="w-3 h-3 text-amber-400" />
-                            Custom Order
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="absolute top-3 right-3">
-                        <span className="bg-tactical-950/80 backdrop-blur-xs text-gray-300 border border-tactical-700 text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded">
-                          {product.category}
-                        </span>
+                      <div className="absolute top-2 left-2 font-mono text-[10px] bg-console-ground/90 border border-console-rule text-console-gold px-2 py-0.5 uppercase tracking-wider">
+                        {product.category}
                       </div>
                     </div>
 
-                    {/* Information */}
-                    <div className="p-4 space-y-3">
-                      <h3 className="font-extrabold text-white text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-gold transition-colors">
+                    {/* Metadata */}
+                    <div className="p-4 space-y-3 font-mono">
+                      <h3 className="font-heading font-bold text-base text-console-textPrimary leading-snug">
                         {product.name}
                       </h3>
 
-                      <div>
-                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider block">Harga</span>
-                        <p className="text-xl font-black text-amber-400 tabular-nums">
-                          {formatRupiah(product.price)}
-                        </p>
+                      <div className="text-xs text-console-textSecondary flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-console-gold shrink-0" />
+                        <span>{product.rackLocation}</span>
                       </div>
 
-                      {/* Rak Fisik */}
-                      <div className="flex items-center gap-2 text-xs text-gray-300 bg-tactical-850 border border-tactical-800 px-3 py-2 rounded-xl">
-                        <MapPin className="w-3.5 h-3.5 text-gold shrink-0" />
-                        <span className="truncate font-medium">{product.rackLocation}</span>
+                      <div className="pt-2 border-t border-console-rule flex items-baseline justify-between">
+                        <span className="font-heading font-bold text-lg text-console-textPrimary">
+                          {formatRupiah(product.price)}
+                        </span>
+                        <span className="text-[11px] text-console-green">
+                          {product.status === "TERSEDIA" ? `STOK: ${product.stock}` : product.status}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="p-4 pt-0">
-                    {product.status === "TERSEDIA" ? (
-                      <a
-                        href={`https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20apakah%20${encodeURIComponent(
-                          product.name
-                        )}%20masih%20tersedia?`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full text-center bg-tactical-800 hover:bg-tactical-700 border border-tactical-600 active:scale-[0.98] text-white text-xs sm:text-sm font-bold py-2.5 rounded-xl transition-all shadow-sm"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Cek / Ambil di Toko</span>
-                      </a>
-                    ) : product.status === "CUSTOM" ? (
-                      <Link
-                        href="/pesan"
-                        className="flex items-center justify-center gap-2 w-full text-center bg-gradient-to-r from-gold-dark to-gold hover:brightness-110 active:scale-[0.98] text-white text-xs sm:text-sm font-black py-2.5 rounded-xl transition-all shadow-sm uppercase tracking-wider"
-                      >
-                        <Scissors className="w-3.5 h-3.5" />
-                        <span>Form Bordir Custom</span>
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled
-                        className="w-full text-center bg-tactical-950 text-gray-600 border border-tactical-800 text-xs sm:text-sm font-bold py-2.5 rounded-xl cursor-not-allowed"
-                      >
-                        Habis — Pre-Order Toko
-                      </button>
-                    )}
+                    <a
+                      href={`https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20apakah%20${encodeURIComponent(
+                        product.name
+                      )}%20masih%20tersedia?`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full border border-console-rule hover:border-console-gold text-console-textPrimary py-2 text-xs font-mono tracking-wider uppercase text-center block transition-colors"
+                    >
+                      VERIFIKASI RAK VIA WA
+                    </a>
                   </div>
                 </div>
               ))}
@@ -534,49 +384,68 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* ─── CALLOUT BORDIR CUSTOM RESMI ─── */}
-        <section className="bg-gradient-to-r from-tactical-900 via-tactical-850 to-tactical-900 border border-tactical-700 rounded-3xl p-6 sm:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl">
-          <div className="space-y-2 text-center lg:text-left">
-            <span className="text-xs font-black uppercase tracking-widest text-gold bg-tactical-800 border border-gold-dark/40 px-3 py-1 rounded-full">
-              Layanan Komando & Satuan
-            </span>
-            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white uppercase tracking-tight">
-              Pesan Bordir Nama, Korps, Atau Lambang Satuan
-            </h3>
-            <p className="text-xs sm:text-sm text-gray-300 max-w-2xl">
-              Melayani pesanan bordir timbul perorangan hingga ratusan set untuk satu batalyon/kompi.
-              Daftar online sekarang untuk mendapatkan Nomor Tiket resmi antrean mesin.
-            </p>
+        {/* ─── DRAFTING TITLE BLOCK (Spesifikasi Operasional Mesin) ─── */}
+        <section className="border border-console-rule bg-console-surface p-6 sm:p-10 space-y-6">
+          <div className="border-b border-console-rule pb-3 flex items-center justify-between font-mono text-xs">
+            <span className="text-console-gold uppercase">SPEC // BORDIR KOMPUTER TIMBUL</span>
+            <span className="text-console-textMuted">TOLERANSI PRESISI ±0.5 MM</span>
           </div>
-          <Link
-            href="/pesan"
-            className="shrink-0 bg-gradient-to-r from-gold-dark to-gold hover:brightness-110 text-white font-black text-sm px-7 py-4 rounded-xl transition-all shadow-xl shadow-amber-950/40 inline-flex items-center gap-2.5 uppercase tracking-wider"
-          >
-            <span>Daftar Pesanan Online</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
+            <div className="space-y-2">
+              <div className="font-heading font-bold text-base text-console-textPrimary uppercase">
+                01. DENSITAS BENANG TINGGI
+              </div>
+              <p className="text-console-textSecondary leading-relaxed">
+                Menggunakan benang bordir poliester grade militer tahan cuaca panas dan pencucian berulang, tidak mudah
+                pudar dan tidak berserabut.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="font-heading font-bold text-base text-console-textPrimary uppercase">
+                02. TIMBUL &amp; TEGAP PRESISI
+              </div>
+              <p className="text-console-textSecondary leading-relaxed">
+                Lapisan spon khusus di bawah bordir timbul untuk memastikan pangkat perwira/bintara dan nama dada tetap
+                tegap sesuai regulasi mabes.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="font-heading font-bold text-base text-console-textPrimary uppercase">
+                03. PENGAMBILAN LANGSUNG
+              </div>
+              <p className="text-console-textSecondary leading-relaxed">
+                Setelah tiket berstatus SIAP DIAMBIL, bawa nomor tiket Anda langsung ke kasir toko Jl. Gaperta Medan
+                tanpa menunggu antrean panjang.
+              </p>
+            </div>
+          </div>
         </section>
       </main>
 
-      {/* ─── FOOTER TAKTIS MILITER ─── */}
-      <footer className="bg-tactical-950 border-t border-tactical-800 py-12 text-xs text-gray-400 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-tactical-850 pb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-tactical-850 border border-tactical-700 flex items-center justify-center text-gold">
-                <Shield className="w-4 h-4" />
-              </div>
-              <span className="text-sm font-black text-white tracking-wider uppercase">
+      {/* ─── FOOTER (Drafting Sheet Title Block) ─── */}
+      <footer className="w-full border-t border-console-rule bg-console-ground mt-16 font-mono text-xs text-console-textSecondary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-console-rule pb-6">
+            <div>
+              <div className="font-heading font-bold text-lg text-console-textPrimary uppercase tracking-wider">
                 TOKO GAPERTA MEDAN
-              </span>
+              </div>
+              <div className="text-[11px] text-console-textMuted mt-0.5">
+                JL. GAPERTA NO. 12, KEC. MEDAN HELVETIA, KOTA MEDAN — SUMATERA UTARA
+              </div>
             </div>
-            <div className="text-xs text-gray-400">
-              Jl. Gaperta No. 12, Helvetia, Medan — Sumatera Utara
+
+            <div className="text-[11px] text-console-textMuted">
+              JAM BUKA TOKO: SENIN – SABTU // 08:00 – 20:00 WIB
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-gray-500">
-            <p>© 2026 Toko Gaperta. Transaksi dan serah terima barang langsung di toko fisik.</p>
-            <p>Standar Perlengkapan Dinas TNI & Kedinasan Resmi.</p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-console-textMuted">
+            <div>© 2026 TOKO GAPERTA. SISTEM INFORMASI ATRIBUT DINAS &amp; BORDIR.</div>
+            <div>DOKUMEN OPERASIONAL TEKNIS // VERSI 2.0</div>
           </div>
         </div>
       </footer>

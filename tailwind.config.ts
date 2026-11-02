@@ -9,47 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Deep tactical military dark - arang kehijauan pekat & tegas
-        tactical: {
-          950: "#080E09", // Background paling pekat
-          900: "#0D170E", // Background utama halaman
-          850: "#132115", // Card background
-          800: "#1A2C1D", // Elevated surface / Border
-          700: "#263F2A", // Active / Highlight border
-          600: "#385B3C", // Accent border
-        },
-        // Deep military forest green - wibawa, tegas, bersih
-        army: {
-          DEFAULT: "#1E3E20",
-          dark: "#142B16",
-          hover: "#254C28",
-          light: "#EAF2EA",
-          border: "#263F2A",
-        },
-        // Military brass / Bronze gold - tegas, maskulin, lencana
-        gold: {
-          DEFAULT: "#D97706",
-          dark: "#B45309",
-          light: "#FDE68A",
-          muted: "#92400E",
-        },
-        // High contrast text
-        ink: {
-          DEFAULT: "#111827",
-          muted: "#4B5563",
-          soft: "#9CA3AF",
+        // Technical Console Theme Palette (Non-AI Slop, Autentik Militer)
+        console: {
+          ground: "#0A0F0B",       // Canvas dasar matte
+          surface: "#111812",      // Surface kerja utama
+          elevated: "#18241A",     // Surface baris/tabel
+          rule: "#233626",         // Border hairline tipis tenang
+          ruleFocus: "#C2850A",    // Hairline fokus
+          gold: "#D97706",         // Kuningan lencana militer
+          goldDark: "#92400E",
+          green: "#22C55E",        // Signal status live
+          red: "#EF4444",          // Signal habis
+          textPrimary: "#F0F4F1",  // Teks terbaca jelas
+          textSecondary: "#8A9E8D",// Teks pendukung
+          textMuted: "#526354",    // Label mono teknikal
         },
       },
       fontFamily: {
-        sans: [
-          '"Plus Jakarta Sans"',
-          "Inter",
-          "-apple-system",
-          "BlinkMacSystemFont",
-          '"Segoe UI"',
-          "Roboto",
-          "sans-serif",
-        ],
+        heading: ["Rajdhani", "sans-serif"],
+        body: ['"IBM Plex Sans"', "sans-serif"],
+        mono: ['"IBM Plex Mono"', "monospace"],
       },
     },
   },
