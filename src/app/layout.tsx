@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Toko Gaperta — Atribut Dinas & Bordir Komputer TNI",
   description:
-    "Verifikasi ketersediaan stok fisik etalase toko dan antrean mesin bordir nama dada, pangkat timbul, serta lencana kesatuan dinas TNI Medan.",
+    "Cek ketersediaan stok fisik perlengkapan dinas dan pesan custom bordir komputer nama dada, pangkat, serta lokasi dinas TNI Medan tanpa antre.",
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className="font-body antialiased bg-console-ground text-console-textPrimary selection:bg-console-gold selection:text-black">
+      <body className="font-sans antialiased bg-slate-canvas text-slate-ink selection:bg-brand selection:text-white">
         {children}
       </body>
     </html>

@@ -129,17 +129,23 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Mengimplementasikan **auto-fallback ke Mode Demo yang mulus** di `getProducts()`, `createOrder()`, dan `trackOrder()` ketika server offline, sehingga halaman web **tidak pernah melempar layar merah / crash** bagi pengguna.
   - Menambahkan penanganan pesan error yang informatif di `AdminLogin` dan `AdminDashboard` jika backend offline.
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
-- [x] **Fase 7 — Rombak Visual (Versi 1, Deprecated) — Digantikan oleh Fase 7.5**
-- [x] **Fase 7.5 — Transformasi Total: Technical Console Militer Otentik via pen.dev (Selesai)**
-  - Mengintegrasikan **pen.dev Canvas MCP** langsung dengan archetype **Technical Console 1** (Drafting Sheet System) dari library gaya open-source pen.dev.
-  - Mengeliminasi total pola generic AI-slop: tidak ada bubble card mengambang, tidak ada border berlapis berlebihan, tidak ada neon glow sintetis, tidak ada stat ticker palsu.
-  - **Sistem Tipografi Baku:** `Rajdhani` (display 700 berbobot tegas), `IBM Plex Sans` (body text bersih), `IBM Plex Mono` (readout data teknikal & anotasi operasional).
-  - **Palet Warna Industrial Militer:** `console-ground` (`#0A0F0B`), `console-surface` (`#111812`), `console-rule` (`#233626`), `console-gold` (`#D97706`), `console-green` (`#22C55E`).
-  - **Top Utility Spec Bar:** Koordinat riil Jl. Gaperta Medan (`03.5952° N, 98.6722° E`) dan status sinkronisasi inventaris fisik.
-  - **Continuous Hero Stage:** Satu panggung headline monumental tanpa split box acak, dipadukan dengan **Action Ledger Strip** (CTA solid + 3 metrik operasional presisi).
-  - **Dual-View Status Rak Toko:** Mode Tabel Logistik Resmi + Mode Grid Pelat Spesimen grayscale dengan hover reveal.
-  - **Formulir Requisition Teknis & Terminal Tiket:** Standar formulir dinas dengan konfirmasi tiket langsung + notifikasi WhatsApp.
-  - **Build & Lint:** Terverifikasi sukses 100% (7/7 static routes, 0 warnings, 0 errors).
+- [x] **Fase 8 — Transformasi Tema Cerah E-Commerce Terkenal (Tokopedia & Uniqlo Style) (Selesai)**
+  - Melakukan riset layout e-commerce terkemuka di **pen.dev Canvas** menggunakan referensi **Tokopedia** (marketplace retail Indonesia) dan **Uniqlo** (clean visual retail).
+  - **Palet Warna Cerah & Ramah Mata:**
+    - Canvas utama: Slate-50 hangat (`#F8FAFC`).
+    - Kartu produk & panel: Putih bersih (`#FFFFFF`) dengan border halus `#E2E8F0`.
+    - Warna brand: Hijau militer wibawa (`#14381B`) dipadu kuningan lencana (`#B45309`).
+    - Tipografi: Kontras tinggi hitam pekat Slate-900 (`#0F172A`) dan Slate-600 (`#475569`) yang sangat mudah dibaca oleh semua umur.
+  - **Top Announcement Bar:** Hijau militer solid dengan info lokasi toko Jl. Gaperta Medan & live status rak fisik sinkron.
+  - **Header Bersih:** Brand logo GAPERTA dengan badge dinas, menu link aktif dengan underline brand, tombol WhatsApp kasir yang kontras.
+  - **Hero Section Cerah:** Headline raksasa hitam pekat, foto atribut dinas TNI nyata yang jernih, tombol CTA ganda (Pesan Bordir Online & Cek Stok Rak).
+  - **Value Proposition 3 Pilar:** 1-2 Hari Jadi, 100% Standar Mabes, Stok Rak Nyata.
+  - **Departemen Kategori:** 5 kartu kategori bersih dengan ikon dan foto sampul jernih.
+  - **Katalog E-Commerce Cerah:**
+    - Search bar besar ala Tokopedia dengan filter pills responsif.
+    - Kartu produk 4:3 berbingkai halus dengan status badge hijau/merah/kuning, harga tebal `Rp 35.000`, lokasi fisik rak (`Rak A-02`), dan tombol aksi WhatsApp/Pesan.
+  - **Halaman `/pesan` & `/tracking`:** Form dan pelacakan tiket putih bersih, rapi, dan mudah diisi.
+  - **Build & Lint:** 7/7 static routes lulus 100% (0 errors, 0 warnings).
 
 ---
 

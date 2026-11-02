@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Copy, Send, ArrowRight } from "lucide-react";
+import { CheckCircle2, Copy, Send, ArrowRight, Scissors, Info } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
 import { createOrder } from "@/lib/data/orders";
@@ -64,178 +64,178 @@ export default function OrderPage() {
       `*Nama Pemesan:* ${formData.name} ${formData.rank ? `(${formData.rank})` : ""}\n` +
       `*Jenis Bordir:* ${formData.orderType}\n` +
       `*Jumlah:* ${formData.quantity}\n` +
-      `*Spesifikasi/Catatan:* ${formData.notes}\n\n` +
-      `Mohon verifikasi antrean pengerjaan mesin. Terima kasih!`
+      `*Spesifikasi/Teks:* ${formData.notes}\n\n` +
+      `Mohon dikonfirmasi pengerjaannya. Terima kasih!`
   );
 
   return (
-    <div className="min-h-screen bg-console-ground text-console-textPrimary flex flex-col font-body">
+    <div className="min-h-screen bg-slate-canvas text-slate-ink flex flex-col font-sans">
       <Navbar />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {submittedTicket ? (
-          /* ─── TIKET KONFIRMASI TEKNIS ─── */
-          <div className="border border-console-rule bg-console-surface p-6 sm:p-10 space-y-8">
-            <div className="border-b border-console-rule pb-4 flex items-center justify-between font-mono text-xs">
-              <span className="text-console-green flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-console-green" />
-                <span>SYS-ACK // ANTREAN MESIN DIGITAL BERHASIL DIDAFTARKAN</span>
-              </span>
-              <span className="text-console-textMuted">ENTRY RECORDED</span>
-            </div>
-
+          /* ─── TIKET KONFIRMASI CERAH ─── */
+          <div className="bg-white border border-slate-border rounded-3xl p-6 sm:p-12 shadow-sm space-y-8 text-center">
             {isDemo && (
-              <DemoBanner>
-                Tiket ini dibuat dalam simulasi mode demo offline karena server database belum terhubung.
-              </DemoBanner>
+              <div className="text-left">
+                <DemoBanner>Pesanan disimulasikan dalam mode demo karena server database belum terhubung.</DemoBanner>
+              </div>
             )}
 
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto border border-emerald-100">
+              <CheckCircle2 className="w-9 h-9" />
+            </div>
+
             <div className="space-y-2">
-              <h1 className="font-heading font-extrabold text-3xl sm:text-4xl text-console-textPrimary uppercase tracking-tight">
-                NOMOR TIKET PESANAN RESMI
+              <span className="text-xs font-bold uppercase tracking-wider text-brand bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                Antrean Mesin Digital Terdaftar
+              </span>
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-ink tracking-tight">
+                Pesanan Custom Bordir Diterima!
               </h1>
-              <p className="font-mono text-xs text-console-textSecondary max-w-xl">
-                Simpan nomor tiket ini. Tunjukkan ke kasir saat pengambilan pesanan bordir di toko fisik Jl. Gaperta Medan.
+              <p className="text-sm text-slate-muted max-w-lg mx-auto leading-relaxed">
+                Nomor Tiket Pesanan resmi telah dibuat. Simpan nomor ini untuk melacak status pengerjaan atau saat
+                pengambilan barang di toko fisik Jl. Gaperta Medan.
               </p>
             </div>
 
             {/* Ticket Box */}
-            <div className="border border-console-gold bg-console-ground p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono">
-              <div>
-                <span className="text-[10px] text-console-textMuted uppercase tracking-widest block">
-                  NOMOR TIKET ANTREAN
-                </span>
-                <span className="text-2xl sm:text-3xl font-bold text-console-gold tracking-widest select-all">
-                  {submittedTicket}
-                </span>
+            <div className="bg-slate-50 border border-slate-border rounded-2xl p-6 max-w-md mx-auto space-y-3">
+              <span className="text-xs font-bold text-slate-muted uppercase tracking-wider block">
+                Nomor Tiket Pesanan Anda
+              </span>
+              <div className="text-2xl sm:text-3xl font-extrabold text-brand tracking-wider select-all font-mono">
+                {submittedTicket}
               </div>
-
               <button
                 type="button"
                 onClick={handleCopy}
-                className="inline-flex items-center gap-2 border border-console-rule hover:border-console-textSecondary bg-console-surface px-4 py-2 text-xs text-console-textPrimary transition-colors uppercase font-mono"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-ink bg-white border border-slate-border px-4 py-2 rounded-lg transition-colors shadow-2xs"
               >
-                <Copy className="w-3.5 h-3.5 text-console-gold" />
-                <span>{copied ? "BERHASIL DISALIN" : "SALIN TIKET"}</span>
+                <Copy className="w-3.5 h-3.5 text-brand" />
+                <span>{copied ? "Berhasil Disalin!" : "Salin Nomor Tiket"}</span>
               </button>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2 font-mono text-xs">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto pt-2">
               <a
                 href={`https://wa.me/6281234567890?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-console-gold hover:bg-console-goldDark text-black font-heading font-bold py-3 text-center uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2 text-sm"
+                className="flex-1 bg-brand hover:bg-brand-hover text-white font-bold px-6 py-3.5 rounded-xl text-sm transition-all shadow-xs inline-flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4" />
-                <span>KIRIM NOTIFIKASI KE WA KASIR</span>
+                <span>Konfirmasi via WA</span>
               </a>
 
               <Link
                 href={`/tracking?ticket=${submittedTicket}&wa=${whatsappLast4}`}
-                className="flex-1 border border-console-rule hover:border-console-gold text-console-textPrimary bg-console-surface py-3 text-center uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2 text-xs font-mono"
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-ink font-semibold px-6 py-3.5 rounded-xl text-sm transition-colors border border-slate-border inline-flex items-center justify-center gap-2"
               >
-                <span>PANTAU STATUS ANTREAN</span>
-                <ArrowRight className="w-3.5 h-3.5 text-console-gold" />
+                <span>Pantau Antrean</span>
+                <ArrowRight className="w-4 h-4 text-brand" />
               </Link>
             </div>
+
+            <p className="text-xs text-slate-400 pt-4 border-t border-slate-border max-w-md mx-auto">
+              Tunjukkan nomor tiket ini ke kasir toko saat mengambil barang di Jl. Gaperta Medan.
+            </p>
           </div>
         ) : (
-          /* ─── DRAFTING REQUISITION FORM ─── */
-          <div className="border border-console-rule bg-console-surface p-6 sm:p-10 space-y-8">
-            <div className="border-b border-console-rule pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-xs">
-              <span className="text-console-gold uppercase">REQUISITION FORM // 02 // CUSTOM BORDIR</span>
-              <span className="text-console-textMuted">ESTIMASI SELESAI 24–48 JAM</span>
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="font-heading font-extrabold text-3xl sm:text-4xl text-console-textPrimary uppercase tracking-tight">
-                FORMULIR PESANAN BORDIR KOMPUTER
+          /* ─── FORMULIR PEMESANAN CERAH ─── */
+          <div className="bg-white border border-slate-border rounded-3xl p-6 sm:p-10 shadow-xs space-y-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 bg-emerald-50 text-brand text-xs font-bold px-3 py-1 rounded-full border border-emerald-100">
+                <Scissors className="w-3.5 h-3.5" />
+                <span>Bordir Komputer Presisi Standar Mabes</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-ink tracking-tight">
+                Formulir Pesanan Custom Bordir
               </h1>
-              <p className="font-mono text-xs text-console-textSecondary max-w-2xl">
-                Isi spesifikasi pesanan bordir nama dada, badge pangkat dinas, lokasi kesatuan, atau emblem resmi. Sistem
-                akan menerbitkan nomor antrean tiket digital secara langsung.
+              <p className="text-sm text-slate-muted max-w-2xl leading-relaxed">
+                Isi data di bawah untuk memesan bordir nama dada, badge pangkat dinas, lambang korps, atau emblem
+                kesatuan tanpa antre panjang di toko fisik Medan.
               </p>
             </div>
 
             {submitError && <ErrorBanner message={submitError} />}
 
-            <form onSubmit={handleSubmit} className="space-y-6 font-mono text-xs">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Nama Lengkap */}
-                <div className="space-y-2">
-                  <label className="block text-[11px] text-console-textSecondary uppercase tracking-wider">
-                    NAMA LENGKAP PEMESAN <span className="text-console-gold">*</span>
+                {/* Nama Pemesan */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Nama Lengkap Pemesan <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="CONTOH: BUDI SANTOSO"
+                    placeholder="Contoh: Budi Santoso"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-console-ground border border-console-rule focus:border-console-gold p-3 text-xs text-console-textPrimary placeholder:text-console-textMuted focus:outline-none uppercase"
+                    className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-4 py-3 rounded-xl text-sm text-slate-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
                   />
                 </div>
 
                 {/* Pangkat / NRP */}
-                <div className="space-y-2">
-                  <label className="block text-[11px] text-console-textSecondary uppercase tracking-wider">
-                    PANGKAT / NRP / SATUAN (OPSIONAL)
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Pangkat / NRP / Satuan (Opsional)
                   </label>
                   <input
                     type="text"
-                    placeholder="CONTOH: SERDA / KODAM I BB"
+                    placeholder="Contoh: Serda / Kodam I BB"
                     value={formData.rank}
                     onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
-                    className="w-full bg-console-ground border border-console-rule focus:border-console-gold p-3 text-xs text-console-textPrimary placeholder:text-console-textMuted focus:outline-none uppercase"
+                    className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-4 py-3 rounded-xl text-sm text-slate-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* WhatsApp */}
-                <div className="space-y-2">
-                  <label className="block text-[11px] text-console-textSecondary uppercase tracking-wider">
-                    NOMOR WHATSAPP AKTIF <span className="text-console-gold">*</span>
+                {/* Nomor WhatsApp */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Nomor WhatsApp Aktif <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
                     required
-                    placeholder="CONTOH: 081234567890"
+                    placeholder="Contoh: 081234567890"
                     value={formData.whatsapp}
                     onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                    className="w-full bg-console-ground border border-console-rule focus:border-console-gold p-3 text-xs text-console-textPrimary placeholder:text-console-textMuted focus:outline-none font-mono"
+                    className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-4 py-3 rounded-xl text-sm text-slate-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
                   />
-                  <span className="text-[10px] text-console-textMuted block">
-                    Notifikasi selesai pengerjaan bordir dikirimkan ke nomor ini.
+                  <span className="text-[11px] text-slate-muted block">
+                    Notifikasi selesai bordir akan dikirimkan ke nomor ini.
                   </span>
                 </div>
 
-                {/* Jenis Pesanan */}
-                <div className="space-y-2">
-                  <label className="block text-[11px] text-console-textSecondary uppercase tracking-wider">
-                    JENIS PESANAN BORDIR <span className="text-console-gold">*</span>
+                {/* Jenis Bordir */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Jenis Pesanan Bordir <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.orderType}
                     onChange={(e) => setFormData({ ...formData, orderType: e.target.value as OrderType })}
-                    className="w-full bg-console-ground border border-console-rule focus:border-console-gold p-3 text-xs text-console-textPrimary focus:outline-none uppercase"
+                    className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-4 py-3 rounded-xl text-sm text-slate-ink focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
                   >
-                    <option value="PANGKAT">BADGE PANGKAT TIMBUL</option>
-                    <option value="NAMA_DADA">NAMA DADA BORDIR</option>
-                    <option value="LOKASI">BADGE LOKASI / SATUAN</option>
-                    <option value="EMBLEM">EMBLEM / LOGO KESATUAN</option>
-                    <option value="LAINNYA">LAINNYA (CUSTOM KHUSUS)</option>
+                    <option value="PANGKAT">Badge Pangkat Timbul</option>
+                    <option value="NAMA_DADA">Nama Dada Bordir</option>
+                    <option value="LOKASI">Badge Lokasi / Satuan</option>
+                    <option value="EMBLEM">Emblem / Logo Satuan</option>
+                    <option value="LAINNYA">Lainnya (Custom Khusus)</option>
                   </select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
                 {/* Jumlah */}
-                <div className="sm:col-span-1 space-y-2">
-                  <label className="block text-[11px] text-console-textSecondary uppercase tracking-wider">
-                    JUMLAH (SET/PCS) <span className="text-console-gold">*</span>
+                <div className="sm:col-span-1 space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Jumlah (Set/Pcs) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -243,38 +243,40 @@ export default function OrderPage() {
                     required
                     value={formData.quantity}
                     onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                    className="w-full bg-console-ground border border-console-rule focus:border-console-gold p-3 text-xs text-console-textPrimary focus:outline-none font-bold"
+                    className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-4 py-3 rounded-xl text-sm text-slate-ink focus:outline-none focus:ring-2 focus:ring-brand/10 font-bold"
                   />
                 </div>
 
                 {/* Catatan / Teks */}
-                <div className="sm:col-span-3 space-y-2">
-                  <label className="block text-[11px] text-console-textSecondary uppercase tracking-wider">
-                    TEKS BORDIR &amp; SPESIFIKASI KHUSUS <span className="text-console-gold">*</span>
+                <div className="sm:col-span-3 space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Teks Bordir &amp; Spesifikasi Khusus <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     required
                     rows={3}
-                    placeholder="CONTOH: TULISAN: 'BUDI SANTOSO', DASAR LORENG MALVINAS, TIMBUL BENANG EMAS, UKURAN STANDAR MABES."
+                    placeholder="Contoh: Tulisan nama: 'BUDI SANTOSO', font Arial tebal, dasar kain loreng malvinas, bordir timbul benang emas."
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full bg-console-ground border border-console-rule focus:border-console-gold p-3 text-xs text-console-textPrimary placeholder:text-console-textMuted focus:outline-none uppercase leading-relaxed"
+                    className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-4 py-3 rounded-xl text-sm text-slate-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/10 leading-relaxed"
                   />
                 </div>
               </div>
 
-              {/* Technical Note */}
-              <div className="border border-console-rule bg-console-ground p-4 text-[11px] text-console-textSecondary flex items-center justify-between">
-                <span>VERIFIKASI FISIK: PEMBAYARAN DAN PENGAMBILAN DILAKUKAN LANGSUNG DI TOKO MEDAN</span>
-                <span className="text-console-gold font-bold">SYARAT &amp; KETENTUAN MABES</span>
+              <div className="bg-slate-50 border border-slate-border p-4 rounded-xl flex items-center gap-3 text-xs text-slate-600">
+                <Info className="w-5 h-5 text-brand shrink-0" />
+                <span>
+                  Pesanan langsung masuk ke antrean mesin digital Toko Gaperta. Estimasi selesai pengerjaan standar
+                  1–2 hari kerja.
+                </span>
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-console-gold hover:bg-console-goldDark text-black font-heading font-bold text-sm tracking-widest uppercase py-3.5 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full bg-brand hover:bg-brand-hover active:scale-[0.99] text-white font-bold py-4 rounded-xl text-sm transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                <span>{isSubmitting ? "MENDAFTARKAN KE MESIN..." : "TERBITKAN TIKET PESANAN BORDIR"}</span>
+                <span>{isSubmitting ? "Mendaftarkan Antrean..." : "Daftarkan Pesanan Bordir Sekarang"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>

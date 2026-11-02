@@ -9,26 +9,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Technical Console Theme Palette (Non-AI Slop, Autentik Militer)
-        console: {
-          ground: "#0A0F0B",       // Canvas dasar matte
-          surface: "#111812",      // Surface kerja utama
-          elevated: "#18241A",     // Surface baris/tabel
-          rule: "#233626",         // Border hairline tipis tenang
-          ruleFocus: "#C2850A",    // Hairline fokus
-          gold: "#D97706",         // Kuningan lencana militer
-          goldDark: "#92400E",
-          green: "#22C55E",        // Signal status live
-          red: "#EF4444",          // Signal habis
-          textPrimary: "#F0F4F1",  // Teks terbaca jelas
-          textSecondary: "#8A9E8D",// Teks pendukung
-          textMuted: "#526354",    // Label mono teknikal
+        // Clean Retail E-Commerce Palette (Inspirasi Tokopedia & Uniqlo)
+        brand: {
+          DEFAULT: "#14381B",    // Hijau militer wibawa
+          dark: "#0D2612",
+          hover: "#1B4D24",
+          light: "#EAF2EA",
+          border: "#E2E8F0",
+        },
+        accent: {
+          gold: "#B45309",       // Kuningan lencana dinas
+          goldLight: "#FEF3C7",
+          green: "#15803D",      // Hijau status stok aman
+          greenLight: "#DCFCE7",
+          red: "#DC2626",        // Merah status stok habis
+          redLight: "#FEE2E2",
+        },
+        slate: {
+          canvas: "#F8FAFC",     // Background utama bersih
+          card: "#FFFFFF",       // Kartu produk & panel
+          border: "#E2E8F0",     // Border halus standar retail
+          ink: "#0F172A",        // Teks utama hitam pekat kontras tinggi
+          muted: "#64748B",      // Teks pendukung abu-abu sejuk
+          soft: "#94A3B8",
         },
       },
       fontFamily: {
-        heading: ["Rajdhani", "sans-serif"],
-        body: ['"IBM Plex Sans"', "sans-serif"],
-        mono: ['"IBM Plex Mono"', "monospace"],
+        sans: [
+          '"Plus Jakarta Sans"',
+          "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          "sans-serif",
+        ],
       },
     },
   },
