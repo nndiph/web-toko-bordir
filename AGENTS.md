@@ -122,22 +122,20 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Skrip npm: `db:start`, `db:stop`, `db:reset`, `db:test`. `supabase/smoke-test.mjs` menguji 31 skenario RLS/RPC (anon vs admin vs user non-admin) — **31/31 lulus** di Postgres 17 lokal.
   - Bug `adjust_stock` diperbaiki dengan pencabutan hak eksekusi anon sebelum grant.
   - Pull Request #10 (`chore/supabase-local-setup`) sukses dimerge ke `main`.
-- [x] **Fase 6 — Redesain Dashboard Admin: Tab Hierarki, Pipeline Visual & Kartu Antrean (Selesai)**
-  - Mengubah tampilan `/admin` menjadi **2 tab terpisah**: `Antrean Bordir` dan `Stok & Kasir`, lengkap dengan badge indikator jumlah order tertunda dan restock.
-  - **Alert Kartu Merah Prioritas:** Peringatan pesanan > 3 hari diletakkan paling atas dengan tombol 1-klik filter.
-  - **Visual Pipeline 3 Tahap (`PipelineBar`):** Antre (Pending), Dibordir (In Progress), dan Siap Diambil (Ready) dengan batang visual proporsi antrean.
-  - **Desain Kartu Antrean Ringkas (`OrderRow`):** Mengganti tabel 6-kolom menjadi kartu responsif dengan indikator visual usia pesanan (hijau, kuning, merah), catatan pemesan yang bisa dilipat/buka, dan 1 aksi utama terarah.
-  - **Kasir Quick-Check & Restock Panel (`StockRow` & `RestockPanel`):** Pencarian instan nama/kategori/rak fisik barang, indikator visual stok (`StockBar`), dan panel samping khusus barang yang menipis (< 5 pcs).
-  - Pembagian modular komponen ke `src/components/admin/`, konstanta `ORDER_TYPE_LABEL` di `src/lib/labels.ts`, serta utilitas `ageLabel` & normalisasi `toWaNumber` di `src/lib/utils.ts`.
-  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` lulus 100% (0 errors, 0 warnings).
+- [x] **Fase 6.1 — Penanganan Resilien Koneksi & Fallback Server Offline (Selesai)**
+  - Mengidentifikasi akar masalah error yang sering muncul: `.env.local` menunjuk ke `http://127.0.0.1:54321` (Docker lokal) dalam kondisi mati/tidak aktif, memicu `ERR_CONNECTION_REFUSED` dan unhandled exception di frontend.
+  - Menambahkan custom fetch dengan **AbortController Timeout (4 detik)** di `src/lib/supabase.ts` untuk mencegah request menggantung (*hang*) saat server offline.
+  - Menambahkan utilitas deteksi error jaringan `isNetworkError()`.
+  - Mengimplementasikan **auto-fallback ke Mode Demo yang mulus** di `getProducts()`, `createOrder()`, dan `trackOrder()` ketika server offline, sehingga halaman web **tidak pernah melempar layar merah / crash** bagi pengguna.
+  - Menambahkan penanganan pesan error yang informatif di `AdminLogin` dan `AdminDashboard` jika backend offline.
+  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/admin-dashboard-redesign` (dibuat dari `main`).
-- **Kondisi Working Directory:** Bersih dan siap dipush ke remote.
-- **Tugas Selanjutnya:** Buka PR untuk `feature/admin-dashboard-redesign`, uji langsung di browser oleh pemilik, lalu merge ke `main`.
+- **Branch Aktif:** `fix/resilient-connection-fallback`
+- **Kondisi Working Directory:** Bersih dan siap dipush / dimerge.
 
 ---
 
