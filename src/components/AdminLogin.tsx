@@ -23,14 +23,23 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
     setIsSubmitting(true);
     setError(null);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    setIsSubmitting(false);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      setIsSubmitting(false);
 
-    if (signInError) {
-      setError("Email atau kata sandi salah.");
-      return;
+      if (signInError) {
+        if (signInError.message?.toLowerCase().includes("failed to fetch") || signInError.status === 0) {
+          setError("Gagal terhubung ke server database (offline atau connection refused). Periksa server Supabase Anda.");
+        } else {
+          setError("Email atau kata sandi salah.");
+        }
+        return;
+      }
+      onSuccess();
+    } catch {
+      setIsSubmitting(false);
+      setError("Gagal menghubungi server database. Periksa koneksi jaringan Anda.");
     }
-    onSuccess();
   };
 
   return (

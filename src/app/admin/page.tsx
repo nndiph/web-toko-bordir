@@ -59,12 +59,15 @@ export default function AdminDashboardPage() {
 
     const access = await getAdminAccess();
     if (!access.live) {
-      if (access.reason === "not-configured") {
+      if (access.reason === "not-configured" || access.reason === "offline") {
         const products = await getProducts();
         setInventory(products.data);
         setOrders(getDemoOrders());
         setIsDemo(true);
         setGate("ready");
+        if (access.reason === "offline") {
+          setLoadError("Database lokal/cloud tidak dapat dijangkau (offline). Beralih ke data contoh (Demo Mode).");
+        }
         return;
       }
       setLoginNotice(
@@ -82,7 +85,16 @@ export default function AdminDashboardPage() {
       setOrders(adminOrders);
       setIsDemo(false);
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Gagal memuat data dashboard.");
+      // Jika terjadi error saat memuat live orders
+      const products = await getProducts();
+      setInventory(products.data);
+      setOrders(getDemoOrders());
+      setIsDemo(true);
+      setLoadError(
+        err instanceof Error
+          ? `${err.message} — Menggunakan data contoh sementara.`
+          : "Gagal memuat data dashboard. Menggunakan data contoh sementara."
+      );
     }
     setGate("ready");
   }, []);
