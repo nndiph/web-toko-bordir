@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:e2e": "npx tsx scripts/test-e2e-flow.mjs",
     "db:start": "npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime,storage-api,mailpit,supavisor",
     "db:stop": "npx supabase stop",
     "db:reset": "npx supabase db reset",

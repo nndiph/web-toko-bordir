@@ -1,21 +1,34 @@
 import { supabase, isSupabaseConfigured, isNetworkError } from "@/lib/supabase";
 import { getDemoOrders } from "@/lib/demo-data";
+import {
+  appendStoredOrder,
+  getStoredOrders,
+  updateStoredOrderStatus,
+} from "@/lib/local-store";
 import type { CustomOrder, NewOrderInput, OrderStatus, OrderType, TrackedOrder } from "@/types";
 
 const digitsOnly = (value: string) => value.replace(/\D/g, "");
 
-// ─── Publik: buat pesanan ───────────────────────────────────────────────────
+/** Ticket generator yang konsisten. */
+function generateDemoTicket(): string {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const suffix = Math.floor(100 + Math.random() * 900);
+  return `GPT-${dateStr}-${suffix}`;
+}
 
-/** Mengembalikan nomor tiket. Di Mode Demo tiket hanya dibuat lokal dan TIDAK tersimpan. */
-export async function createOrder(input: NewOrderInput): Promise<{ ticket: string; demo: boolean }> {
-  const generateDemoTicket = () => {
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const suffix = Math.floor(100 + Math.random() * 900);
-    return { ticket: `GPT-${dateStr}-${suffix}`, demo: true };
-  };
+// ─── Publik: buat pesanan ────────────────────────────────────────────────────
 
+/**
+ * Mengembalikan nomor tiket.
+ * - Supabase online → RPC create_order, tersimpan di PostgreSQL.
+ * - Mode demo / offline → tiket dibuat lokal & disimpan ke LocalStorage
+ *   agar dapat dilacak di /tracking dan terlihat di /admin.
+ */
+export async function createOrder(
+  input: NewOrderInput
+): Promise<{ ticket: string; demo: boolean }> {
   if (!isSupabaseConfigured) {
-    return generateDemoTicket();
+    return saveOrderToLocalStore(input);
   }
 
   try {
@@ -29,22 +42,43 @@ export async function createOrder(input: NewOrderInput): Promise<{ ticket: strin
     });
     if (error || typeof data !== "string") {
       if (isNetworkError(error)) {
-        console.warn("Koneksi Supabase offline saat membuat pesanan. Menggunakan tiket demo.");
-        return generateDemoTicket();
+        console.warn("Koneksi Supabase offline saat membuat pesanan. Menyimpan ke LocalStorage.");
+        return saveOrderToLocalStore(input);
       }
       throw new Error(`Gagal menyimpan pesanan: ${error?.message ?? "respons tidak valid"}`);
     }
     return { ticket: data, demo: false };
   } catch (err) {
     if (isNetworkError(err)) {
-      console.warn("Koneksi Supabase offline saat membuat pesanan (catch). Menggunakan tiket demo.");
-      return generateDemoTicket();
+      console.warn("Koneksi Supabase offline (catch). Menyimpan ke LocalStorage.");
+      return saveOrderToLocalStore(input);
     }
     throw err;
   }
 }
 
-// ─── Publik: lacak pesanan ──────────────────────────────────────────────────
+function saveOrderToLocalStore(
+  input: NewOrderInput
+): { ticket: string; demo: boolean } {
+  const ticket = generateDemoTicket();
+  const newOrder: CustomOrder = {
+    id: `demo-${Date.now()}`,
+    orderNumber: ticket,
+    customerName: input.customerName,
+    customerRank: input.customerRank ?? undefined,
+    whatsappNumber: input.whatsappNumber,
+    orderType: input.orderType,
+    quantity: input.quantity,
+    notes: input.notes,
+    status: "PENDING",
+    estimatedDone: undefined,
+    createdAt: new Date().toISOString(),
+  };
+  appendStoredOrder(newOrder);
+  return { ticket, demo: true };
+}
+
+// ─── Publik: lacak pesanan ───────────────────────────────────────────────────
 
 interface TrackedOrderRow {
   order_number: string;
@@ -58,7 +92,10 @@ interface TrackedOrderRow {
   created_at: string;
 }
 
-/** Perlu nomor tiket + 4 digit terakhir WhatsApp. `null` = tidak ditemukan. */
+/**
+ * Lacak pesanan berdasarkan nomor tiket + 4 digit terakhir WA.
+ * Demo mode: cek LocalStorage dulu, baru fallback ke data contoh bawaan.
+ */
 export async function trackOrder(
   ticket: string,
   whatsappLast4: string
@@ -66,30 +103,53 @@ export async function trackOrder(
   const normalizedTicket = ticket.trim().toUpperCase();
   const suffix = digitsOnly(whatsappLast4);
 
-  const fallbackDemo = () => {
-    const found = getDemoOrders().find(
-      (o) => o.orderNumber === normalizedTicket && digitsOnly(o.whatsappNumber).endsWith(suffix) && suffix.length === 4
+  const searchInDemoData = (): TrackedOrder | null => {
+    // 1. Cek LocalStorage (pesanan yang dibuat pengguna di sesi ini)
+    const stored = getStoredOrders() ?? [];
+    const fromStore = stored.find(
+      (o) =>
+        o.orderNumber === normalizedTicket &&
+        digitsOnly(o.whatsappNumber).endsWith(suffix) &&
+        suffix.length === 4
     );
-    return {
-      order: found
-        ? {
-            orderNumber: found.orderNumber,
-            customerName: found.customerName,
-            customerRank: found.customerRank,
-            orderType: found.orderType,
-            quantity: found.quantity,
-            notes: found.notes,
-            status: found.status,
-            estimatedDone: found.estimatedDone,
-            createdAt: found.createdAt,
-          }
-        : null,
-      demo: true,
-    };
+    if (fromStore) {
+      return {
+        orderNumber: fromStore.orderNumber,
+        customerName: fromStore.customerName,
+        customerRank: fromStore.customerRank,
+        orderType: fromStore.orderType,
+        quantity: fromStore.quantity,
+        notes: fromStore.notes,
+        status: fromStore.status,
+        estimatedDone: fromStore.estimatedDone,
+        createdAt: fromStore.createdAt,
+      };
+    }
+
+    // 2. Fallback ke data contoh bawaan (demo-data.ts)
+    const found = getDemoOrders().find(
+      (o) =>
+        o.orderNumber === normalizedTicket &&
+        digitsOnly(o.whatsappNumber).endsWith(suffix) &&
+        suffix.length === 4
+    );
+    return found
+      ? {
+          orderNumber: found.orderNumber,
+          customerName: found.customerName,
+          customerRank: found.customerRank,
+          orderType: found.orderType,
+          quantity: found.quantity,
+          notes: found.notes,
+          status: found.status,
+          estimatedDone: found.estimatedDone,
+          createdAt: found.createdAt,
+        }
+      : null;
   };
 
   if (!isSupabaseConfigured) {
-    return fallbackDemo();
+    return { order: searchInDemoData(), demo: true };
   }
 
   try {
@@ -99,14 +159,17 @@ export async function trackOrder(
     });
     if (error) {
       if (isNetworkError(error)) {
-        console.warn("Koneksi Supabase offline saat melacak pesanan. Beralih ke demo data.");
-        return fallbackDemo();
+        console.warn("Koneksi Supabase offline saat melacak pesanan. Beralih ke LocalStorage.");
+        return { order: searchInDemoData(), demo: true };
       }
       throw new Error(`Gagal melacak pesanan: ${error.message}`);
     }
 
     const row = (data as TrackedOrderRow[] | null)?.[0];
     if (!row) {
+      // Coba LocalStorage juga (jika user baru pesan tapi koneksi fluktuatif)
+      const localResult = searchInDemoData();
+      if (localResult) return { order: localResult, demo: true };
       return { order: null, demo: false };
     }
     return {
@@ -125,14 +188,14 @@ export async function trackOrder(
     };
   } catch (err) {
     if (isNetworkError(err)) {
-      console.warn("Koneksi Supabase offline saat melacak pesanan (catch). Beralih ke demo data.");
-      return fallbackDemo();
+      console.warn("Koneksi Supabase offline (catch). Beralih ke LocalStorage.");
+      return { order: searchInDemoData(), demo: true };
     }
     throw err;
   }
 }
 
-// ─── Admin ──────────────────────────────────────────────────────────────────
+// ─── Admin ───────────────────────────────────────────────────────────────────
 
 export type AdminAccess =
   | { live: true }
@@ -243,4 +306,16 @@ export async function updateOrderStatus(
     }
     throw err;
   }
+}
+
+/**
+ * Khusus demo mode: perbarui status pesanan di LocalStorage
+ * agar perubahan admin terlihat di /tracking tanpa Supabase.
+ */
+export function updateDemoOrderStatus(
+  orderId: string,
+  status: OrderStatus,
+  estimatedDone?: string
+): void {
+  updateStoredOrderStatus(orderId, status, estimatedDone);
 }

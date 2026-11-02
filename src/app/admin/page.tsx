@@ -20,10 +20,12 @@ import { RestockPanel } from "@/components/admin/RestockPanel";
 import { StockRow } from "@/components/admin/StockRow";
 import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
 import { getDemoOrders } from "@/lib/demo-data";
+import { getStoredOrders, setStoredOrders } from "@/lib/local-store";
 import {
   getAdminAccess,
   getAdminOrders,
   updateOrderStatus as saveOrderStatus,
+  updateDemoOrderStatus,
 } from "@/lib/data/orders";
 import { adjustStock, getProducts } from "@/lib/data/products";
 import { supabase } from "@/lib/supabase";
@@ -62,11 +64,20 @@ export default function AdminDashboardPage() {
       if (access.reason === "not-configured" || access.reason === "offline") {
         const products = await getProducts();
         setInventory(products.data);
-        setOrders(getDemoOrders());
+
+        // Ambil dari LocalStorage (termasuk pesanan yang dibuat pelanggan lewat /pesan)
+        let loadedOrders = getStoredOrders();
+        if (!loadedOrders || loadedOrders.length === 0) {
+          loadedOrders = getDemoOrders();
+          setStoredOrders(loadedOrders);
+        }
+        setOrders(loadedOrders);
         setIsDemo(true);
         setGate("ready");
         if (access.reason === "offline") {
-          setLoadError("Database lokal/cloud tidak dapat dijangkau (offline). Beralih ke data contoh (Demo Mode).");
+          setLoadError(
+            "Database Supabase offline. Beroperasi dalam Mode Demo tersimpan (LocalStorage aktif)."
+          );
         }
         return;
       }
@@ -85,15 +96,15 @@ export default function AdminDashboardPage() {
       setOrders(adminOrders);
       setIsDemo(false);
     } catch (err) {
-      // Jika terjadi error saat memuat live orders
       const products = await getProducts();
       setInventory(products.data);
-      setOrders(getDemoOrders());
+      const fallbackOrders = getStoredOrders() ?? getDemoOrders();
+      setOrders(fallbackOrders);
       setIsDemo(true);
       setLoadError(
         err instanceof Error
-          ? `${err.message} — Menggunakan data contoh sementara.`
-          : "Gagal memuat data dashboard. Menggunakan data contoh sementara."
+          ? `${err.message} — Menggunakan data lokal tersimpan.`
+          : "Gagal memuat data dashboard. Menggunakan data lokal tersimpan."
       );
     }
     setGate("ready");
@@ -118,7 +129,8 @@ export default function AdminDashboardPage() {
   };
 
   // ─── Ringkasan angka ───
-  const isOverdue = (o: CustomOrder) => o.status !== "COMPLETED" && daysSince(o.createdAt) >= OVERDUE_DAYS;
+  const isOverdue = (o: CustomOrder) =>
+    o.status !== "COMPLETED" && daysSince(o.createdAt) >= OVERDUE_DAYS;
   const overdueOrders = orders.filter(isOverdue);
   const completedOrders = orders.filter((o) => o.status === "COMPLETED");
   const activeOrders = orders.filter((o) => o.status !== "COMPLETED");
@@ -127,34 +139,16 @@ export default function AdminDashboardPage() {
     IN_PROGRESS: orders.filter((o) => o.status === "IN_PROGRESS").length,
     READY: orders.filter((o) => o.status === "READY").length,
   };
-  // Produk CUSTOM dibuat sesuai pesanan, jadi stoknya tidak relevan untuk restock.
   const restockItems = inventory
     .filter((p) => p.status !== "CUSTOM" && p.stock < LOW_STOCK)
     .sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name));
 
-  // ─── Fungsi Kasir Cepat Tambah/Kurang Stok ───
+  // ─── Kasir Quick-Check: Tambah/Kurang Stok ───
   const updateStock = async (productId: string, delta: number) => {
     setActionError(null);
-
-    if (isDemo) {
-      setInventory((prev) =>
-        prev.map((item) => {
-          if (item.id !== productId) return item;
-          const newStock = Math.max(0, item.stock + delta);
-          const syncsWithStock = item.status === "TERSEDIA" || item.status === "HABIS";
-          return {
-            ...item,
-            stock: newStock,
-            status: syncsWithStock ? (newStock === 0 ? "HABIS" : "TERSEDIA") : item.status,
-          };
-        })
-      );
-      return;
-    }
-
     setBusyId(productId);
+
     try {
-      // Stok & status dihitung atomik oleh database, UI memakai hasilnya.
       const updated = await adjustStock(productId, delta);
       setInventory((prev) =>
         prev.map((item) => (item.id === productId ? { ...item, ...updated } : item))
@@ -166,7 +160,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // ─── Fungsi Ubah Status Pesanan ───
+  // ─── Ubah Status Pesanan ───
   const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     const current = orders.find((o) => o.id === orderId);
     if (!current) return;
@@ -181,21 +175,23 @@ export default function AdminDashboardPage() {
         ? "Sudah diambil pemesan"
         : current.estimatedDone;
 
-    if (!isDemo) {
-      setBusyId(orderId);
-      try {
+    setBusyId(orderId);
+    try {
+      if (isDemo) {
+        updateDemoOrderStatus(orderId, newStatus, estimatedDone);
+      } else {
         await saveOrderStatus(orderId, newStatus, estimatedDone);
-      } catch (err) {
-        setActionError(err instanceof Error ? err.message : "Gagal mengubah status pesanan.");
-        setBusyId(null);
-        return;
       }
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus, estimatedDone } : order
+        )
+      );
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Gagal mengubah status pesanan.");
+    } finally {
       setBusyId(null);
     }
-
-    setOrders((prev) =>
-      prev.map((order) => (order.id === orderId ? { ...order, status: newStatus, estimatedDone } : order))
-    );
   };
 
   // ─── Filter & urutan ───
@@ -216,11 +212,9 @@ export default function AdminDashboardPage() {
         return order.status === orderFilter;
       }
       if (orderFilter === "COMPLETED") return order.status === "COMPLETED";
-      // "Semua aktif" = antrean yang belum diambil.
       return order.status !== "COMPLETED";
     })
     .sort((a, b) => {
-      // Terlewat dulu, lalu yang masih perlu mesin, lalu yang tinggal diserahkan. Paling lama di atas.
       const rank = (o: CustomOrder) =>
         o.status === "COMPLETED" ? 3 : isOverdue(o) ? 0 : o.status === "READY" ? 2 : 1;
       const diff = rank(a) - rank(b);
@@ -229,12 +223,13 @@ export default function AdminDashboardPage() {
       return orderFilter === "COMPLETED" ? -byAge : byAge;
     });
 
-  const selectStage = (stage: PipelineStage) => setOrderFilter((f) => (f === stage ? "ALL" : stage));
+  const selectStage = (stage: PipelineStage) =>
+    setOrderFilter((f) => (f === stage ? "ALL" : stage));
 
   if (gate === "checking") {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center text-sm text-gray-500 font-sans">
-        Memeriksa akses...
+      <div className="min-h-screen bg-slate-canvas flex items-center justify-center text-sm text-slate-muted font-sans">
+        Memeriksa hak akses admin...
       </div>
     );
   }
@@ -244,72 +239,83 @@ export default function AdminDashboardPage() {
   }
 
   const tabClass = (active: boolean) =>
-    `relative inline-flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${
-      active ? "border-army text-army" : "border-transparent text-gray-500 hover:text-gray-900"
+    `relative inline-flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-colors ${
+      active
+        ? "border-brand text-brand"
+        : "border-transparent text-slate-500 hover:text-slate-ink hover:border-slate-300"
     }`;
 
   const chipClass = (active: boolean, tone: "neutral" | "danger") =>
-    `rounded-full px-3 py-1 text-xs font-bold border transition-colors ${
+    `rounded-xl px-3.5 py-1.5 text-xs font-bold border transition-colors ${
       active
         ? tone === "danger"
-          ? "bg-rose-600 border-rose-600 text-white"
-          : "bg-army border-army text-white"
+          ? "bg-red-600 border-red-600 text-white shadow-2xs"
+          : "bg-brand border-brand text-white shadow-2xs"
         : tone === "danger"
-        ? "bg-white border-rose-200 text-rose-700 hover:bg-rose-50"
-        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        ? "bg-white border-red-200 text-red-700 hover:bg-red-50"
+        : "bg-white border-slate-border text-slate-600 hover:bg-slate-50 hover:text-slate-ink"
     }`;
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col font-sans">
-      {/* ─── Header ─── */}
-      <header className="bg-army-dark text-white border-b border-army sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <div className="min-h-screen bg-slate-canvas text-slate-ink flex flex-col font-sans">
+      {/* ─── Header Panel Pemilik Cerah ─── */}
+      <header className="bg-white border-b border-slate-border sticky top-0 z-40 shadow-2xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 bg-army rounded-lg flex items-center justify-center border border-white/20 shrink-0">
-              <Shield className="w-4 h-4 text-amber-300" />
+            <div className="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center shrink-0 shadow-xs">
+              <Shield className="w-5 h-5 text-accent-gold" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-base font-bold tracking-tight truncate">Panel Pemilik · Toko Gaperta</h1>
-              <p className="hidden sm:block text-xs text-gray-300">Antrean bordir dan stok toko</p>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-lg font-extrabold text-slate-ink tracking-tight truncate">
+                  Panel Pemilik · Toko Gaperta
+                </h1>
+                <span className="hidden sm:inline-block bg-amber-100 text-accent-gold text-[10px] font-bold px-2 py-0.5 rounded border border-amber-200">
+                  ADMIN KASIR
+                </span>
+              </div>
+              <p className="hidden sm:block text-xs text-slate-muted">
+                Antrean mesin bordir &amp; ketersediaan stok fisik rak Medan
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {!isDemo && (
-              <button
-                type="button"
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 disabled:opacity-60 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors border border-white/20"
-                title="Muat ulang data (pesanan baru dari pelanggan)"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-                <span className="hidden sm:inline">Muat ulang</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 disabled:opacity-60 text-slate-700 text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors border border-slate-border"
+              title="Muat ulang antrean pesanan & stok"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-brand ${refreshing ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">{refreshing ? "Memuat..." : "Sinkron Data"}</span>
+            </button>
+
             {!isDemo && (
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors border border-white/20"
+                className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-colors border border-slate-border"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Keluar</span>
               </button>
             )}
+
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors border border-white/20"
+              className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-2xs"
             >
-              <span className="hidden sm:inline">Katalog</span>
+              <span className="hidden sm:inline">Lihat Etalase</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
 
-        {/* ─── Tab ─── */}
-        <div className="bg-white border-b border-gray-200 text-gray-900">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 flex gap-1" role="tablist">
+        {/* ─── Tab Navigasi Admin ─── */}
+        <div className="bg-slate-50/50 border-t border-slate-border">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2" role="tablist">
             <button
               type="button"
               role="tab"
@@ -318,19 +324,20 @@ export default function AdminDashboardPage() {
               className={tabClass(tab === "antrean")}
             >
               <ClipboardList className="w-4 h-4" />
-              Antrean Bordir
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-700 tabular-nums">
+              <span>Antrean Mesin Bordir</span>
+              <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-bold text-slate-700 tabular-nums">
                 {activeOrders.length}
               </span>
               {overdueOrders.length > 0 && (
                 <span
-                  className="rounded-full bg-rose-600 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums"
+                  className="rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums animate-pulse"
                   title={`${overdueOrders.length} pesanan terlewat`}
                 >
                   {overdueOrders.length} terlewat
                 </span>
               )}
             </button>
+
             <button
               type="button"
               role="tab"
@@ -339,7 +346,7 @@ export default function AdminDashboardPage() {
               className={tabClass(tab === "stok")}
             >
               <Package className="w-4 h-4" />
-              Stok &amp; Kasir
+              <span>Kasir &amp; Stok Rak Fisik</span>
               {restockItems.length > 0 && (
                 <span
                   className="rounded-full bg-amber-600 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums"
@@ -353,10 +360,12 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-5 w-full">
+      {/* ─── Konten Utama ─── */}
+      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 w-full">
         {isDemo && (
           <DemoBanner>
-            Perubahan stok dan status di panel ini hanya contoh dan hilang saat halaman dimuat ulang.
+            Data beroperasi dalam <strong>Mode Demo Tersimpan</strong>. Pesanan baru dari pelanggan
+            dan pembaruan stok otomatis tersimpan di LocalStorage peramban ini.
           </DemoBanner>
         )}
         {loadError && <ErrorBanner message={loadError} />}
@@ -364,42 +373,50 @@ export default function AdminDashboardPage() {
 
         {tab === "antrean" ? (
           <>
-            {/* 1. Yang paling mendesak */}
+            {/* 1. Alert Kartu Merah (> 3 Hari) */}
             {overdueOrders.length > 0 ? (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-rose-300 bg-rose-50 p-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0 text-rose-600" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-5 shadow-2xs">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
                   <div>
-                    <p className="text-sm font-bold text-rose-950">
-                      {overdueOrders.length} pesanan sudah lewat {OVERDUE_DAYS} hari
+                    <h3 className="text-sm font-bold text-red-950">
+                      Alert Kartu Merah: {overdueOrders.length} Pesanan Tertahan &gt; {OVERDUE_DAYS} Hari
+                    </h3>
+                    <p className="text-xs text-red-800 mt-0.5">
+                      Dahulukan pengerjaan bordir di mesin digital agar anggota tidak komplain saat mengambil.
                     </p>
-                    <p className="text-xs text-rose-800">Dahulukan di mesin agar pelanggan tidak menunggu lebih lama.</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOrderFilter((f) => (f === "OVERDUE" ? "ALL" : "OVERDUE"))}
-                  className="shrink-0 rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2 text-xs font-bold text-white transition-colors"
+                  className="shrink-0 rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2.5 text-xs font-bold text-white transition-colors shadow-2xs"
                 >
-                  {orderFilter === "OVERDUE" ? "Tampilkan semua antrean" : "Tampilkan yang terlewat"}
+                  {orderFilter === "OVERDUE" ? "Tampilkan Semua Antrean" : "Filter Yang Terlewat"}
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs sm:text-sm font-semibold text-emerald-900">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                Tidak ada pesanan yang tertahan lebih dari {OVERDUE_DAYS} hari.
+              <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 text-xs sm:text-sm font-semibold text-emerald-900">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Semua pesanan tertangani tepat waktu. Tidak ada antrean yang tertahan lebih dari {OVERDUE_DAYS} hari.</span>
               </div>
             )}
 
-            {/* 2. Gambaran alur */}
+            {/* 2. Visual Pipeline Antrean */}
             <PipelineBar counts={stageCounts} selected={orderFilter} onSelect={selectStage} />
 
-            {/* 3. Daftar */}
-            <section className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* 3. Daftar Pesanan */}
+            <section className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" onClick={() => setOrderFilter("ALL")} className={chipClass(orderFilter === "ALL", "neutral")}>
-                    Semua aktif ({activeOrders.length})
+                  <button
+                    type="button"
+                    onClick={() => setOrderFilter("ALL")}
+                    className={chipClass(orderFilter === "ALL", "neutral")}
+                  >
+                    Semua Aktif ({activeOrders.length})
                   </button>
                   <button
                     type="button"
@@ -413,22 +430,22 @@ export default function AdminDashboardPage() {
                     onClick={() => setOrderFilter("COMPLETED")}
                     className={chipClass(orderFilter === "COMPLETED", "neutral")}
                   >
-                    Sudah diambil ({completedOrders.length})
+                    Sudah Diambil ({completedOrders.length})
                   </button>
                 </div>
-                <p className="text-xs text-gray-500">
-                  {orderFilter === "COMPLETED" ? "Terbaru di atas" : "Terlewat dan paling lama di atas"}
+                <p className="text-xs text-slate-muted">
+                  {orderFilter === "COMPLETED" ? "Diurutkan terbaru di atas" : "Prioritas terlewat & paling lama di atas"}
                 </p>
               </div>
 
               {filteredOrders.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center text-sm text-gray-500">
+                <div className="rounded-2xl border border-slate-border bg-white p-12 text-center text-sm text-slate-muted">
                   {orders.length === 0
-                    ? "Belum ada pesanan masuk."
+                    ? "Belum ada pesanan masuk. Pesanan dari form /pesan akan muncul di sini."
                     : "Tidak ada pesanan pada filter ini."}
                 </div>
               ) : (
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {filteredOrders.map((order) => (
                     <OrderRow
                       key={order.id}
@@ -445,33 +462,38 @@ export default function AdminDashboardPage() {
             </section>
           </>
         ) : (
-          <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
-            {/* Kasir Quick-Check */}
-            <section className="space-y-3 min-w-0 lg:order-1">
+          <div className="grid gap-6 lg:grid-cols-[1fr_21rem]">
+            {/* Kasir Quick-Check Pencarian Stok */}
+            <section className="space-y-4 min-w-0 lg:order-1">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="search"
                   autoFocus
-                  aria-label="Cari barang, kategori, atau rak"
-                  placeholder="Cari barang, kategori, atau rak (mis: Kopel, Baret, A-02)..."
+                  aria-label="Cari barang, kategori, atau rak fisik"
+                  placeholder="Cari barang atau nomor rak (contoh: Kopel, Baret, Rak A-02)..."
                   value={cashierSearch}
                   onChange={(e) => setCashierSearch(e.target.value)}
-                  className="w-full bg-white border border-gray-300 pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 placeholder:text-gray-400 shadow-xs"
+                  className="w-full bg-white border border-slate-border pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-slate-ink placeholder:text-slate-400 shadow-2xs"
                 />
               </div>
 
-              <p className="text-xs text-gray-500">
-                {filteredInventory.length} dari {inventory.length} barang
-                {cashierSearch.trim() && " cocok dengan pencarian"}
-              </p>
+              <div className="flex items-center justify-between text-xs text-slate-muted">
+                <span>
+                  {filteredInventory.length} dari {inventory.length} barang etalase
+                  {cashierSearch.trim() && " cocok dengan pencarian"}
+                </span>
+                <span className="text-[11px] font-medium text-brand">
+                  Klik + / - untuk update stok instan
+                </span>
+              </div>
 
               {filteredInventory.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center text-sm text-gray-500">
+                <div className="rounded-2xl border border-slate-border bg-white p-12 text-center text-sm text-slate-muted">
                   Tidak ada barang yang cocok dengan &quot;{cashierSearch}&quot;.
                 </div>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-2.5">
                   {filteredInventory.map((item) => (
                     <StockRow
                       key={item.id}
@@ -484,6 +506,7 @@ export default function AdminDashboardPage() {
               )}
             </section>
 
+            {/* Panel Restock Kritis */}
             <div className="lg:order-2">
               <RestockPanel items={restockItems} onPick={setCashierSearch} />
             </div>
@@ -491,8 +514,15 @@ export default function AdminDashboardPage() {
         )}
       </main>
 
-      <footer className="bg-white border-t border-gray-200 py-5 text-center text-xs text-gray-500">
-        <p>© 2026 Toko Gaperta — Panel Kontrol Pemilik & Inventaris Toko Fisik.</p>
+      {/* ─── Footer Admin Cerah ─── */}
+      <footer className="bg-white border-t border-slate-border py-6 text-center text-xs text-slate-muted mt-12">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+          <p>© 2026 Toko Gaperta — Panel Kontrol Pemilik &amp; Kasir Fisik Toko Medan.</p>
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Sistem Kasir Sinkron</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

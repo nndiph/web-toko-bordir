@@ -1,51 +1,72 @@
-import { CheckCircle2, PackageX } from "lucide-react";
-import { StockBar, stockTone } from "@/components/admin/StockRow";
+import { AlertCircle, AlertTriangle } from "lucide-react";
 import type { Product } from "@/types";
 
 interface RestockPanelProps {
-  /** Sudah diurutkan: paling sedikit lebih dulu. */
   items: Product[];
-  onPick: (name: string) => void;
+  onPick: (query: string) => void;
 }
 
 export function RestockPanel({ items, onPick }: RestockPanelProps) {
+  const outOfStockCount = items.filter((i) => i.stock === 0).length;
+
   return (
-    <aside className="rounded-xl border border-gray-200 bg-white p-4 space-y-3 h-fit">
-      <div className="flex items-center justify-between">
-        <h2 className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-900">
-          <PackageX className="w-4 h-4 text-amber-600" />
-          Perlu restock
-        </h2>
-        {items.length > 0 && (
-          <span className="rounded-full bg-amber-600 px-2 py-0.5 text-[11px] font-bold text-white">{items.length}</span>
-        )}
+    <aside className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4.5 space-y-3 shadow-2xs">
+      <div className="flex items-center justify-between gap-2 border-b border-amber-200/80 pb-3">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-700" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-amber-950">
+            Perlu Restock Segera
+          </h2>
+        </div>
+        <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[11px] font-extrabold text-amber-900 tabular-nums">
+          {items.length}
+        </span>
       </div>
 
+      {outOfStockCount > 0 && (
+        <div className="flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-100/80 px-2.5 py-1.5 rounded-lg border border-red-200">
+          <AlertCircle className="w-3.5 h-3.5" />
+          <span>{outOfStockCount} barang kosong total di rak!</span>
+        </div>
+      )}
+
       {items.length === 0 ? (
-        <p className="flex items-start gap-2 text-xs text-gray-500">
-          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-          Semua barang stoknya aman (5 pcs atau lebih).
+        <p className="text-xs text-amber-900/80 py-2">
+          Semua stok barang fisik di etalase dalam kondisi aman (≥ 5 pcs).
         </p>
       ) : (
-        <ul className="divide-y divide-gray-100">
-          {items.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => onPick(item.name)}
-                className="flex w-full items-center gap-3 py-2 text-left hover:bg-gray-50 -mx-1 px-1 rounded"
-                title="Tampilkan di daftar"
-              >
-                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-gray-900">{item.name}</span>
-                <StockBar stock={item.stock} className="w-14" />
-                <span className={`w-12 text-right text-[11px] font-bold tabular-nums ${stockTone(item.stock).text}`}>
-                  {item.stock === 0 ? "HABIS" : `${item.stock} pcs`}
-                </span>
-              </button>
-            </li>
-          ))}
+        <ul className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
+          {items.map((item) => {
+            const isZero = item.stock === 0;
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => onPick(item.name)}
+                  className="w-full text-left rounded-xl bg-white/90 hover:bg-white border border-amber-200/80 hover:border-amber-400 p-2.5 transition-all text-xs flex items-center justify-between gap-2 shadow-2xs group"
+                >
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-ink truncate group-hover:text-brand transition-colors">
+                      {item.name}
+                    </p>
+                    <p className="text-[11px] text-slate-500 truncate">{item.rackLocation}</p>
+                  </div>
+                  <span
+                    className={`rounded-md px-2 py-0.5 text-[11px] font-extrabold tabular-nums shrink-0 ${
+                      isZero ? "bg-red-600 text-white" : "bg-amber-100 text-amber-900"
+                    }`}
+                  >
+                    {isZero ? "KOSONG" : `${item.stock} pcs`}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
+      <p className="text-[11px] text-amber-800/80 pt-1">
+        Klik nama barang di atas untuk langsung membuka dan menyesuaikan stok di tabel kasir.
+      </p>
     </aside>
   );
 }
