@@ -4,18 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Search,
-  Clock,
   CheckCircle2,
   AlertTriangle,
-  MapPin,
+  Clock,
   ArrowRight,
   Phone,
+  MapPin,
+  Sparkles,
   Award,
   Shirt,
   ShieldCheck,
   Tag,
   Scissors,
-  ChevronRight,
+  Layers,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
@@ -27,42 +28,37 @@ const FEATURED_CATEGORIES = [
   {
     id: "pangkat",
     name: "Badge & Pangkat",
-    desc: "Bordir timbul rapi & presisi",
-    count: "24+ Model",
+    desc: "Bordir timbul standar dinas",
     icon: Award,
-    imageUrl: "https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=400&q=70",
+    imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=75",
   },
   {
     id: "seragam",
-    name: "Seragam PDL/PDH",
-    desc: "Kain loreng standar TNI",
-    count: "Standar Mabes",
+    name: "Seragam PDL / PDH",
+    desc: "Kain loreng resmi Mabes TNI",
     icon: Shirt,
-    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=400&q=70",
+    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=75",
   },
   {
     id: "sabuk",
-    name: "Sabuk & Kopel Rim",
-    desc: "Kopel dinas & kepala kuningan",
-    count: "Kuat & Tahan Dinas",
+    name: "Sabuk & Kopel",
+    desc: "Kopel rim kuningan tebal",
     icon: ShieldCheck,
-    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=70",
+    imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=75",
   },
   {
     id: "topi",
     name: "Topi & Baret",
-    desc: "Kostrad, Kopassus & emblem",
-    count: "Lengkap Kesatuan",
+    desc: "Semua korps + emblem dinas",
     icon: Tag,
-    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=400&q=70",
+    imageUrl: "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=600&q=75",
   },
   {
     id: "bordir",
-    name: "Pesanan Custom",
-    desc: "Nama dada & lokasi 1-2 hari",
-    count: "Antrean Terjadwal",
+    name: "Custom Bordir",
+    desc: "Nama dada timbul 1-2 hari",
     icon: Scissors,
-    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=70",
+    imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=75",
   },
 ];
 
@@ -78,7 +74,6 @@ const FILTER_TABS = [
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
   const [products, setProducts] = useState<Product[]>([]);
   const [isDemo, setIsDemo] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,7 +89,7 @@ export default function HomePage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setLoadError(err instanceof Error ? err.message : "Gagal memuat produk.");
+        setLoadError(err instanceof Error ? err.message : "Gagal memuat katalog barang.");
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -104,162 +99,102 @@ export default function HomePage() {
     };
   }, []);
 
-  const handleImageError = (id: string) => {
-    setImgErrors((prev) => ({ ...prev, [id]: true }));
-  };
-
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    const catalogElement = document.getElementById("katalog");
-    if (catalogElement) {
-      catalogElement.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const renderFallbackCover = (category: string) => {
-    switch (category) {
-      case "pangkat":
-        return (
-          <div className="w-full h-full bg-gradient-to-br from-emerald-800 to-emerald-950 flex flex-col items-center justify-center text-white p-4">
-            <Award className="w-12 h-12 text-amber-400 mb-2" />
-            <span className="text-xs font-bold tracking-wider uppercase text-emerald-200">Pangkat Dinas</span>
-          </div>
-        );
-      case "seragam":
-        return (
-          <div className="w-full h-full bg-gradient-to-br from-stone-800 to-stone-950 flex flex-col items-center justify-center text-white p-4">
-            <Shirt className="w-12 h-12 text-stone-300 mb-2" />
-            <span className="text-xs font-bold tracking-wider uppercase text-stone-300">Seragam PDL</span>
-          </div>
-        );
-      case "sabuk":
-        return (
-          <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-black flex flex-col items-center justify-center text-white p-4">
-            <ShieldCheck className="w-12 h-12 text-amber-500 mb-2" />
-            <span className="text-xs font-bold tracking-wider uppercase text-zinc-300">Kopel & Sabuk</span>
-          </div>
-        );
-      case "topi":
-        return (
-          <div className="w-full h-full bg-gradient-to-br from-teal-900 to-slate-950 flex flex-col items-center justify-center text-white p-4">
-            <Tag className="w-12 h-12 text-teal-300 mb-2" />
-            <span className="text-xs font-bold tracking-wider uppercase text-teal-200">Topi & Baret</span>
-          </div>
-        );
-      case "bordir":
-      default:
-        return (
-          <div className="w-full h-full bg-gradient-to-br from-amber-900 to-stone-950 flex flex-col items-center justify-center text-white p-4">
-            <Scissors className="w-12 h-12 text-amber-300 mb-2" />
-            <span className="text-xs font-bold tracking-wider uppercase text-amber-200">Bordir Komputer</span>
-          </div>
-        );
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-surface flex flex-col font-sans">
-      {/* ─── Navbar ─── */}
+    <div className="min-h-screen bg-slate-canvas text-slate-ink flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 w-full">
-        {/* ─── Hero Banner dengan Showcase Produk Visual ─── */}
-        <section className="bg-army text-white rounded-2xl p-6 sm:p-10 lg:p-12 shadow-sm relative overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            {/* Kolom Kiri: Headline & Call To Action */}
-            <div className="lg:col-span-7 space-y-4">
-              <span className="inline-flex items-center gap-1.5 bg-black/30 text-amber-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-white/10">
-                Toko Atribut Resmi & Bordir Komputer
-              </span>
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-                Cek Ketersediaan Stok & Pesan Bordir Dinas Tanpa Antre
-              </h1>
-              <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-xl">
-                Khusus anggota dinas, komando satuan, dan calon prajurit. Pantau sisa stok nyata barang sebelum berangkat ke toko fisik atau ajukan pesanan custom bordir nama & pangkat secara online.
-              </p>
-
-              {/* Poin Kepercayaan Toko */}
-              <div className="flex flex-wrap gap-y-1.5 gap-x-4 text-xs font-semibold text-emerald-200 pt-1">
-                <span>✓ Sisa Stok Nyata di Rak</span>
-                <span>✓ Pengerjaan Cepat 1-2 Hari</span>
-                <span>✓ Ambil Langsung di Toko Medan</span>
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        {/* ─── HERO SECTION CERAH (Inspirasi Tokopedia & Uniqlo) ─── */}
+        <section className="bg-white border border-slate-border rounded-3xl p-6 sm:p-12 lg:p-14 shadow-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            {/* Copywriting */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 text-xs font-bold px-3.5 py-1.5 rounded-full border border-emerald-200">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Pusat Perlengkapan Dinas TNI &amp; Bordir Komputer Resmi</span>
               </div>
 
-              <div className="pt-2 flex flex-wrap gap-3">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-ink leading-[1.1]">
+                Perlengkapan Dinas Lengkap. <br />
+                <span className="text-brand">Bordir Komputer Rapi &amp; Presisi.</span>
+              </h1>
+
+              <p className="text-slate-muted text-base sm:text-lg leading-relaxed max-w-xl font-normal">
+                Cek langsung ketersediaan stok fisik di rak toko sebelum datang. Pesan custom nama dada dan pangkat
+                timbul standar Mabes selesai dalam 1–2 hari kerja.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-4 pt-2">
                 <Link
                   href="/pesan"
-                  className="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-army font-bold px-5 py-3 rounded-lg text-sm transition-colors shadow-sm"
+                  className="inline-flex items-center gap-2.5 bg-brand hover:bg-brand-hover active:scale-[0.98] text-white font-bold px-7 py-3.5 rounded-xl text-sm transition-all shadow-sm"
                 >
-                  <span>Pesan Custom Bordir</span>
+                  <span>Pesan Custom Bordir Online</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
+
                 <a
                   href="#katalog"
-                  className="border border-white/70 hover:bg-white/10 text-white font-medium px-5 py-3 rounded-lg text-sm transition-colors"
+                  className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-ink font-semibold px-6 py-3.5 rounded-xl text-sm transition-colors border border-slate-border"
                 >
-                  Lihat Katalog Barang
+                  <Layers className="w-4 h-4 text-slate-500" />
+                  <span>Jelajahi Stok Rak Toko</span>
                 </a>
               </div>
             </div>
 
-            {/* Kolom Kanan: Showcase Produk Unggulan Toko */}
+            {/* Featured Visual Card */}
             <div className="lg:col-span-5">
-              <div className="bg-white text-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-white/20 group">
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
+              <div className="bg-slate-50 border border-slate-border rounded-2xl overflow-hidden shadow-sm group">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=500&q=75"
-                    alt="Pangkat Bordir TNI AD - Serda (Timbul)"
-                    loading="eager"
-                    decoding="async"
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                    src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=700&q=80"
+                    alt="Pangkat Bordir TNI AD Serda"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-amber-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded shadow-sm">
-                      ★ Produk Paling Dicari
-                    </span>
+                  <div className="absolute top-3 left-3 bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                    ★ Paling Dicari
                   </div>
-                  <div className="absolute top-3 right-3">
-                    <span className="bg-emerald-700 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
-                      Tersedia 24 pcs
-                    </span>
+                  <div className="absolute top-3 right-3 bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                    Tersedia (24 pcs)
                   </div>
                 </div>
 
-                <div className="p-4 space-y-2.5">
-                  <div className="flex items-start justify-between gap-2">
+                <div className="p-5 space-y-3 bg-white">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500">
-                        Pangkat Dinas TNI AD
-                      </span>
-                      <h3 className="font-bold text-gray-900 text-base leading-snug">
-                        Pangkat Bordir TNI AD - Serda (Timbul)
+                      <span className="text-xs font-semibold text-brand block">Pangkat Dinas Timbul</span>
+                      <h3 className="font-bold text-slate-ink text-base leading-snug">
+                        Pangkat Bordir TNI AD - Serda (Timbul Benang Emas)
                       </h3>
                     </div>
-                    <p className="text-lg font-extrabold text-army tabular-nums shrink-0">
-                      Rp 35.000
-                    </p>
+                    <div className="text-right">
+                      <span className="text-[11px] text-slate-muted block font-medium">Harga</span>
+                      <span className="text-xl font-extrabold text-slate-ink">Rp 35.000</span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
-                    <div className="flex items-center gap-1.5 text-gray-600">
-                      <MapPin className="w-3.5 h-3.5 text-army" />
-                      <span>Rak A-02 (Etalase Depan)</span>
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-border text-xs">
+                    <div className="flex items-center gap-1.5 text-slate-600 font-medium">
+                      <MapPin className="w-4 h-4 text-accent-gold" />
+                      <span>Rak A-02 (Etalase Depan Toko)</span>
                     </div>
                     <a
                       href="https://wa.me/6281234567890?text=Halo%20Toko%20Gaperta,%20saya%20ingin%20cek%20Pangkat%20Serda"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 bg-army hover:bg-army-dark active:scale-[0.98] text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1.5 text-brand hover:text-brand-hover font-bold"
                     >
-                      <Phone className="w-3 h-3" />
-                      <span>Beli via WA</span>
+                      <span>Cek via WA</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                   </div>
                 </div>
@@ -268,112 +203,136 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ─── KATEGORI PILIHAN BERGAMBAR (ala Tokopedia & Uniqlo) ─── */}
+        {/* ─── 3 PILAR KEUNGGULAN (VALUE PROPOSITION) ─── */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-xs flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-accent-gold flex items-center justify-center shrink-0 border border-amber-100">
+              <Clock className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-accent-gold">
+                Cepat &amp; Presisi
+              </span>
+              <h3 className="font-bold text-slate-ink text-lg mt-0.5">1–2 Hari Selesai</h3>
+              <p className="text-xs text-slate-muted mt-1 leading-relaxed">
+                Mesin bordir komputer digital otomatis dengan antrean tercatat rapi tanpa takut terselip.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-xs flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-brand flex items-center justify-center shrink-0 border border-emerald-100">
+              <Award className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-brand">
+                Standar Mabes
+              </span>
+              <h3 className="font-bold text-slate-ink text-lg mt-0.5">100% Sesuai Regulasi</h3>
+              <p className="text-xs text-slate-muted mt-1 leading-relaxed">
+                Warna kain loreng, densitas benang, dan spon timbul mematuhi ketentuan resmi kedinasan.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-xs flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100">
+              <MapPin className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
+                Transparan &amp; Nyata
+              </span>
+              <h3 className="font-bold text-slate-ink text-lg mt-0.5">Stok Rak Fisik Tertera</h3>
+              <p className="text-xs text-slate-muted mt-1 leading-relaxed">
+                Menampilkan nomor rak penyimpanan fisik di toko Medan agar Anda tidak bolak-balik saat datang.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── DEPARTEMEN PRODUK (Uniqlo Style Cards) ─── */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-                Jelajahi Departemen Produk
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Pilih kategori untuk langsung menjelajah etalase perlengkapan toko
-              </p>
+              <h2 className="text-2xl font-extrabold text-slate-ink tracking-tight">Departemen Perlengkapan</h2>
+              <p className="text-xs sm:text-sm text-slate-muted">Pilih kategori untuk memfilter etalase toko</p>
             </div>
             {selectedCategory !== "all" && (
               <button
                 type="button"
                 onClick={() => setSelectedCategory("all")}
-                className="text-xs font-semibold text-army hover:underline"
+                className="text-xs font-bold text-brand hover:underline"
               >
-                Reset ke Semua ({products.length})
+                Reset Filter (Semua Barang)
               </button>
             )}
           </div>
 
-          {/* Grid Kategori Bergambar Penuh */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {FEATURED_CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
-
+              const Icon = cat.icon;
               return (
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`group text-left rounded-xl border overflow-hidden bg-white transition-all duration-200 flex flex-col justify-between shadow-xs ${
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    document.getElementById("katalog")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className={`text-left rounded-2xl border p-4 transition-all duration-200 bg-white shadow-xs group ${
                     isSelected
-                      ? "border-army ring-2 ring-army/20 shadow-sm"
-                      : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                      ? "border-brand ring-2 ring-brand/20 bg-brand-light/30"
+                      : "border-slate-border hover:border-slate-300 hover:shadow-sm"
                   }`}
                 >
-                  {/* Sampul Foto Kategori */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={cat.imageUrl}
-                      alt={cat.name}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-white">
-                      <span className="text-[10px] font-bold bg-white/95 text-gray-900 px-2 py-0.5 rounded shadow-xs">
-                        {cat.count}
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-white opacity-80 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-brand flex items-center justify-center group-hover:bg-brand group-hover:text-white transition-colors mb-3">
+                    <Icon className="w-5 h-5" />
                   </div>
-
-                  {/* Keterangan Teks Kategori */}
-                  <div className="p-3 space-y-0.5">
-                    <h3 className="font-bold text-gray-900 text-sm leading-snug group-hover:text-army transition-colors">
-                      {cat.name}
-                    </h3>
-                    <p className="text-[11px] text-gray-500 line-clamp-1">
-                      {cat.desc}
-                    </p>
-                  </div>
+                  <h3 className="font-bold text-slate-ink text-sm leading-snug group-hover:text-brand transition-colors">
+                    {cat.name}
+                  </h3>
+                  <p className="text-[11px] text-slate-muted mt-0.5 line-clamp-1">{cat.desc}</p>
                 </button>
               );
             })}
           </div>
         </section>
 
-        {/* ─── Katalog Barang Section ─── */}
-        <section id="katalog" className="space-y-6 pt-2">
+        {/* ─── KATALOG PRODUK CERAH (Tokopedia / Uniqlo Grid) ─── */}
+        <section id="katalog" className="space-y-6 pt-4">
           {isDemo && <DemoBanner />}
 
-          {/* Header & Controls */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-border pb-5">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-                  Katalog Etalase Toko
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-ink tracking-tight">
+                  Katalog Stok Rak Toko
                 </h2>
-                <span className="text-xs font-bold bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full border border-gray-200">
+                <span className="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full border border-slate-200">
                   {filteredProducts.length} Produk
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                Ketersediaan stok sinkron langsung dengan fisik rak toko Gaperta
+              <p className="text-xs sm:text-sm text-slate-muted mt-1">
+                Ketersediaan barang sinkron langsung dengan fisik rak toko Gaperta Medan
               </p>
             </div>
 
-            {/* Search Input Bar */}
-            <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-400" />
+            {/* Large Search Bar ala Tokopedia */}
+            <div className="relative w-full md:w-88">
+              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Cari barang (Pangkat, Kopel, PDL)..."
+                placeholder="Cari barang (Pangkat, Kopel, PDL, Topi)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-gray-300 pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 placeholder:text-gray-400 shadow-xs"
+                className="w-full bg-white border border-slate-border focus:border-brand pl-10 pr-4 py-2.5 rounded-xl text-sm text-slate-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/10 shadow-2xs"
               />
             </div>
           </div>
 
-          {/* Filter Pills Tabs */}
+          {/* Filter Tabs */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {FILTER_TABS.map((tab) => {
               const isSelected = selectedCategory === tab.id;
@@ -382,10 +341,10 @@ export default function HomePage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setSelectedCategory(tab.id)}
-                  className={`text-xs sm:text-sm px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                  className={`text-xs sm:text-sm px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-all border ${
                     isSelected
-                      ? "bg-army text-white shadow-sm font-semibold"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                      ? "bg-brand text-white border-brand shadow-xs"
+                      : "bg-white text-slate-600 border-slate-border hover:bg-slate-50 hover:text-slate-ink"
                   }`}
                 >
                   {tab.label}
@@ -394,21 +353,22 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* ─── Grid Kartu Produk Bergaya Tokopedia / Uniqlo (Dengan Sampul Gambar) ─── */}
+          {/* Grid Produk Terang */}
           {isLoading ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-sm text-gray-500">
-              Memuat katalog produk...
+            <div className="bg-white border border-slate-border rounded-2xl p-16 text-center text-sm text-slate-muted">
+              Memuat katalog stok barang...
             </div>
           ) : loadError ? (
-            <ErrorBanner message={`${loadError} Silakan muat ulang halaman atau hubungi toko via WhatsApp.`} />
+            <ErrorBanner message={loadError} />
           ) : filteredProducts.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center space-y-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-400">
+            <div className="bg-white border border-slate-border rounded-2xl p-14 text-center space-y-3">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
                 <Search className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-gray-900">Produk Tidak Ditemukan</h3>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                Tidak ada produk dengan kata kunci &quot;{searchQuery}&quot; pada kategori ini. Coba pilih kategori lain atau tanyakan langsung ke kasir toko via WhatsApp.
+              <h3 className="text-base font-bold text-slate-ink">Barang Tidak Ditemukan</h3>
+              <p className="text-xs text-slate-muted max-w-sm mx-auto">
+                Tidak ada produk dengan kata kunci &quot;{searchQuery}&quot;. Hubungi toko langsung untuk konfirmasi
+                stok khusus.
               </p>
               <button
                 type="button"
@@ -416,9 +376,9 @@ export default function HomePage() {
                   setSearchQuery("");
                   setSelectedCategory("all");
                 }}
-                className="inline-block mt-2 text-xs font-semibold text-army underline"
+                className="inline-block mt-2 text-xs font-bold text-brand hover:underline"
               >
-                Tampilkan Semua Produk
+                Tampilkan Semua Barang
               </button>
             </div>
           ) : (
@@ -426,77 +386,76 @@ export default function HomePage() {
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col justify-between hover:border-gray-300 hover:shadow-md transition-all duration-200 group"
+                  className="bg-white border border-slate-border hover:border-slate-300 rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-200 hover:shadow-md group"
                 >
                   <div>
-                    {/* ─── Sampul Gambar Produk (Cover Frame E-Commerce) ─── */}
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 border-b border-gray-100">
-                      {imgErrors[product.id] || !product.imageUrl ? (
-                        renderFallbackCover(product.category)
-                      ) : (
+                    {/* Foto Produk */}
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 border-b border-slate-border">
+                      {product.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={product.imageUrl}
                           alt={product.name}
                           loading="lazy"
-                          decoding="async"
-                          onError={() => handleImageError(product.id)}
-                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 font-medium">
+                          Foto Produk
+                        </div>
                       )}
 
-                      {/* Status Badge Mengambang di Atas Gambar */}
+                      {/* Status Badge */}
                       <div className="absolute top-2.5 left-2.5">
                         {product.status === "TERSEDIA" && (
-                          <span className="inline-flex items-center gap-1 bg-emerald-700 text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
+                          <span className="inline-flex items-center gap-1 bg-emerald-700 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
                             <CheckCircle2 className="w-3 h-3" />
-                            Tersedia ({product.stock} pcs)
+                            Stok: {product.stock} pcs
                           </span>
                         )}
                         {product.status === "HABIS" && (
-                          <span className="inline-flex items-center gap-1 bg-rose-700 text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
+                          <span className="inline-flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
                             <AlertTriangle className="w-3 h-3" />
                             Stok Habis
                           </span>
                         )}
                         {product.status === "CUSTOM" && (
-                          <span className="inline-flex items-center gap-1 bg-amber-700 text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
+                          <span className="inline-flex items-center gap-1 bg-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
                             <Clock className="w-3 h-3" />
                             Custom Order
                           </span>
                         )}
                       </div>
 
-                      {/* Tag Kategori Mengambang */}
                       <div className="absolute top-2.5 right-2.5">
-                        <span className="bg-black/60 backdrop-blur-xs text-white text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded">
+                        <span className="bg-white/90 backdrop-blur-xs text-slate-700 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
                           {product.category}
                         </span>
                       </div>
                     </div>
 
-                    {/* Informasi Produk */}
-                    <div className="p-4 space-y-2.5">
-                      <h3 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-army transition-colors">
+                    {/* Rincian Produk */}
+                    <div className="p-4 space-y-3">
+                      <h3 className="font-bold text-slate-ink text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-brand transition-colors">
                         {product.name}
                       </h3>
 
                       <div>
-                        <span className="text-[11px] text-gray-500 block">Harga</span>
-                        <p className="text-lg sm:text-xl font-extrabold text-gray-900 tabular-nums">
+                        <span className="text-[11px] text-slate-muted block font-medium">Harga</span>
+                        <p className="text-xl font-extrabold text-slate-ink tabular-nums">
                           {formatRupiah(product.price)}
                         </p>
                       </div>
 
-                      {/* Lokasi Rak Fisik di Toko */}
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-200/80 px-2.5 py-1.5 rounded-lg">
-                        <MapPin className="w-3.5 h-3.5 text-army shrink-0" />
-                        <span className="truncate">{product.rackLocation}</span>
+                      {/* Lokasi Rak Fisik */}
+                      <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl">
+                        <MapPin className="w-3.5 h-3.5 text-accent-gold shrink-0" />
+                        <span className="truncate font-medium">{product.rackLocation}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Tombol Aksi Pembelian */}
+                  {/* Tombol Aksi */}
                   <div className="p-4 pt-0">
                     {product.status === "TERSEDIA" ? (
                       <a
@@ -505,26 +464,26 @@ export default function HomePage() {
                         )}%20masih%20tersedia?`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full text-center bg-army hover:bg-army-dark active:scale-[0.98] text-white text-xs sm:text-sm font-semibold py-2.5 rounded-lg transition-colors shadow-xs"
+                        className="flex items-center justify-center gap-2 w-full text-center bg-brand hover:bg-brand-hover active:scale-[0.98] text-white text-xs sm:text-sm font-bold py-2.5 rounded-xl transition-all shadow-2xs"
                       >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>Beli / Cek via WA</span>
+                        <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Cek / Ambil di Toko</span>
                       </a>
                     ) : product.status === "CUSTOM" ? (
                       <Link
                         href="/pesan"
-                        className="flex items-center justify-center gap-2 w-full text-center bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white text-xs sm:text-sm font-semibold py-2.5 rounded-lg transition-colors shadow-xs"
+                        className="flex items-center justify-center gap-2 w-full text-center bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white text-xs sm:text-sm font-bold py-2.5 rounded-xl transition-all shadow-2xs"
                       >
                         <Scissors className="w-3.5 h-3.5" />
-                        <span>Isi Form Bordir Custom</span>
+                        <span>Pesan Custom Bordir</span>
                       </Link>
                     ) : (
                       <button
                         type="button"
                         disabled
-                        className="w-full text-center bg-gray-100 text-gray-400 text-xs sm:text-sm font-semibold py-2.5 rounded-lg cursor-not-allowed"
+                        className="w-full text-center bg-slate-100 text-slate-400 border border-slate-200 text-xs sm:text-sm font-bold py-2.5 rounded-xl cursor-not-allowed"
                       >
-                        Bisa Pre-Order di Toko
+                        Habis — Pre-Order Toko
                       </button>
                     )}
                   </div>
@@ -534,34 +493,50 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* ─── Callout Bordir Khusus ─── */}
-        <section className="bg-stone-50 border border-stone-200 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center sm:text-left">
-            <span className="text-xs font-bold uppercase tracking-wider text-stone-700 bg-stone-200/70 px-2.5 py-0.5 rounded">
-              Layanan Pesanan Khusus
+        {/* ─── CALLOUT BORDIR CUSTOM RESMI ─── */}
+        <section className="bg-brand text-white rounded-3xl p-6 sm:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-sm">
+          <div className="space-y-2 text-center lg:text-left">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-brand-dark px-3 py-1 rounded-full">
+              Layanan Pesanan Satuan &amp; Kompi
             </span>
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-              Punya Desain Bordir Nama, Lokasi, atau Lambang Satuan Sendiri?
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight">
+              Pesan Bordir Nama, Korps, Atau Lambang Kesatuan
             </h3>
-            <p className="text-xs sm:text-sm text-gray-600 max-w-xl">
-              Kami melayani bordir komputer custom untuk perorangan maupun satu kompi satuan. Isi formulir pemesanan online untuk mendapatkan Nomor Tiket resmi toko.
+            <p className="text-xs sm:text-sm text-slate-200 max-w-2xl leading-relaxed">
+              Melayani pesanan bordir timbul perorangan hingga ratusan set untuk satu batalyon/kompi.
+              Daftar online sekarang untuk mendapatkan Nomor Tiket resmi antrean mesin digital.
             </p>
           </div>
           <Link
             href="/pesan"
-            className="shrink-0 bg-army hover:bg-army-dark active:scale-[0.98] text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-lg transition-colors shadow-sm inline-flex items-center gap-2"
+            className="shrink-0 bg-white hover:bg-slate-100 text-brand font-bold text-sm px-7 py-3.5 rounded-xl transition-all shadow-xs inline-flex items-center gap-2"
           >
-            <span>Daftar Pesanan Bordir</span>
-            <ChevronRight className="w-4 h-4" />
+            <span>Daftar Pesanan Online</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </section>
       </main>
 
-      {/* ─── Footer ─── */}
-      <footer className="bg-white border-t border-gray-200 py-8 text-center text-xs text-gray-500 mt-12">
-        <div className="max-w-7xl mx-auto px-4 space-y-2">
-          <p className="font-semibold text-gray-700">TOKO GAPERTA — Perlengkapan Dinas TNI & Bordir Komputer</p>
-          <p>© 2026 Toko Gaperta. Transaksi dan pengambilan barang dilakukan di toko fisik Medan.</p>
+      {/* ─── FOOTER TERANG & BERSIH ─── */}
+      <footer className="w-full bg-white border-t border-slate-border mt-20 text-xs text-slate-muted">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-border pb-6 text-center sm:text-left">
+            <div>
+              <span className="font-extrabold text-slate-ink text-base tracking-tight block">
+                TOKO GAPERTA MEDAN
+              </span>
+              <span className="text-slate-muted text-xs mt-0.5 block">
+                Jl. Gaperta No. 12, Kec. Medan Helvetia, Kota Medan — Sumatera Utara
+              </span>
+            </div>
+            <div className="text-slate-600 font-medium">
+              Buka Setiap Hari: Senin – Sabtu // 08:00 – 20:00 WIB
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-slate-500 text-center sm:text-left">
+            <p>© 2026 Toko Gaperta. Transaksi dan serah terima barang langsung di toko fisik Medan.</p>
+            <p>Standar Perlengkapan Dinas TNI &amp; Kedinasan Resmi.</p>
+          </div>
         </div>
       </footer>
     </div>

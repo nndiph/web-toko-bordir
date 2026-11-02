@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { Shield, LogIn } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isNetworkError } from "@/lib/supabase";
 import { ErrorBanner } from "@/components/StatusBanner";
 
 interface AdminLoginProps {
-  /** Pesan tambahan, mis. akun yang login bukan admin. */
   notice?: string;
   onSuccess: () => void;
 }
@@ -23,38 +22,47 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
     setIsSubmitting(true);
     setError(null);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    setIsSubmitting(false);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      setIsSubmitting(false);
 
-    if (signInError) {
-      setError("Email atau kata sandi salah.");
-      return;
+      if (signInError) {
+        if (isNetworkError(signInError) || signInError.status === 0) {
+          setError("Gagal terhubung ke server database (offline atau connection refused).");
+        } else {
+          setError("Email atau kata sandi tidak cocok.");
+        }
+        return;
+      }
+      onSuccess();
+    } catch {
+      setIsSubmitting(false);
+      setError("Gagal menghubungi server database. Periksa koneksi jaringan Anda.");
     }
-    onSuccess();
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center px-4 font-sans">
+    <div className="min-h-screen bg-slate-canvas text-slate-ink flex items-center justify-center px-4 font-sans">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm space-y-5"
+        className="w-full max-w-sm bg-white border border-slate-border rounded-3xl p-6 sm:p-8 shadow-xs space-y-5"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-army text-white flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5" />
+        <div className="flex items-center gap-3.5 border-b border-slate-border pb-5">
+          <div className="w-11 h-11 rounded-xl bg-brand text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Shield className="w-6 h-6 text-accent-gold" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-tight">Panel Pemilik Toko</h1>
-            <p className="text-xs text-gray-500">Masuk dengan akun admin Gaperta</p>
+            <h1 className="text-base font-bold text-slate-ink">Panel Pemilik Toko</h1>
+            <p className="text-xs text-slate-muted">Masuk dengan akun admin Gaperta</p>
           </div>
         </div>
 
         {notice && <ErrorBanner message={notice} />}
         {error && <ErrorBanner message={error} />}
 
-        <div className="space-y-1.5">
-          <label htmlFor="admin-email" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
-            Email
+        <div className="space-y-1.5 text-xs">
+          <label htmlFor="admin-email" className="block font-bold text-slate-700 uppercase tracking-wider">
+            Email Admin
           </label>
           <input
             id="admin-email"
@@ -63,12 +71,12 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-white border border-gray-300 px-3.5 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 shadow-xs"
+            className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-3.5 py-2.5 rounded-xl text-sm text-slate-ink focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="admin-password" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+        <div className="space-y-1.5 text-xs">
+          <label htmlFor="admin-password" className="block font-bold text-slate-700 uppercase tracking-wider">
             Kata Sandi
           </label>
           <input
@@ -78,17 +86,17 @@ export function AdminLogin({ notice, onSuccess }: AdminLoginProps) {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-white border border-gray-300 px-3.5 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-army/20 focus:border-army text-gray-900 shadow-xs"
+            className="w-full bg-slate-50 border border-slate-border focus:border-brand focus:bg-white px-3.5 py-2.5 rounded-xl text-sm text-slate-ink focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-army hover:bg-army-dark active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+          className="w-full bg-brand hover:bg-brand-hover active:scale-[0.98] disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2"
         >
           <LogIn className="w-4 h-4" />
-          <span>{isSubmitting ? "Memeriksa..." : "Masuk"}</span>
+          <span>{isSubmitting ? "Memeriksa..." : "Masuk Dashboard"}</span>
         </button>
       </form>
     </div>

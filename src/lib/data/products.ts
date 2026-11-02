@@ -1,10 +1,10 @@
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isNetworkError } from "@/lib/supabase";
 import { DEMO_PRODUCTS } from "@/lib/demo-data";
 import type { Product, StockStatus } from "@/types";
 
 export interface Loaded<T> {
   data: T;
-  /** true = data contoh lokal karena Supabase belum dikonfigurasi. */
+  /** true = data contoh lokal karena Supabase belum dikonfigurasi atau offline. */
   demo: boolean;
 }
 
@@ -46,11 +46,23 @@ export async function getProducts(): Promise<Loaded<Product[]>> {
     return { data: DEMO_PRODUCTS, demo: true };
   }
 
-  const { data, error } = await supabase.from("products").select(PRODUCT_COLUMNS).order("name");
-  if (error) {
-    throw new Error(`Gagal memuat produk: ${error.message}`);
+  try {
+    const { data, error } = await supabase.from("products").select(PRODUCT_COLUMNS).order("name");
+    if (error) {
+      if (isNetworkError(error)) {
+        console.warn("Koneksi Supabase offline/gagal. Beralih otomatis ke data demo.");
+        return { data: DEMO_PRODUCTS, demo: true };
+      }
+      throw new Error(`Gagal memuat produk: ${error.message}`);
+    }
+    return { data: (data as unknown as ProductRow[]).map(mapProduct), demo: false };
+  } catch (err) {
+    if (isNetworkError(err)) {
+      console.warn("Koneksi Supabase offline/gagal (catch). Beralih otomatis ke data demo.");
+      return { data: DEMO_PRODUCTS, demo: true };
+    }
+    throw err;
   }
-  return { data: (data as unknown as ProductRow[]).map(mapProduct), demo: false };
 }
 
 /**
@@ -61,17 +73,27 @@ export async function adjustStock(
   productId: string,
   delta: number
 ): Promise<{ stock: number; status: StockStatus }> {
-  const { data, error } = await supabase.rpc("adjust_stock", {
-    p_product_id: productId,
-    p_delta: delta,
-  });
-  if (error) {
-    throw new Error(`Gagal mengubah stok: ${error.message}`);
-  }
+  try {
+    const { data, error } = await supabase.rpc("adjust_stock", {
+      p_product_id: productId,
+      p_delta: delta,
+    });
+    if (error) {
+      if (isNetworkError(error)) {
+        throw new Error("Gagal terhubung ke database. Pastikan koneksi atau server database aktif.");
+      }
+      throw new Error(`Gagal mengubah stok: ${error.message}`);
+    }
 
-  const row = data as { stock: number | null; status: StockStatus | null } | null;
-  if (!row || row.stock === null || row.status === null) {
-    throw new Error("Gagal mengubah stok: produk tidak ditemukan atau akun tidak punya izin admin.");
+    const row = data as { stock: number | null; status: StockStatus | null } | null;
+    if (!row || row.stock === null || row.status === null) {
+      throw new Error("Gagal mengubah stok: produk tidak ditemukan atau akun tidak punya izin admin.");
+    }
+    return { stock: row.stock, status: row.status };
+  } catch (err) {
+    if (isNetworkError(err)) {
+      throw new Error("Gagal terhubung ke database. Pastikan koneksi atau server database aktif.");
+    }
+    throw err;
   }
-  return { stock: row.stock, status: row.status };
 }

@@ -9,31 +9,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Deep military forest green - wibawa, tegas, bersih
-        army: {
-          DEFAULT: "#1E3E20",
-          dark: "#142B16",
-          hover: "#18331A",
+        // Clean Retail E-Commerce Palette (Inspirasi Tokopedia & Uniqlo)
+        brand: {
+          DEFAULT: "#14381B",    // Hijau militer wibawa
+          dark: "#0D2612",
+          hover: "#1B4D24",
           light: "#EAF2EA",
-          border: "#E5E7EB", // Neutral clean border (tidak kehijauan/keruh)
+          border: "#E2E8F0",
         },
-        // Warm brass / bronze gold - tegas, tidak kusam
-        gold: {
-          DEFAULT: "#B45309",
-          dark: "#92400E",
-          light: "#FEF3C7",
+        accent: {
+          gold: "#B45309",       // Kuningan lencana dinas
+          goldLight: "#FEF3C7",
+          green: "#15803D",      // Hijau status stok aman
+          greenLight: "#DCFCE7",
+          red: "#DC2626",        // Merah status stok habis
+          redLight: "#FEE2E2",
         },
-        // Neutral canvas - bersih, ramah mata, standar e-commerce
-        surface: {
-          DEFAULT: "#F9FAFB", // Gray-50 bersih
-          card: "#FFFFFF",
-          muted: "#F3F4F6",   // Gray-100
-        },
-        // High contrast text - hitam arang tajam, bukan hijau gelap
-        ink: {
-          DEFAULT: "#111827", // Gray-900: tegas, mudah dibaca
-          muted: "#4B5563",   // Gray-600: kontras jelas
-          soft: "#9CA3AF",    // Gray-400
+        slate: {
+          canvas: "#F8FAFC",     // Background utama bersih
+          card: "#FFFFFF",       // Kartu produk & panel
+          border: "#E2E8F0",     // Border halus standar retail
+          ink: "#0F172A",        // Teks utama hitam pekat kontras tinggi
+          muted: "#64748B",      // Teks pendukung abu-abu sejuk
+          soft: "#94A3B8",
         },
       },
       fontFamily: {

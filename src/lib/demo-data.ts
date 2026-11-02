@@ -19,7 +19,7 @@ export const DEMO_PRODUCTS: Product[] = [
     stock: 24,
     status: "TERSEDIA",
     rackLocation: "Rak A-02 (Etalase Depan)",
-    imageUrl: img("1579273166152-d725a4e2b755"),
+    imageUrl: img("1607604276583-eef5d076aa5f"),
   },
   {
     id: "2",

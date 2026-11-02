@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isNetworkError } from "@/lib/supabase";
 import { getDemoOrders } from "@/lib/demo-data";
 import type { CustomOrder, NewOrderInput, OrderStatus, OrderType, TrackedOrder } from "@/types";
 
@@ -8,24 +8,40 @@ const digitsOnly = (value: string) => value.replace(/\D/g, "");
 
 /** Mengembalikan nomor tiket. Di Mode Demo tiket hanya dibuat lokal dan TIDAK tersimpan. */
 export async function createOrder(input: NewOrderInput): Promise<{ ticket: string; demo: boolean }> {
-  if (!isSupabaseConfigured) {
+  const generateDemoTicket = () => {
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const suffix = Math.floor(100 + Math.random() * 900);
     return { ticket: `GPT-${dateStr}-${suffix}`, demo: true };
+  };
+
+  if (!isSupabaseConfigured) {
+    return generateDemoTicket();
   }
 
-  const { data, error } = await supabase.rpc("create_order", {
-    p_customer_name: input.customerName,
-    p_customer_rank: input.customerRank ?? null,
-    p_whatsapp: input.whatsappNumber,
-    p_order_type: input.orderType,
-    p_quantity: input.quantity,
-    p_notes: input.notes,
-  });
-  if (error || typeof data !== "string") {
-    throw new Error(`Gagal menyimpan pesanan: ${error?.message ?? "respons tidak valid"}`);
+  try {
+    const { data, error } = await supabase.rpc("create_order", {
+      p_customer_name: input.customerName,
+      p_customer_rank: input.customerRank ?? null,
+      p_whatsapp: input.whatsappNumber,
+      p_order_type: input.orderType,
+      p_quantity: input.quantity,
+      p_notes: input.notes,
+    });
+    if (error || typeof data !== "string") {
+      if (isNetworkError(error)) {
+        console.warn("Koneksi Supabase offline saat membuat pesanan. Menggunakan tiket demo.");
+        return generateDemoTicket();
+      }
+      throw new Error(`Gagal menyimpan pesanan: ${error?.message ?? "respons tidak valid"}`);
+    }
+    return { ticket: data, demo: false };
+  } catch (err) {
+    if (isNetworkError(err)) {
+      console.warn("Koneksi Supabase offline saat membuat pesanan (catch). Menggunakan tiket demo.");
+      return generateDemoTicket();
+    }
+    throw err;
   }
-  return { ticket: data, demo: false };
 }
 
 // ─── Publik: lacak pesanan ──────────────────────────────────────────────────
@@ -50,7 +66,7 @@ export async function trackOrder(
   const normalizedTicket = ticket.trim().toUpperCase();
   const suffix = digitsOnly(whatsappLast4);
 
-  if (!isSupabaseConfigured) {
+  const fallbackDemo = () => {
     const found = getDemoOrders().find(
       (o) => o.orderNumber === normalizedTicket && digitsOnly(o.whatsappNumber).endsWith(suffix) && suffix.length === 4
     );
@@ -70,56 +86,85 @@ export async function trackOrder(
         : null,
       demo: true,
     };
-  }
-
-  const { data, error } = await supabase.rpc("track_order", {
-    p_ticket: normalizedTicket,
-    p_wa_suffix: suffix,
-  });
-  if (error) {
-    throw new Error(`Gagal melacak pesanan: ${error.message}`);
-  }
-
-  const row = (data as TrackedOrderRow[] | null)?.[0];
-  if (!row) {
-    return { order: null, demo: false };
-  }
-  return {
-    order: {
-      orderNumber: row.order_number,
-      customerName: row.customer_name,
-      customerRank: row.customer_rank ?? undefined,
-      orderType: row.order_type,
-      quantity: row.quantity,
-      notes: row.notes,
-      status: row.status,
-      estimatedDone: row.estimated_done ?? undefined,
-      createdAt: row.created_at,
-    },
-    demo: false,
   };
+
+  if (!isSupabaseConfigured) {
+    return fallbackDemo();
+  }
+
+  try {
+    const { data, error } = await supabase.rpc("track_order", {
+      p_ticket: normalizedTicket,
+      p_wa_suffix: suffix,
+    });
+    if (error) {
+      if (isNetworkError(error)) {
+        console.warn("Koneksi Supabase offline saat melacak pesanan. Beralih ke demo data.");
+        return fallbackDemo();
+      }
+      throw new Error(`Gagal melacak pesanan: ${error.message}`);
+    }
+
+    const row = (data as TrackedOrderRow[] | null)?.[0];
+    if (!row) {
+      return { order: null, demo: false };
+    }
+    return {
+      order: {
+        orderNumber: row.order_number,
+        customerName: row.customer_name,
+        customerRank: row.customer_rank ?? undefined,
+        orderType: row.order_type,
+        quantity: row.quantity,
+        notes: row.notes,
+        status: row.status,
+        estimatedDone: row.estimated_done ?? undefined,
+        createdAt: row.created_at,
+      },
+      demo: false,
+    };
+  } catch (err) {
+    if (isNetworkError(err)) {
+      console.warn("Koneksi Supabase offline saat melacak pesanan (catch). Beralih ke demo data.");
+      return fallbackDemo();
+    }
+    throw err;
+  }
 }
 
 // ─── Admin ──────────────────────────────────────────────────────────────────
 
 export type AdminAccess =
   | { live: true }
-  | { live: false; reason: "not-configured" | "no-session" | "not-admin" };
+  | { live: false; reason: "not-configured" | "no-session" | "not-admin" | "offline" };
 
 /** Admin = user Supabase Auth dengan app_metadata.role = "admin". */
 export async function getAdminAccess(): Promise<AdminAccess> {
   if (!isSupabaseConfigured) {
     return { live: false, reason: "not-configured" };
   }
-  const { data } = await supabase.auth.getSession();
-  const user = data.session?.user;
-  if (!user) {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      if (isNetworkError(error)) {
+        return { live: false, reason: "offline" };
+      }
+      return { live: false, reason: "no-session" };
+    }
+    const user = data.session?.user;
+    if (!user) {
+      return { live: false, reason: "no-session" };
+    }
+    if (user.app_metadata?.role !== "admin") {
+      return { live: false, reason: "not-admin" };
+    }
+    return { live: true };
+  } catch (err) {
+    if (isNetworkError(err)) {
+      return { live: false, reason: "offline" };
+    }
     return { live: false, reason: "no-session" };
   }
-  if (user.app_metadata?.role !== "admin") {
-    return { live: false, reason: "not-admin" };
-  }
-  return { live: true };
 }
 
 interface OrderRow {
@@ -137,29 +182,39 @@ interface OrderRow {
 }
 
 export async function getAdminOrders(): Promise<CustomOrder[]> {
-  const { data, error } = await supabase
-    .from("orders")
-    .select(
-      "id, order_number, customer_name, customer_rank, whatsapp, order_type, quantity, notes, status, estimated_done, created_at"
-    )
-    .order("created_at", { ascending: true });
-  if (error) {
-    throw new Error(`Gagal memuat pesanan: ${error.message}`);
-  }
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        "id, order_number, customer_name, customer_rank, whatsapp, order_type, quantity, notes, status, estimated_done, created_at"
+      )
+      .order("created_at", { ascending: true });
+    if (error) {
+      if (isNetworkError(error)) {
+        throw new Error("Gagal terhubung ke server database. Pastikan koneksi atau server Supabase aktif.");
+      }
+      throw new Error(`Gagal memuat pesanan: ${error.message}`);
+    }
 
-  return (data as unknown as OrderRow[]).map((row) => ({
-    id: row.id,
-    orderNumber: row.order_number,
-    customerName: row.customer_name,
-    customerRank: row.customer_rank ?? undefined,
-    whatsappNumber: row.whatsapp,
-    orderType: row.order_type,
-    quantity: row.quantity,
-    notes: row.notes,
-    status: row.status,
-    estimatedDone: row.estimated_done ?? undefined,
-    createdAt: row.created_at,
-  }));
+    return (data as unknown as OrderRow[]).map((row) => ({
+      id: row.id,
+      orderNumber: row.order_number,
+      customerName: row.customer_name,
+      customerRank: row.customer_rank ?? undefined,
+      whatsappNumber: row.whatsapp,
+      orderType: row.order_type,
+      quantity: row.quantity,
+      notes: row.notes,
+      status: row.status,
+      estimatedDone: row.estimated_done ?? undefined,
+      createdAt: row.created_at,
+    }));
+  } catch (err) {
+    if (isNetworkError(err)) {
+      throw new Error("Gagal terhubung ke server database. Pastikan koneksi atau server Supabase aktif.");
+    }
+    throw err;
+  }
 }
 
 export async function updateOrderStatus(
@@ -167,15 +222,25 @@ export async function updateOrderStatus(
   status: OrderStatus,
   estimatedDone: string | undefined
 ): Promise<void> {
-  const { data, error } = await supabase
-    .from("orders")
-    .update({ status, estimated_done: estimatedDone ?? null })
-    .eq("id", orderId)
-    .select("id");
-  if (error) {
-    throw new Error(`Gagal mengubah status pesanan: ${error.message}`);
-  }
-  if (!data || data.length === 0) {
-    throw new Error("Gagal mengubah status pesanan: pesanan tidak ditemukan atau akun tidak punya izin admin.");
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ status, estimated_done: estimatedDone ?? null })
+      .eq("id", orderId)
+      .select("id");
+    if (error) {
+      if (isNetworkError(error)) {
+        throw new Error("Gagal terhubung ke database. Pastikan koneksi atau server database aktif.");
+      }
+      throw new Error(`Gagal mengubah status pesanan: ${error.message}`);
+    }
+    if (!data || data.length === 0) {
+      throw new Error("Gagal mengubah status pesanan: pesanan tidak ditemukan atau akun tidak punya izin admin.");
+    }
+  } catch (err) {
+    if (isNetworkError(err)) {
+      throw new Error("Gagal terhubung ke database. Pastikan koneksi atau server database aktif.");
+    }
+    throw err;
   }
 }
