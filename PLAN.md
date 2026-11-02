@@ -1,24 +1,28 @@
-# Fitur: Supabase Lokal & Uji SQL/RLS (Fase 5.2)
+# Fitur: Redesain Dashboard Admin (Fase 6)
 
-## Tujuan
-- SQL Fase 5 belum pernah dijalankan. Jalankan di Postgres/Supabase lokal (Docker) dan buktikan aturan RLS/RPC benar sebelum dipakai di project cloud.
+## Masalah
+- `/admin` menampilkan 3 kartu KPI besar, tabel kasir, dan tabel antrean 6 kolom sekaligus dengan bobot visual sama. Pemilik harus membaca semuanya untuk tahu apa yang mendesak.
+- Usia pesanan hanya teks; tidak ada visual alur proses maupun level stok.
 
 ## Rencana
-1. `npx supabase init` + `supabase start` (migrasi & seed otomatis diterapkan).
-2. Skrip uji `supabase/smoke-test.mjs` (supabase-js, peran anon / admin / user non-admin).
-3. Perbaiki bug yang ditemukan uji pada `0001_init.sql`.
-4. Skrip npm `db:start|db:stop|db:reset|db:test` (tanpa menambah dependency).
-5. `.env.local` lokal (di-gitignore) agar `npm run dev` langsung memakai DB lokal.
+1. **Hierarki:** alert pesanan terlewat di paling atas, lalu alur proses + antrean aktif. Hal tidak mendesak (pesanan selesai, kasir) tidak ikut menumpuk.
+2. **Dua tab:** `Antrean Bordir` dan `Stok & Kasir`, masing-masing dengan badge angka (terlewat / perlu restock) agar peringatan tidak tersembunyi.
+3. **Visual tanpa library baru:** pipeline 3 tahap yang bisa diklik sebagai filter + batang proporsi; batang usia per pesanan (hijau/kuning/merah); batang level stok; panel "Perlu restock".
+4. **Antrean ringkas:** daftar kartu (bukan tabel 6 kolom), urut terlewat dulu lalu paling lama, satu aksi utama per baris, catatan dilipat.
+5. Komponen presentasi dipisah ke `src/components/admin/`; state & logika data tetap di `src/app/admin/page.tsx`.
+6. Perbaikan kecil terkait: tautan WhatsApp memakai helper `toWaNumber` (mengabaikan tanda strip/spasi dan awalan 62).
+
+## Perubahan perilaku yang disengaja
+- Daftar "perlu restock" mencakup stok 0 dan < 5 (sebelumnya hanya 1 s/d 4), kecuali produk `CUSTOM`.
+- Tombol "Muat ulang" ditambahkan (pesanan baru dari publik tidak realtime).
 
 ## Kriteria Selesai
-- [x] Migrasi + seed berhasil diterapkan di Postgres 17 lokal.
-- [x] 31/31 skenario uji lulus setelah `db reset`.
-- [x] Bug `adjust_stock` terbuka untuk anon diperbaiki (revoke dari `anon, authenticated`).
-- [x] `npm run lint` dan `npm run build` lulus dengan env live.
+- [x] Semua fungsi lama tetap ada: mulai bordir, tandai siap, kirim WA, sudah diambil, +/- stok, filter, login/keluar, Mode Demo.
+- [x] `npm run lint` dan `npm run build` lulus.
+- [ ] Dicek di browser oleh pemilik.
 - [x] `AGENTS.md` diperbarui.
-- [ ] Setup cloud oleh pemilik; uji UI browser.
 
 ## Batasan
-- Jangan sentuh folder `figcraft/`.
-- Jangan commit secret: `.env.local` di-gitignore; kunci di dokumen hanyalah kunci default Supabase lokal.
-- Tidak menambah dependency npm.
+- Jangan sentuh folder `figcraft/`; jangan commit secret.
+- Tanpa dependency baru; tanpa perubahan skema/data layer.
+- Palet hijau militer dan font Plus Jakarta Sans dipertahankan.

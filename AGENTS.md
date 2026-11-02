@@ -106,34 +106,38 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Mengompresi beban gambar Unsplash (pengurangan ~60% bandwidth dengan `w=400&q=70&auto=format`).
   - Menambahkan `decoding="async"` dan `loading="lazy"` agar proses decode gambar tidak membebani main thread JavaScript saat browsing dan scrolling.
   - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` terverifikasi lulus 100% (0 errors, 0 warnings).
-
 - [x] **Fase 5 — Integrasi Database Supabase (Kode Selesai, Menunggu Setup Supabase oleh Pemilik)**
   - Skema + RLS + RPC di `supabase/migrations/0001_init.sql`, seed 5 kategori & 8 produk di `supabase/seed.sql`.
   - Akses publik hanya lewat RPC `create_order` (nomor tiket dibuat server) dan `track_order` (tiket + 4 digit akhir WA). Tabel `orders` tertutup untuk anon. Admin = user dengan `app_metadata.role = 'admin'`.
   - Data layer di `src/lib/data/` (`products.ts`, `orders.ts`); mapper snake_case → camelCase; tipe baru di `src/types/index.ts`.
   - **Mode Demo:** bila `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` kosong, UI memakai `src/lib/demo-data.ts` dengan banner kuning dan tidak menyimpan apa pun. Cek via `isSupabaseConfigured`.
   - `/admin` kini punya login (`src/components/AdminLogin.tsx`) dan tombol Keluar. Alert Kartu Merah dihitung dari `created_at` (>= 3 hari).
-  - `npm run lint` dan `npm run build` (7/7 route) lulus. **SQL belum pernah dijalankan** (tidak ada Postgres/Docker lokal) dan alur live belum diuji end-to-end.
+  - Pull Request #8 (`feature/supabase-integration`) sukses dimerge ke `main`.
 - [x] **Fase 5.1 — Aksi "Sudah Diambil" di `/admin` (Selesai)**
   - Pesanan `READY` punya tombol "Sudah Diambil" (dengan konfirmasi) yang mengubah status ke `COMPLETED`.
   - Filter "Semua" hanya menampilkan antrean aktif; pesanan selesai dilihat lewat filter baru "Sudah Diambil".
-  - Tanpa perubahan SQL (RLS admin sudah mengizinkan update). `/tracking` sudah menangani `COMPLETED`.
-  - `npm run lint` dan `npm run build` (7/7 route) lulus.
+  - Pull Request #7 (`feature/order-completed-action`) sukses dimerge ke `main`.
 - [x] **Fase 5.2 — Supabase Lokal & Uji SQL/RLS (Selesai)**
   - Supabase CLI via `npx supabase` (butuh Docker Desktop). `supabase/config.toml` ditambahkan; migrasi & seed otomatis diterapkan oleh `supabase start` / `db reset`.
-  - Skrip npm: `db:start`, `db:stop`, `db:reset`, `db:test`. `supabase/smoke-test.mjs` menguji 31 skenario RLS/RPC (anon vs admin vs user non-admin) — **31/31 lulus** di Postgres 17 lokal. **Skrip ini menghapus pesanan di DB lokal; jalankan `db:reset` sesudahnya.**
-  - Bug ditemukan & diperbaiki lewat uji: anon masih bisa memanggil `adjust_stock` karena default privileges Supabase; `revoke` kini juga mencabut dari `anon, authenticated` sebelum `grant`.
-  - Dev lokal: `.env.local` (di-gitignore) berisi URL `http://127.0.0.1:54321` + anon key lokal. Akun admin lokal: `admin@gaperta.local` / `gaperta-dev-123` (hanya untuk DB lokal; dibuat ulang manual setelah `db:reset`).
-  - **Belum dilakukan:** setup project Supabase cloud (produksi) oleh pemilik; uji klik-klik UI di browser.
+  - Skrip npm: `db:start`, `db:stop`, `db:reset`, `db:test`. `supabase/smoke-test.mjs` menguji 31 skenario RLS/RPC (anon vs admin vs user non-admin) — **31/31 lulus** di Postgres 17 lokal.
+  - Bug `adjust_stock` diperbaiki dengan pencabutan hak eksekusi anon sebelum grant.
+  - Pull Request #10 (`chore/supabase-local-setup`) sukses dimerge ke `main`.
+- [x] **Fase 6 — Redesain Dashboard Admin: Tab Hierarki, Pipeline Visual & Kartu Antrean (Selesai)**
+  - Mengubah tampilan `/admin` menjadi **2 tab terpisah**: `Antrean Bordir` dan `Stok & Kasir`, lengkap dengan badge indikator jumlah order tertunda dan restock.
+  - **Alert Kartu Merah Prioritas:** Peringatan pesanan > 3 hari diletakkan paling atas dengan tombol 1-klik filter.
+  - **Visual Pipeline 3 Tahap (`PipelineBar`):** Antre (Pending), Dibordir (In Progress), dan Siap Diambil (Ready) dengan batang visual proporsi antrean.
+  - **Desain Kartu Antrean Ringkas (`OrderRow`):** Mengganti tabel 6-kolom menjadi kartu responsif dengan indikator visual usia pesanan (hijau, kuning, merah), catatan pemesan yang bisa dilipat/buka, dan 1 aksi utama terarah.
+  - **Kasir Quick-Check & Restock Panel (`StockRow` & `RestockPanel`):** Pencarian instan nama/kategori/rak fisik barang, indikator visual stok (`StockBar`), dan panel samping khusus barang yang menipis (< 5 pcs).
+  - Pembagian modular komponen ke `src/components/admin/`, konstanta `ORDER_TYPE_LABEL` di `src/lib/labels.ts`, serta utilitas `ageLabel` & normalisasi `toWaNumber` di `src/lib/utils.ts`.
+  - Pengujian build `npm run build` (7/7 static routes) dan lint `npm run lint` lulus 100% (0 errors, 0 warnings).
 
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `chore/supabase-local-setup` (dari `main`, belum dimerge). Fase 5 – 5.1 sudah di `main`.
-- **Kondisi Working Directory:** Bersih setelah commit Fase 5.2.
-- **Menunggu dari Pemilik (produksi):** buat project Supabase cloud, jalankan `0001_init.sql` lalu `seed.sql` di SQL Editor (atau `npx supabase link` + `db push` dengan access token), buat & tandai akun admin, isi env di hosting.
-- **Tugas Selanjutnya:** Uji UI di browser dengan DB lokal (`npm run db:start`, `npm run dev`); deploy.
+- **Branch Aktif:** `feature/admin-dashboard-redesign` (dibuat dari `main`).
+- **Kondisi Working Directory:** Bersih dan siap dipush ke remote.
+- **Tugas Selanjutnya:** Buka PR untuk `feature/admin-dashboard-redesign`, uji langsung di browser oleh pemilik, lalu merge ke `main`.
 
 ---
 
