@@ -30,7 +30,7 @@ const FEATURED_CATEGORIES = [
     desc: "Bordir timbul rapi & presisi",
     count: "24+ Model",
     icon: Award,
-    imageUrl: "https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=400&q=70",
+    imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=400&q=70",
   },
   {
     id: "seragam",
@@ -214,7 +214,7 @@ export default function HomePage() {
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="https://images.unsplash.com/photo-1579273166152-d725a4e2b755?auto=format&fit=crop&w=500&q=75"
+                    src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=500&q=75"
                     alt="Pangkat Bordir TNI AD - Serda (Timbul)"
                     loading="eager"
                     decoding="async"
