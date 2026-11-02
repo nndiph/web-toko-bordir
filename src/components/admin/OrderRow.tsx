@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Clock, MessageCircle, Package, RefreshCw, Send } from "lucide-react";
+import { CheckCircle2, Clock, MessageCircle, Package, RefreshCw, Send, ChevronDown } from "lucide-react";
 import { ORDER_TYPE_LABEL } from "@/lib/labels";
 import { ageLabel, formatOrderDate, toWaNumber } from "@/lib/utils";
 import type { CustomOrder, OrderStatus } from "@/types";
@@ -10,23 +10,23 @@ interface OrderRowProps {
   order: CustomOrder;
   overdue: boolean;
   days: number;
-  /** Batas hari sebelum pesanan dianggap terlewat (untuk skala batang usia). */
+  /** Batas hari sebelum pesanan dianggap terlewat. */
   overdueDays: number;
   busy: boolean;
   onAdvance: (status: OrderStatus) => void;
 }
 
 const STATUS_META: Record<OrderStatus, { label: string; pill: string; stripe: string; Icon: typeof Clock }> = {
-  PENDING: { label: "Antre", pill: "bg-amber-100 text-amber-800", stripe: "bg-amber-500", Icon: Clock },
-  IN_PROGRESS: { label: "Dibordir", pill: "bg-blue-100 text-blue-800", stripe: "bg-blue-600", Icon: RefreshCw },
-  READY: { label: "Siap diambil", pill: "bg-emerald-100 text-emerald-800", stripe: "bg-emerald-600", Icon: CheckCircle2 },
-  COMPLETED: { label: "Sudah diambil", pill: "bg-gray-100 text-gray-700", stripe: "bg-gray-300", Icon: Package },
+  PENDING: { label: "Antre di Mesin", pill: "bg-amber-100 text-amber-800 border-amber-200", stripe: "bg-amber-500", Icon: Clock },
+  IN_PROGRESS: { label: "Sedang Dibordir", pill: "bg-sky-100 text-sky-800 border-sky-200", stripe: "bg-sky-600", Icon: RefreshCw },
+  READY: { label: "Siap Diambil", pill: "bg-emerald-100 text-emerald-800 border-emerald-200", stripe: "bg-emerald-600", Icon: CheckCircle2 },
+  COMPLETED: { label: "Sudah Diambil", pill: "bg-slate-100 text-slate-700 border-slate-200", stripe: "bg-slate-400", Icon: Package },
 };
 
 const primaryBtn =
-  "inline-flex items-center justify-center gap-1.5 bg-army hover:bg-army-dark disabled:opacity-60 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors shadow-xs whitespace-nowrap";
+  "inline-flex items-center justify-center gap-1.5 bg-brand hover:bg-brand-hover active:scale-[0.98] disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-2xs whitespace-nowrap";
 const secondaryBtn =
-  "inline-flex items-center justify-center gap-1.5 bg-white hover:bg-gray-50 disabled:opacity-60 text-gray-900 border border-gray-300 font-semibold px-3 py-2 rounded-lg text-xs transition-colors whitespace-nowrap";
+  "inline-flex items-center justify-center gap-1.5 bg-white hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 text-slate-700 border border-slate-border font-semibold px-3 py-2 rounded-xl text-xs transition-all whitespace-nowrap shadow-2xs";
 
 export function OrderRow({ order, overdue, days, overdueDays, busy, onAdvance }: OrderRowProps) {
   const [expanded, setExpanded] = useState(false);
@@ -34,118 +34,163 @@ export function OrderRow({ order, overdue, days, overdueDays, busy, onAdvance }:
   const wa = toWaNumber(order.whatsappNumber);
   const isCompleted = order.status === "COMPLETED";
 
-  const ageTone = days >= overdueDays ? "bg-rose-600" : days >= overdueDays - 1 ? "bg-amber-500" : "bg-emerald-600";
+  const ageTone = days >= overdueDays ? "bg-red-600" : days >= overdueDays - 1 ? "bg-amber-500" : "bg-emerald-600";
   const agePct = Math.max(8, Math.min(100, (days / overdueDays) * 100));
 
   const readyMessage = encodeURIComponent(
-    `Halo Bpk/Ibu ${order.customerName}, pesanan custom bordir Anda dengan tiket ${order.orderNumber} sudah selesai dan siap diambil di Toko Gaperta.`
+    `Halo Bpk/Ibu ${order.customerName}, pesanan custom bordir Anda dengan nomor tiket ${order.orderNumber} sudah selesai dan siap diambil di Toko Gaperta (Jl. Gaperta No. 12, Medan).`
   );
 
   return (
     <li
-      className={`flex overflow-hidden rounded-lg border ${
-        overdue ? "border-rose-300 bg-rose-50/40" : "border-gray-200 bg-white"
+      className={`flex overflow-hidden rounded-2xl border transition-all ${
+        overdue
+          ? "border-red-300 bg-red-50/40 shadow-xs"
+          : "border-slate-border bg-white hover:border-slate-300 hover:shadow-xs"
       }`}
     >
-      <span className={`w-1.5 shrink-0 ${overdue ? "bg-rose-600" : meta.stripe}`} aria-hidden />
+      {/* Stripe warna status */}
+      <span className={`w-1.5 shrink-0 ${overdue ? "bg-red-600" : meta.stripe}`} aria-hidden />
 
-      <div className="flex-1 min-w-0 p-3.5 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
-        <div className="min-w-0 space-y-1.5">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <h3 className="font-bold text-sm text-gray-900">{order.customerName}</h3>
-            {order.customerRank && <span className="text-xs text-gray-500">{order.customerRank}</span>}
-            <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold ${meta.pill}`}>
+      <div className="flex-1 min-w-0 p-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+        {/* Info Pemesan */}
+        <div className="min-w-0 space-y-2">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <h3 className="font-extrabold text-sm sm:text-base text-slate-ink">{order.customerName}</h3>
+            {order.customerRank && (
+              <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                {order.customerRank}
+              </span>
+            )}
+            <span
+              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold border ${meta.pill}`}
+            >
               <meta.Icon className="w-3 h-3" />
               {meta.label}
             </span>
             {overdue && (
-              <span className="rounded-md bg-rose-600 px-2 py-0.5 text-[11px] font-extrabold text-white">
+              <span className="rounded-md bg-red-600 px-2 py-0.5 text-[11px] font-extrabold text-white">
                 Terlewat {days} hari
               </span>
             )}
           </div>
 
-          <p className="text-xs text-gray-600">
-            <span className="font-semibold text-gray-900">{ORDER_TYPE_LABEL[order.orderType]}</span>
+          <p className="text-xs text-slate-600">
+            <span className="font-bold text-slate-ink">{ORDER_TYPE_LABEL[order.orderType]}</span>
             {" · "}
-            {order.quantity} pcs
+            <span className="font-semibold">{order.quantity} pcs</span>
             {" · "}
-            <span className="font-mono text-gray-500">{order.orderNumber}</span>
+            <span className="font-mono text-brand font-bold">{order.orderNumber}</span>
           </p>
 
+          {/* Toggle Catatan */}
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className="block w-full text-left"
-            title={expanded ? "Ciutkan catatan" : "Lihat catatan lengkap"}
+            className="flex items-center gap-1 text-xs text-slate-500 hover:text-brand font-medium pt-0.5 text-left"
           >
-            <span className={`block text-xs text-gray-500 ${expanded ? "" : "line-clamp-1"}`}>{order.notes}</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} />
+            <span>{expanded ? "Sembunyikan Catatan" : `Lihat Catatan: "${order.notes.slice(0, 35)}..."`}</span>
           </button>
 
+          {expanded && (
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs text-slate-700 space-y-1 mt-1">
+              <span className="text-[11px] font-bold text-slate-400 block uppercase">Spesifikasi Tulisan Bordir:</span>
+              <p className="whitespace-pre-wrap font-medium">{order.notes}</p>
+            </div>
+          )}
+
+          {/* Batang Usia Pesanan */}
           {!isCompleted && (
-            <div className="flex items-center gap-2 pt-0.5" title={`Masuk ${formatOrderDate(order.createdAt)}`}>
-              <div className="h-1.5 w-28 overflow-hidden rounded-full bg-gray-100">
+            <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-400">
+              <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100" aria-hidden>
                 <div className={`h-full rounded-full ${ageTone}`} style={{ width: `${agePct}%` }} />
               </div>
-              <span className="text-[11px] tabular-nums text-gray-500">{ageLabel(days)}</span>
+              <span className="font-medium text-slate-500">
+                {ageLabel(days)} · Didaftarkan {formatOrderDate(order.createdAt)}
+              </span>
             </div>
           )}
         </div>
 
-        {!isCompleted && (
-          <div className="flex flex-wrap items-center gap-2 md:justify-end">
-            {order.status === "PENDING" && (
-              <button type="button" disabled={busy} onClick={() => onAdvance("IN_PROGRESS")} className={primaryBtn}>
-                Mulai Bordir
-              </button>
-            )}
-            {order.status === "IN_PROGRESS" && (
-              <button type="button" disabled={busy} onClick={() => onAdvance("READY")} className={primaryBtn}>
-                Tandai Siap Diambil
-              </button>
-            )}
-            {order.status === "READY" && (
-              <>
+        {/* Tombol Aksi Kasir */}
+        <div className="flex flex-wrap items-center gap-2 md:justify-end">
+          {order.status === "PENDING" && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onAdvance("IN_PROGRESS")}
+              className={primaryBtn}
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Mulai Bordir</span>
+            </button>
+          )}
+
+          {order.status === "IN_PROGRESS" && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onAdvance("READY")}
+              className={primaryBtn}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Tandai Siap</span>
+            </button>
+          )}
+
+          {order.status === "READY" && (
+            <>
+              {wa && (
                 <a
                   href={`https://wa.me/${wa}?text=${readyMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={primaryBtn}
+                  className="inline-flex items-center justify-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-2xs"
+                  title="Buka chat WhatsApp dengan pesan konfirmasi siap diambil"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  Kirim WA Selesai
+                  <span>Kirim WA</span>
                 </a>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => {
-                    if (window.confirm(`Tandai pesanan ${order.orderNumber} sudah diambil pemesan?`)) {
-                      onAdvance("COMPLETED");
-                    }
-                  }}
-                  className={secondaryBtn}
-                >
-                  <Package className="w-3.5 h-3.5" />
-                  Sudah Diambil
-                </button>
-              </>
-            )}
-            {order.status !== "READY" && (
-              <a
-                href={`https://wa.me/${wa}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              )}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  if (confirm(`Konfirmasi penyerahan barang untuk tiket ${order.orderNumber}?`)) {
+                    onAdvance("COMPLETED");
+                  }
+                }}
                 className={secondaryBtn}
-                title={`Chat ${order.whatsappNumber}`}
-                aria-label={`Chat WhatsApp ${order.customerName}`}
+                title="Tandai pesanan sudah diserahkan ke pelanggan"
               >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span className="sr-only sm:not-sr-only">Chat</span>
-              </a>
-            )}
-          </div>
-        )}
+                <Package className="w-3.5 h-3.5 text-slate-500" />
+                <span>Sudah Diambil</span>
+              </button>
+            </>
+          )}
+
+          {isCompleted && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 font-medium px-2 py-1">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              Selesai &amp; Diserahkan
+            </span>
+          )}
+
+          {wa && order.status !== "READY" && !isCompleted && (
+            <a
+              href={`https://wa.me/${wa}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={secondaryBtn}
+              title={`Hubungi WhatsApp pemesan (${order.whatsappNumber})`}
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Chat WA</span>
+            </a>
+          )}
+        </div>
       </div>
     </li>
   );

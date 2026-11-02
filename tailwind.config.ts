@@ -17,6 +17,14 @@ const config: Config = {
           light: "#EAF2EA",
           border: "#E2E8F0",
         },
+        // Alias admin (dipakai di komponen admin/) — mengarah ke brand yang sama
+        army: {
+          DEFAULT: "#14381B",
+          dark: "#0D2612",
+          hover: "#1B4D24",
+        },
+        // Background surface untuk admin pages
+        surface: "#F8FAFC",
         accent: {
           gold: "#B45309",       // Kuningan lencana dinas
           goldLight: "#FEF3C7",

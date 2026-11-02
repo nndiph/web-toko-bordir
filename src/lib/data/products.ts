@@ -1,5 +1,10 @@
 import { supabase, isSupabaseConfigured, isNetworkError } from "@/lib/supabase";
 import { DEMO_PRODUCTS } from "@/lib/demo-data";
+import {
+  adjustStoredStock,
+  getStoredProducts,
+  setStoredProducts,
+} from "@/lib/local-store";
 import type { Product, StockStatus } from "@/types";
 
 export interface Loaded<T> {
@@ -40,9 +45,19 @@ function mapProduct(row: ProductRow): Product {
   };
 }
 
-/** Daftar produk untuk katalog publik dan Kasir Quick-Check. */
+/**
+ * Daftar produk untuk katalog publik dan Kasir Quick-Check.
+ * Demo mode: cek LocalStorage dulu, baru pakai DEMO_PRODUCTS sebagai seed.
+ */
 export async function getProducts(): Promise<Loaded<Product[]>> {
   if (!isSupabaseConfigured) {
+    // Ambil dari LocalStorage (mungkin sudah dimodifikasi kasir di /admin)
+    const stored = getStoredProducts();
+    if (stored) {
+      return { data: stored, demo: true };
+    }
+    // Pertama kali: seed LocalStorage dengan DEMO_PRODUCTS
+    setStoredProducts(DEMO_PRODUCTS);
     return { data: DEMO_PRODUCTS, demo: true };
   }
 
@@ -51,6 +66,9 @@ export async function getProducts(): Promise<Loaded<Product[]>> {
     if (error) {
       if (isNetworkError(error)) {
         console.warn("Koneksi Supabase offline/gagal. Beralih otomatis ke data demo.");
+        const stored = getStoredProducts();
+        if (stored) return { data: stored, demo: true };
+        setStoredProducts(DEMO_PRODUCTS);
         return { data: DEMO_PRODUCTS, demo: true };
       }
       throw new Error(`Gagal memuat produk: ${error.message}`);
@@ -59,6 +77,9 @@ export async function getProducts(): Promise<Loaded<Product[]>> {
   } catch (err) {
     if (isNetworkError(err)) {
       console.warn("Koneksi Supabase offline/gagal (catch). Beralih otomatis ke data demo.");
+      const stored = getStoredProducts();
+      if (stored) return { data: stored, demo: true };
+      setStoredProducts(DEMO_PRODUCTS);
       return { data: DEMO_PRODUCTS, demo: true };
     }
     throw err;
@@ -66,13 +87,20 @@ export async function getProducts(): Promise<Loaded<Product[]>> {
 }
 
 /**
- * Tambah/kurang stok secara atomik di server (khusus admin).
- * Mengembalikan stok & status terbaru yang sudah dihitung database.
+ * Tambah/kurang stok secara atomik.
+ * - Supabase online → RPC adjust_stock di PostgreSQL.
+ * - Demo mode → update LocalStorage.
  */
 export async function adjustStock(
   productId: string,
   delta: number
 ): Promise<{ stock: number; status: StockStatus }> {
+  if (!isSupabaseConfigured) {
+    const result = adjustStoredStock(productId, delta);
+    if (!result) throw new Error("Produk tidak ditemukan di store demo.");
+    return result;
+  }
+
   try {
     const { data, error } = await supabase.rpc("adjust_stock", {
       p_product_id: productId,
