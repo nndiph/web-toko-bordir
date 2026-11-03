@@ -159,15 +159,26 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - **Pengujian End-to-End Otomatis (`scripts/test-e2e-flow.mjs`):** 7 skenario alur nyata diuji dan lulus 100% tanpa error (create order → track → admin antrean → update status → track update → adjust stock → catalog sync).
   - **Build & Lint:** 7/7 static routes, 0 warnings, 0 errors.
 
+- [x] **Fase 10 — Perbaikan UX Berbasis Kebutuhan Tiap Pengguna (Selesai, branch `feature/ux-per-user`)**
+  - Audit per pengguna (pembeli/anggota TNI di HP vs kasir/pemilik di meja kasir), detail di `PLAN.md`.
+  - **Pembeli:** hero search-first + 3 tombol tugas (Cek Stok, Pesan Bordir, Lacak Tiket); kartu produk palsu di hero dihapus, diganti ringkasan stok nyata; satu baris filter kategori dengan jumlah; pencarian mencocokkan nama + kategori + rak; katalog 2 kolom di HP; barang HABIS punya tombol "Tanya Restock".
+  - Navbar hanya menu pembeli; akses kasir dipindah ke `SiteFooter` ("Masuk Kasir / Pemilik"). Info toko (WA, alamat, jam) terpusat di `src/lib/store-info.ts`.
+  - `/pesan`: form 3 langkah, jenis bordir berupa pilihan radio, panduan + "Pakai contoh" per jenis, validasi WA 10–14 digit, stepper jumlah. Halaman tiket menampilkan tiket + 4 digit WA sebagai kunci lacak.
+  - `/tracking`: stepper 4 tahap (Antre → Dibordir → Siap → Diambil) dan kotak alamat/jam saat SIAP.
+  - **Kasir:** `KpiStrip` (Kartu Merah, Siap Diambil, Antrean Aktif, Stok Menipis) di semua tab dan bisa diklik; menggantikan `PipelineBar` (dihapus). Pencarian pesanan via tiket/nama/WA (termasuk yang sudah diambil). Tab "Cek Stok & Rak" default di HP. Tombol `/` untuk fokus ke kolom cari.
+  - `StockRow`: lokasi rak ditonjolkan, tombol 44px, klik angka stok untuk set jumlah persis (memakai `adjustStock(delta)`, tanpa migrasi).
+  - Perubahan perilaku: Kartu Merah tidak lagi menghitung pesanan `READY` (bordir sudah selesai, hanya belum diambil).
+  - Tidak ada teks 10–11px tersisa; target sentuh tombol utama ≥ 44px.
+  - Lint 0 warning, build 7/7, `npm run test:e2e` 7/7 lulus. Dicek visual via Chrome headless (lebar 500px & 1366px) dalam Mode Demo.
+
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/full-stack-integration`
-- **Kondisi Working Directory:** Bersih (semua perubahan di commit).
-- **Status Build & Lint:** 100% Lulus (7/7 static routes, 0 errors, 0 warnings).
-- **Alur End-to-End:** Berfungsi penuh di mode demo dengan LocalStorage persistensi.
-- **Tampilan UI:** Seragam seluruh halaman (`/`, `/pesan`, `/tracking`, `/admin`, `/not-found`) dengan tema cerah e-commerce retail (Tokopedia & Uniqlo reference).
+- **Branch Aktif:** `feature/ux-per-user` (dicabang dari `feature/full-stack-integration` yang belum dimerge ke `main`).
+- **Status Build & Lint:** Lulus (7/7 static routes, 0 errors, 0 warnings); `test:e2e` 7/7 lulus.
+- **Catatan:** Foto produk demo di `src/lib/demo-data.ts` adalah foto Unsplash yang tidak sesuai barang (mis. tas, obat). Perlu diganti foto asli toko.
+- **Catatan:** Beberapa class Tailwind v4 (`shadow-xs`, `shadow-2xs`, `w-88`) masih ada di file lama padahal proyek memakai Tailwind v3, sehingga class tersebut tidak berefek.
 
 ---
 

@@ -77,10 +77,10 @@ Branch: `feature/ux-per-user` (dicabang dari `feature/full-stack-integration`, k
 - Pembuatan gambar AI (skill `/design` untuk logo/banner butuh `GEMINI_API_KEY`; tidak diperlukan di sini).
 
 ## Kriteria Selesai
-- [ ] Pembeli bisa mencari stok dari hero tanpa scroll, di HP dan desktop.
-- [ ] Tidak ada data produk palsu yang ditulis langsung di kode di halaman utama.
-- [ ] Kasir bisa menemukan pesanan dari nomor tiket atau 4 digit WA dalam satu ketikan.
-- [ ] KPI Kartu Merah / Siap Diambil / Stok Menipis terlihat di semua tab admin.
-- [ ] Stok bisa diatur ke jumlah tertentu tanpa klik berulang.
-- [ ] Tidak ada teks informasi di bawah 12px, dan target sentuh tombol utama ≥ 44px.
-- [ ] Lint, build, dan test e2e lulus. `AGENTS.md` diperbarui.
+- [x] Pembeli bisa mencari stok dari hero tanpa scroll, di HP dan desktop.
+- [x] Tidak ada data produk palsu yang ditulis langsung di kode di halaman utama.
+- [x] Kasir bisa menemukan pesanan dari nomor tiket atau 4 digit WA dalam satu ketikan.
+- [x] KPI Kartu Merah / Siap Diambil / Stok Menipis terlihat di semua tab admin.
+- [x] Stok bisa diatur ke jumlah tertentu tanpa klik berulang.
+- [x] Tidak ada teks informasi di bawah 12px, dan target sentuh tombol utama ≥ 44px.
+- [x] Lint, build, dan test e2e lulus. `AGENTS.md` diperbarui.
