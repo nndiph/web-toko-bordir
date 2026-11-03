@@ -1,78 +1,86 @@
-# Fitur: Integrasi Penuh & Keandalan End-to-End (Fase 9)
+# Fitur: Perbaikan UX Berbasis Kebutuhan Tiap Pengguna (Fase 10)
 
-## Masalah & Kebutuhan
-1. **Sinkronisasi Data Real-Time Antar-Halaman:**
-   - Dalam kondisi mode demo/offline (saat Supabase cloud belum dikonfigurasi), data yang diinput pembeli di `/pesan` tidak tersimpan ke penyimpanan lokal (hanya memori session sementara), sehingga kasir di `/admin` tidak bisa melihat pesanan tersebut, dan pelacakan di `/tracking` bisa hilang saat refresh.
-   - Perlu sistem persistensi tangguh (LocalStorage synchronized fallback) yang otomatis beralih mulus jika Supabase online/offline.
-2. **Harmonisasi Tampilan `/admin` ke Tema Cerah Bersih (Tokopedia/Uniqlo Style):**
-   - Halaman `/admin` dan subkomponennya (`OrderRow`, `StockRow`, `PipelineBar`, `RestockPanel`) masih memiliki styling yang belum seragam dengan tema cerah Fase 8.
-   - Tombol aksi (+/- stok, ubah status pesanan, kirim WA konfirmasi) harus memberikan feedback visual instan yang jelas bagi kasir.
-3. **Uji Alur Nyata End-to-End:**
-   - Alur pemesanan custom bordir: Form `/pesan` -> Terbit Nomor Tiket -> Masuk antrean `/admin` -> Diubah statusnya oleh kasir -> Terbaca di `/tracking` -> Selesai & Diambil.
-   - Alur kasir stok rak fisik: Kasir update stok di `/admin` -> Etalase publik `/` terupdate secara sinkron.
-4. **Halaman 404 (`/not-found`):**
-   - Diselaraskan ke tema cerah toko dengan navigasi kembali ke katalog.
+Branch: `feature/ux-per-user` (dicabang dari `feature/full-stack-integration`, karena Fase 9 belum dimerge ke `main`).
+
+## Siapa Penggunanya & Apa Tugas Utamanya
+
+| Pengguna | Konteks | Tugas utama (harus ≤ 2 klik) |
+| :--- | :--- | :--- |
+| **Pembeli / anggota TNI** | Disuruh komandan, buka dari HP, sering tidak paham teknologi, kadang memesan untuk 1 regu | Cek stok barang, pesan bordir, lacak tiket |
+| **Kasir / pemilik** | Berdiri di meja kasir, ada pembeli di depannya, sering pakai HP/tablet | Cari barang + lokasi rak, serahkan pesanan berdasarkan tiket, lihat pesanan terlewat, update stok |
+
+## Temuan Audit (Masalah Nyata di Kode Sekarang)
+
+### Sisi Pembeli
+1. **Tugas utama tertimbun.** Di `/`, pembeli harus melewati hero, 3 pilar, dan kartu departemen sebelum sampai ke kolom cari stok. Pintasan "Lacak Pesanan" tidak ada di halaman utama.
+2. **Data palsu di hero.** Kartu "Pangkat Serda — Tersedia (24 pcs)" ditulis langsung di kode. Isinya bisa bertentangan dengan stok asli, sehingga merusak tujuan "stok transparan".
+3. **Navigasi kategori dobel dan tidak konsisten.** Kartu departemen dan filter pill sama-sama memfilter, tapi labelnya berbeda ("Custom Bordir" vs "Badge & Bordir").
+4. **Pencarian hanya mencocokkan nama.** Mengetik "kopel" atau "A-02" tidak menemukan barang lewat kategori atau rak.
+5. **Tombol barang HABIS membingungkan.** Tombolnya mati tapi bertuliskan "Pre-Order Toko". Tidak ada jalan untuk tanya restock.
+6. **HP: katalog 1 kolom.** Kartu sangat tinggi dan pembeli harus scroll jauh. Marketplace (Tokopedia) memakai 2 kolom ringkas.
+7. **Teks terlalu kecil.** Ada 39 pemakaian `text-[10px]`/`text-[11px]`, sulit dibaca pengguna usia lanjut di HP.
+8. **Menu "Dashboard Pemilik" tampil untuk pembeli** di navbar utama, sehingga mengganggu dan membingungkan.
+9. **`/pesan`:** kolom catatan berupa teks bebas tanpa panduan sesuai jenis bordir, sehingga isinya sering kurang lengkap dan kasir harus tanya ulang via WA. Halaman tiket tidak menegaskan bahwa **4 digit WA** diperlukan untuk melacak.
+10. **`/tracking`:** stepper tidak membedakan tahap "sudah lewat", "sedang", dan "belum". Saat status SIAP, alamat dan jam buka toko tidak ditampilkan.
+
+### Sisi Kasir / Pemilik
+11. **Tidak bisa mencari pesanan.** Saat pembeli datang membawa tiket, kasir harus scroll antrean. Tidak ada pencarian berdasarkan tiket, nama, atau no. WA.
+12. **Quick-Check stok tersembunyi di tab kedua.** Padahal itu yang paling sering dipakai saat ada pembeli di depan meja.
+13. **Tidak ada ringkasan KPI di atas.** Kartu Merah, Siap Diambil, dan Stok Menipis tersebar di tab berbeda.
+14. **Update stok hanya ±1.** Restock 20 pcs berarti 20 kali klik.
+15. **Di HP, indikator stok disembunyikan** (`hidden sm:flex`). Tombol aksi kecil (h-9/py-2), di bawah target sentuh 44px.
+16. Footer admin menampilkan "Sistem Kasir Sinkron" yang selalu hijau walau sedang Mode Demo, sehingga menyesatkan.
 
 ## Rencana Pengerjaan
-1. **Data Layer Persistensi Tangguh (`src/lib/data/` & `src/lib/demo-data.ts`):**
-   - Tambahkan wrapper penyimpanan lokal terintegrasi untuk fallback mode demo sehingga mutasi data (order baru, perubahan status, update stok) bertahan saat refresh dan sinkron antar-tab.
-   - Saat Supabase online, query langsung ke PostgreSQL Supabase.
-2. **Redesain Halaman `/admin` & Sub-komponen ke Tema Cerah:**
-   - Perbarui `src/app/admin/page.tsx` dan `src/components/admin/*` ke palet Slate-50, kartu putih bersih `#FFFFFF`, border halus `#E2E8F0`, dan teks Slate-900.
-   - Status badge yang jelas, tombol aksi yang responsif, tab antrean dan stok yang bersih.
-3. **Harmonisasi Halaman 404 (`src/app/not-found.tsx`):**
-   - Desain bersih ramah mata dengan tombol kembali ke katalog.
-4. **Pengujian Build & Lint:**
-   - `npm run lint` lulus (0 warnings, 0 errors).
-   - `npm run build` lulus (7/7 static routes).
-5. **Dokumentasi `AGENTS.md`:**
-   - Catat detail perubahan dan status akhir.
+
+### A. Fondasi (tanpa dependensi baru)
+- Ganti teks 10–11px menjadi minimal 12px (`text-xs`) untuk informasi penting.
+- Satukan konfigurasi toko (No. WA, alamat, jam buka) ke `src/lib/store-info.ts`. Saat ini WA `6281234567890` diulang di banyak file.
+- Ekstrak `SiteFooter` agar `/pesan` dan `/tracking` juga punya info toko.
+
+### B. Halaman Utama `/` (pembeli)
+- **Hero ringkas, langsung kerja:** judul + kolom cari stok besar + 3 tombol tugas (Cek Stok, Pesan Bordir, Lacak Tiket).
+- Hapus kartu produk palsu. Ganti dengan ringkasan stok nyata (jumlah barang tersedia/habis dari data).
+- Satu baris filter kategori saja (hapus duplikasi kartu departemen), dengan label yang konsisten.
+- Pencarian mencocokkan nama + kategori + lokasi rak.
+- Kartu produk 2 kolom di HP, versi ringkas. Barang HABIS diberi tombol "Tanya Restock via WA".
+- Pilar keunggulan dipadatkan menjadi strip kecil di bawah hero.
+
+### C. Navbar
+- Menu pembeli: Katalog Stok · Pesan Bordir · Lacak Pesanan.
+- "Dashboard Pemilik" dipindah ke footer sebagai link kecil "Masuk Kasir".
+
+### D. `/pesan`
+- Kolom catatan diberi **panduan dinamis per jenis bordir** (contoh isian Nama Dada vs Pangkat vs Emblem) + tombol "Pakai contoh".
+- Validasi nomor WA (angka, 10–14 digit) dengan pesan jelas.
+- Halaman tiket menampilkan **Tiket + 4 digit WA** sebagai "kunci lacak", ringkasan pesanan, dan tips screenshot.
+
+### E. `/tracking`
+- Stepper 4 tahap (Antre → Dibordir → Siap → Diambil) dengan status selesai/aktif/belum yang jelas.
+- Saat SIAP: kotak hijau berisi alamat, jam buka, dan "bawa nomor tiket".
+
+### F. `/admin` (kasir/pemilik)
+- **Strip KPI di atas, terlihat di semua tab:** Kartu Merah · Siap Diambil · Sedang Antre · Stok Menipis. Setiap kartu bisa diklik dan langsung memfilter.
+- **Pencarian pesanan** (tiket / nama / 4 digit WA) di tab Antrean, untuk alur serah terima di kasir.
+- Tab **Kasir & Stok jadi default** saat dibuka di HP. Di desktop tetap Antrean.
+- StockRow: indikator stok tampil di HP, tombol +/− 44px, plus tombol **"Atur jumlah"** untuk mengisi stok sekaligus. Memakai `adjustStock(delta)` yang sudah ada, jadi **tanpa migrasi DB**.
+- Tombol aksi OrderRow minimal 44px. Footer admin menampilkan status asli (Demo / Supabase).
+
+### G. Verifikasi
+- `npm run lint` dan `npm run build` lulus.
+- `npm run test:e2e` tetap lulus (data layer tidak diubah).
+- Uji visual di browser pada lebar HP (375px) dan desktop untuk keempat halaman.
+- Perbarui `AGENTS.md`.
+
+## Di Luar Cakupan
+- Bot Gemini, perubahan skema Supabase, dan logo/branding baru.
+- Pembuatan gambar AI (skill `/design` untuk logo/banner butuh `GEMINI_API_KEY`; tidak diperlukan di sini).
 
 ## Kriteria Selesai
-- [x] Pesanan yang dibuat di `/pesan` dapat langsung dilacak di `/tracking` dan muncul di antrean `/admin`.
-- [x] Perubahan status di `/admin` langsung ter-update di `/tracking`.
-- [x] Penyesuaian stok di `/admin` langsung terlihat di katalog `/`.
-- [x] Seluruh tampilan `/admin` dan 404 seragam dengan tema cerah e-commerce (Fase 8).
-- [x] `npm run lint` dan `npm run build` lulus 100%.
-- [x] `AGENTS.md` diperbarui.
-
-## Hasil Implementasi
-
-### 1. LocalStorage Store Tangguh (`src/lib/local-store.ts`)
-- **getStoredOrders / setStoredOrders**: Persistensi pesanan di LocalStorage, sinkron antar-tab.
-- **appendStoredOrder**: Menambahkan pesanan baru dari form `/pesan` ke store.
-- **updateStoredOrderStatus**: Update status pesanan oleh kasir.
-- **adjustStoredStock**: Update stok produk di store demo.
-- **clearDemoStore**: Reset data demo jika diperlukan.
-
-### 2. Data Layer Enhanced (`src/lib/data/orders.ts`, `src/lib/data/products.ts`)
-- **createOrder**: Jika Supabase offline, simpan langsung ke LocalStorage.
-- **trackOrder**: Cari pesanan di LocalStorage dulu, baru fallback ke DEMO_PRODUCTS.
-- **updateDemoOrderStatus**: Fungsi khusus demo untuk update status.
-- **adjustStock**: Perubahan stok di admin juga disimpan di LocalStorage saat demo.
-
-### 3. Tema Cerah `/admin` & Komponennya
-- **Warna**: Slate-50 canvas, kartu putih bersih, border `#E2E8F0`, teks Slate-900.
-- **Tombol**: Shadow halus, hover states, transisi smooth.
-- **Badge Status**: Amber (PENDING), Sky (IN_PROGRESS), Emerald (READY), Slate (COMPLETED).
-- **PipelineBar**: 3 kartu interaktif dengan progress bar visual.
-- **StockRow**: Batang indikator stok (hijau/amber/merah), tombol +/- dengan feedback instan.
-- **OrderRow**: Tampilan kartu pesanan dengan tombol aksi "Mulai Bordir", "Tandai Siap", "Kirim WA", "Sudah Diambil".
-
-### 4. Halaman 404 Bersih
-- Desain putih bersih dengan badge 404 dan tombol kembali ke katalog.
-
-### 5. Validasi & Testing
-- **Lint**: 0 errors, 0 warnings.
-- **Build**: 7/7 static routes (Next.js 15).
-- **Test E2E**: Alur lengkap dari form pemesanan sampai tracking dan admin difungsikan via `npm run test:e2e` dan lulus 7 skenario.
-
-### 6. Script Testing (`scripts/test-e2e-flow.mjs`)
-- Menguji alur nyata dari pembuatan tiket, pelacakan, admin antrean, perubahan status, hingga sinkronisasi stok.
-- Berjalan di lingkungan Node.js tanpa dependency browser.
-
----
-
-**Status:** SELESAI (100%)
-**Kualitas:** Lint & Build clean, test automation pass.
-**Tahap Berikutnya:** Pemilik bisa setup Supabase cloud untuk live database atau langsung deploy ke hosting (Vercel).
+- [ ] Pembeli bisa mencari stok dari hero tanpa scroll, di HP dan desktop.
+- [ ] Tidak ada data produk palsu yang ditulis langsung di kode di halaman utama.
+- [ ] Kasir bisa menemukan pesanan dari nomor tiket atau 4 digit WA dalam satu ketikan.
+- [ ] KPI Kartu Merah / Siap Diambil / Stok Menipis terlihat di semua tab admin.
+- [ ] Stok bisa diatur ke jumlah tertentu tanpa klik berulang.
+- [ ] Tidak ada teks informasi di bawah 12px, dan target sentuh tombol utama ≥ 44px.
+- [ ] Lint, build, dan test e2e lulus. `AGENTS.md` diperbarui.

@@ -4,105 +4,85 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Phone, Menu, X, Shield, MapPin, Clock } from "lucide-react";
+import { STORE, storeWaLink } from "@/lib/store-info";
+
+/** Menu khusus pembeli. Akses kasir ada di footer agar tidak membingungkan pembeli. */
+const NAV_LINKS = [
+  { href: "/", label: "Katalog Stok" },
+  { href: "/pesan", label: "Pesan Bordir" },
+  { href: "/tracking", label: "Lacak Pesanan" },
+];
 
 export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { href: "/", label: "Katalog Stok" },
-    { href: "/pesan", label: "Pesan Custom Bordir" },
-    { href: "/tracking", label: "Lacak Pesanan" },
-    { href: "/admin", label: "Dashboard Pemilik" },
-  ];
-
   return (
-    <header className="w-full sticky top-0 z-50 shadow-xs">
-      {/* 1. TOP ANNOUNCEMENT BAR (Identitas Militer Solid) */}
-      <div className="w-full bg-brand text-white px-4 sm:px-6 lg:px-8 py-2 text-xs font-medium flex items-center justify-between">
-        <div className="flex items-center gap-4 text-slate-300">
-          <span className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-accent-gold" />
-            <span>Toko Fisik: Jl. Gaperta No. 12, Medan Helvetia</span>
-          </span>
-          <span className="hidden md:inline text-slate-500">•</span>
-          <span className="hidden md:flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Buka: Senin – Sabtu 08:00 – 20:00 WIB</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-emerald-300 font-semibold text-[11px] sm:text-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>STOK RAK FISIK SINKRON</span>
-        </div>
+    <header className="w-full sticky top-0 z-50 shadow-sm">
+      {/* Info toko fisik */}
+      <div className="w-full bg-brand text-slate-200 px-4 sm:px-6 lg:px-8 py-2 text-xs font-medium flex items-center gap-4">
+        <span className="flex items-center gap-1.5 min-w-0">
+          <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+          <span className="truncate">{STORE.address}</span>
+        </span>
+        <span className="hidden md:flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <span>Buka {STORE.hours}</span>
+        </span>
       </div>
 
-      {/* 2. MAIN HEADER (Clean White ala Tokopedia / Uniqlo) */}
       <div className="w-full bg-white border-b border-slate-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center shrink-0 shadow-sm group-hover:bg-brand-hover transition-colors">
-              <Shield className="w-5 h-5 text-accent-gold" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3">
+          <Link href="/" className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 text-amber-300" />
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-2xl tracking-tight text-slate-ink leading-none">
-                  GAPERTA
-                </span>
-                <span className="bg-amber-100 text-accent-gold text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-wider">
-                  TNI &amp; Dinas
-                </span>
-              </div>
-              <span className="text-[11px] text-slate-muted font-medium mt-0.5">
+            <div className="min-w-0">
+              <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-ink leading-none block">
+                GAPERTA
+              </span>
+              <span className="hidden sm:block text-xs text-slate-muted font-medium mt-0.5 truncate">
                 Perlengkapan Dinas &amp; Bordir Komputer Medan
               </span>
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold">
-            {navLinks.map((link) => {
+          <nav className="hidden md:flex items-center gap-1 text-sm font-semibold" aria-label="Menu utama">
+            {NAV_LINKS.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`py-2 transition-colors relative ${
-                    isActive
-                      ? "text-brand font-bold"
-                      : link.href === "/admin"
-                      ? "text-amber-800 hover:text-amber-900 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200"
-                      : "text-slate-600 hover:text-slate-ink"
+                  aria-current={isActive ? "page" : undefined}
+                  className={`px-4 py-2.5 rounded-xl transition-colors ${
+                    isActive ? "bg-brand-light text-brand font-bold" : "text-slate-600 hover:text-slate-ink hover:bg-slate-50"
                   }`}
                 >
                   {link.label}
-                  {isActive && link.href !== "/admin" && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full" />
-                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* WhatsApp CTA & Mobile Menu Toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <a
-              href="https://wa.me/6281234567890"
+              href={storeWaLink()}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-brand hover:bg-brand-hover active:scale-[0.98] text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all shadow-xs"
+              className="inline-flex items-center gap-2 bg-brand hover:bg-brand-hover text-white font-bold text-sm px-4 h-11 rounded-xl transition-colors"
             >
-              <Phone className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">Hubungi WhatsApp</span>
-              <span className="sm:hidden">WA Kasir</span>
+              <Phone className="w-4 h-4" />
+              <span className="hidden sm:inline">WhatsApp Kasir</span>
+              <span className="sm:hidden">WA</span>
             </a>
 
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-600 hover:text-slate-ink border border-slate-border rounded-xl"
-              aria-label="Toggle Menu"
+              className="md:hidden w-11 h-11 flex items-center justify-center text-slate-700 border border-slate-border rounded-xl"
+              aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu"}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -110,29 +90,25 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-slate-border px-4 py-4 space-y-2 shadow-lg">
-          {navLinks.map((link) => {
+        <nav className="md:hidden bg-white border-b border-slate-border px-4 py-3 space-y-1 shadow-lg" aria-label="Menu utama">
+          {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center justify-between p-3 rounded-xl text-sm font-semibold transition-colors ${
-                  isActive
-                    ? "bg-slate-100 text-brand font-bold"
-                    : link.href === "/admin"
-                    ? "text-amber-900 bg-amber-50 border border-amber-200"
-                    : "text-slate-700 hover:bg-slate-50"
+                aria-current={isActive ? "page" : undefined}
+                className={`flex items-center px-4 h-12 rounded-xl text-base font-semibold ${
+                  isActive ? "bg-brand-light text-brand font-bold" : "text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                <span>{link.label}</span>
+                {link.label}
               </Link>
             );
           })}
-        </div>
+        </nav>
       )}
     </header>
   );
