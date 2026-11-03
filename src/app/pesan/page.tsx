@@ -387,7 +387,7 @@ export default function OrderPage() {
                       required
                       value={formData.quantity}
                       onChange={(e) => setQuantity(Number(e.target.value))}
-                      className={`${fieldClass} w-24 text-center font-extrabold text-lg`}
+                      className="w-24 h-12 bg-slate-50 border border-slate-border focus:border-brand focus:bg-white rounded-xl text-center text-lg font-extrabold text-slate-ink focus:outline-none focus:ring-2 focus:ring-brand/10"
                     />
                     <button
                       type="button"

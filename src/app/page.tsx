@@ -419,7 +419,7 @@ function ProductCard({ product }: { product: Product }) {
         isEmpty ? "opacity-90" : ""
       }`}
     >
-      <div className="relative aspect-[4/3] bg-slate-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         {product.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -427,7 +427,7 @@ function ProductCard({ product }: { product: Product }) {
             alt={product.name}
             loading="lazy"
             decoding="async"
-            className={`w-full h-full object-cover ${isEmpty ? "grayscale" : ""}`}
+            className={`absolute inset-0 w-full h-full object-cover ${isEmpty ? "grayscale" : ""}`}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-sm text-slate-400">Foto belum ada</div>
