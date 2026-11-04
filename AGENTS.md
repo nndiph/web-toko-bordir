@@ -171,11 +171,23 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Tidak ada teks 10–11px tersisa; target sentuh tombol utama ≥ 44px.
   - Lint 0 warning, build 7/7, `npm run test:e2e` 7/7 lulus. Dicek visual via Chrome headless (lebar 500px & 1366px) dalam Mode Demo.
 
+- [x] **Fase 11 — Redesign Tampilan dengan Estetika TechNest Modern (Selesai, branch `feature/redesign-dark-technest`)**
+  - **Palette & Styling:** Menambahkan warna `dark` (`#0B0F12`, `#121820`, `#1E293B`) dan aksen `vibrant` (`#22C55E`, `#16A34A`) di `tailwind.config.ts`; scrollbar hijau transparan.
+  - **Navbar Dark Mode Modern:** Announcement bar dengan lokasi & jam; logo GAPERTA dengan shield hijau neon; menu navigasi clear; tombol WhatsApp hijau vibrant dengan shadow glow.
+  - **Hero Section:** Dark aesthetic dengan grid overlay halus, glowing blobs hijau, headline besar "Perlengkapan Dinas TNI & Bordir Presisi."; search bar dark surface; 3 task cards dengan icon warna; CTA tombol "Pesan Bordir Online" & "Cek Stok Rak".
+  - **Value Proposition Bar:** 3 pillar (Bordir Selesai 1-2 Hari, Standar Resmi Mabes TNI, Stok Rak Fisik Nyata) dalam panel gelap.
+  - **Katalog E-Commerce Cerah:** Grid produk 4 kolom (desktop) / 2 kolom (mobile) dengan foto bersih, badge status hijau/merah/kuning, harga tebal, lokasi rak fisik, dan tombol aksi hijau solid penuh.
+  - **Mid-Promo Banner Gelap:** Horizontal banner "Pesan Bordir Satuan & Regu" dengan blobs glow dan tombol CTA hijau.
+  - **Dual Category Showcase:** Dua kartu besar (Atribut & Pangkat Resmi / Bordir Komputer Custom) dengan foto overlay dan tombol filter hijau.
+  - **Footer Dark Elegan:** Konsultasi banner hijau + info toko + link "Masuk Kasir/Pemilik".
+  - **Konsistensi Halaman Lain:** Tombol utama di `/pesan` dan `/tracking` menggunakan aksen `vibrant`.
+  - **Pengujian:** `npm run lint` lulus, `npm run build` 7/7 static routes, `npm run test:e2e` 7/7 skenario lulus 100%.
+
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/ux-per-user` (dicabang dari `feature/full-stack-integration` yang belum dimerge ke `main`).
+- **Branch Aktif:** `feature/redesign-dark-technest` (push ke remote, PR siap di-buka).
 - **Status Build & Lint:** Lulus (7/7 static routes, 0 errors, 0 warnings); `test:e2e` 7/7 lulus.
 - **Catatan:** Foto produk demo di `src/lib/demo-data.ts` adalah foto Unsplash yang tidak sesuai barang (mis. tas, obat). Perlu diganti foto asli toko.
 - **Catatan:** Beberapa class Tailwind v4 (`shadow-xs`, `shadow-2xs`, `w-88`) masih ada di file lama padahal proyek memakai Tailwind v3, sehingga class tersebut tidak berefek.
