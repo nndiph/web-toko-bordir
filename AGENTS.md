@@ -171,17 +171,16 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - Tidak ada teks 10–11px tersisa; target sentuh tombol utama ≥ 44px.
   - Lint 0 warning, build 7/7, `npm run test:e2e` 7/7 lulus. Dicek visual via Chrome headless (lebar 500px & 1366px) dalam Mode Demo.
 
-- [x] **Fase 11 — Redesign Tampilan dengan Estetika TechNest Modern (Selesai, branch `feature/redesign-dark-technest`)**
-  - **Palette & Styling:** Menambahkan warna `dark` (`#0B0F12`, `#121820`, `#1E293B`) dan aksen `vibrant` (`#22C55E`, `#16A34A`) di `tailwind.config.ts`; scrollbar hijau transparan.
-  - **Navbar Dark Mode Modern:** Announcement bar dengan lokasi & jam; logo GAPERTA dengan shield hijau neon; menu navigasi clear; tombol WhatsApp hijau vibrant dengan shadow glow.
-  - **Hero Section:** Dark aesthetic dengan grid overlay halus, glowing blobs hijau, headline besar "Perlengkapan Dinas TNI & Bordir Presisi."; search bar dark surface; 3 task cards dengan icon warna; CTA tombol "Pesan Bordir Online" & "Cek Stok Rak".
-  - **Value Proposition Bar:** 3 pillar (Bordir Selesai 1-2 Hari, Standar Resmi Mabes TNI, Stok Rak Fisik Nyata) dalam panel gelap.
-  - **Katalog E-Commerce Cerah:** Grid produk 4 kolom (desktop) / 2 kolom (mobile) dengan foto bersih, badge status hijau/merah/kuning, harga tebal, lokasi rak fisik, dan tombol aksi hijau solid penuh.
-  - **Mid-Promo Banner Gelap:** Horizontal banner "Pesan Bordir Satuan & Regu" dengan blobs glow dan tombol CTA hijau.
-  - **Dual Category Showcase:** Dua kartu besar (Atribut & Pangkat Resmi / Bordir Komputer Custom) dengan foto overlay dan tombol filter hijau.
-  - **Footer Dark Elegan:** Konsultasi banner hijau + info toko + link "Masuk Kasir/Pemilik".
-  - **Konsistensi Halaman Lain:** Tombol utama di `/pesan` dan `/tracking` menggunakan aksen `vibrant`.
-  - **Pengujian:** `npm run lint` lulus, `npm run build` 7/7 static routes, `npm run test:e2e` 7/7 skenario lulus 100%.
+- [x] **Fase 11 — Redesign Clean Retail E-Commerce (Tokopedia / Uniqlo inspired, Zero AI-Slop) (Selesai, branch `feature/redesign-dark-technest`)**
+  - **Prinsip Desain:** Menghilangkan elemen murahan/AI-slop (seperti neon blur blobs, gradien bertumpuk, latar kartun gelap) dan menggantinya dengan estetika clean e-commerce retail otentik berstandar dinas militer.
+  - **Palet Warna & Tipografi:** Background canvas Slate-50 (`#F8FAFC`), permukaan kartu putih solid (`#FFFFFF`) dengan border presisi Slate-200 (`#E2E8F0`), aksen hijau dinas militer wibawa (`#1B3C20`) dan hijau retail solid (`#15803D`). Tipografi berkontras tinggi pekat Slate-900 (`#0F172A`).
+  - **Header & Navbar:** Top announcement bar Slate-900 dengan status rak fisik live & jam toko; main navbar putih bersih dengan badge resmi TNI & DINAS, tautan navigasi jelas, dan tombol WhatsApp kasir yang kontras.
+  - **Hero Layout Fungsional (7:5 Kolom):** Headline tegas "Perlengkapan Dinas TNI & Bordir Komputer Presisi", kotak pencarian instan nama atribut / rak fisik, indikator jumlah stok toko live, serta 3 kartu aksi utama (Cek Stok Rak, Pesan Bordir Online, Lacak Status Tiket).
+  - **Value Proposition 3 Pilar:** Panel bersih horizontal (Bordir 1–2 Hari Kerja, 100% Standar Mabes TNI, Stok Rak Fisik Sinkron).
+  - **Katalog E-Commerce Grid:** Filter pills kategori responsif dengan hitungan item dinamis, kartu produk aspect 4:3 berbingkai halus dengan badge stok hijau/merah/kuning, harga tebal, nomor rak toko (`Rak A-02`), dan tombol aksi 1-klik (Pesan Bordir / Tanya WA).
+  - **Info Pemesanan Regu & Departemen Visual:** Banner editorial bersih untuk pemesanan massal batalyon/regu dan kartu showcase visual atribut resmi.
+  - **Footer Bersih & Operasional:** Banner WhatsApp konsultasi khusus regu, detail alamat, jam operasional, dan tautan akses kasir.
+  - **Pengujian & Kestabilan:** `npm run lint` lulus (0 warnings, 0 errors), `npm run test:e2e` lulus 7/7 skenario, dev server berjalan lancar di port 3000.
 
 ---
 
@@ -204,3 +203,13 @@ Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah be
 5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
 6. Push branch dan berikan link PR kepada pengguna.
 7. **Perbarui bagian "Riwayat Pekerjaan Selesai" dan "Status Terkini" di file `AGENTS.md` ini.**
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

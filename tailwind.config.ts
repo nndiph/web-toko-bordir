@@ -40,20 +40,20 @@ const config: Config = {
           muted: "#64748B",
           soft: "#94A3B8",
         },
-        // ═══ TechNest Dark-Theme + Vibrant Green ═══
+        // ═══ Clean Retail Theme (Tokopedia/Uniqlo inspired, Zero AI-Slop) ═══
         vibrant: {
-          DEFAULT: "#22C55E",   // Hijau neon segar
-          hover: "#16A34A",
-          dark: "#15803D",
-          light: "#DCFCE7",
-          glow: "rgba(34,197,94,0.15)",
+          DEFAULT: "#15803D",   // Hijau retail solid & tegas (Green-700)
+          hover: "#166534",     // Green-800
+          dark: "#14532D",      // Green-900
+          light: "#DCFCE7",     // Green-100
+          glow: "transparent",
         },
         dark: {
-          bg: "#0B0F12",        // Hitam pekat modern
-          surface: "#121820",   // Panel gelap
-          card: "#161E27",      // Kartu gelap
-          border: "#1E293B",    // Garis pemisah gelap
-          muted: "#94A3B8",     // Teks sekunder abu terang
+          bg: "#0F172A",        // Slate-900 solid
+          surface: "#1E293B",   // Slate-800
+          card: "#334155",      // Slate-700
+          border: "#E2E8F0",    // Slate-200
+          muted: "#64748B",     // Slate-500
         },
       },
       fontFamily: {

@@ -18,21 +18,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* TechNest Dark Scrollbar */
+/* Clean Minimalist Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0F12;
+  background: #F1F5F9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #22C55E44;
+  background: #CBD5E1;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #22C55E88;
+  background: #94A3B8;
 }
