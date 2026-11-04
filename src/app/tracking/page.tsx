@@ -182,7 +182,7 @@ function TrackingContent() {
           <button
             type="submit"
             disabled={isSearching}
-            className="sm:col-span-3 h-12 bg-brand hover:bg-brand-hover text-white font-bold rounded-xl text-base transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="sm:col-span-3 h-12 bg-vibrant hover:bg-vibrant-hover text-white font-bold rounded-xl text-base transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-vibrant/20"
           >
             <Search className="w-5 h-5" />
             {isSearching ? "Mencari..." : "Lacak"}

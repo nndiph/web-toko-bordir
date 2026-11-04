@@ -1,86 +1,45 @@
-# Fitur: Perbaikan UX Berbasis Kebutuhan Tiap Pengguna (Fase 10)
+# Rencana: Redesign Tampilan Berdasarkan Referensi "TechNest" (Fase 11)
 
-Branch: `feature/ux-per-user` (dicabang dari `feature/full-stack-integration`, karena Fase 9 belum dimerge ke `main`).
+Branch: `feature/redesign-dark-technest`
 
-## Siapa Penggunanya & Apa Tugas Utamanya
+## 1. Analisis Referensi Desain "TechNest"
+Referensi visual yang diberikan memiliki karakteristik:
+1. **Header & Hero Dark Mode Modern**: Latar belakang hitam pekat (`#0B0F12` / `#0D1117`) elegan dipadukan dengan tipografi putih tebal dan foto showcase produk yang melayang (floating).
+2. **Aksen Hijau Vibrant / Neon (`#22C55E` / `#16A34A`)**: Memberikan kontras tinggi yang eye-catching untuk tombol CTA ("Shop Now"), badge produk ("New"), dan icon fitur, sangat selaras dengan tema militer/taktis modern.
+3. **Value Proposition Bar di Bawah Hero**: Bar hitam dengan 3 pilar jaminan ber-icon hijau neon.
+4. **Featured Products di Kanvas Bersih**: Grid produk 4 kolom (2 kolom di mobile) berlatar belakang putih, dengan foto produk dalam kontainer abu-abu terang halus (`bg-slate-50`), badge status, nama produk tebal, harga, dan tombol CTA hijau solid penuh.
+5. **Mid-Promo Banner Gelap ("Boost Your Productivity")**: Banner horizontal dark mode dengan headline tajam, CTA hijau, dan visual produk di samping kanan.
+6. **Dual Category Showcase ("New Arrivals" & "Best Sellers")**: 2 kartu besar berdampingan dengan foto produk dan tombol CTA hijau di bawahnya.
+7. **Footer Dark Mode Elegan**: Bar konsultasi cepat + kolom informasi navigasi & akses kasir.
 
-| Pengguna | Konteks | Tugas utama (harus ≤ 2 klik) |
-| :--- | :--- | :--- |
-| **Pembeli / anggota TNI** | Disuruh komandan, buka dari HP, sering tidak paham teknologi, kadang memesan untuk 1 regu | Cek stok barang, pesan bordir, lacak tiket |
-| **Kasir / pemilik** | Berdiri di meja kasir, ada pembeli di depannya, sering pakai HP/tablet | Cari barang + lokasi rak, serahkan pesanan berdasarkan tiket, lihat pesanan terlewat, update stok |
+## 2. Rencana Implementasi
+1. **Tailwind Config & Styling**:
+   - Tambahkan warna dark modern (`#0B0F12`, `#121820`, `#1E293B`) dan aksen hijau vibrant (`#22C55E`, `#16A34A`) ke `tailwind.config.ts`.
+2. **Navbar Redesign**:
+   - Dark mode modern (`bg-[#0B0F12]`), logo GAPERTA dengan icon perisai aksen hijau neon, menu navigasi jelas, dan tombol WhatsApp Kasir hijau vibrant.
+3. **Hero Section Redesign**:
+   - Dark aesthetic dengan headline tegas "Perlengkapan Dinas & Bordir Komputer Presisi".
+   - Subheadline & tombol CTA ganda (Pesan Bordir & Cek Stok Rak).
+   - Hero visual showcase atribut dinas & bordir di sisi kanan.
+   - Search bar cepat yang terintegrasi.
+4. **Value Proposition Bar**:
+   - 3 pilar (Bordir Cepat 1-2 Hari, Standar Mabes TNI, Stok Rak Fisik Nyata) dengan icon kotak hijau modern.
+5. **Featured Products Catalog**:
+   - Filter kategori ala retail dengan pill responsif.
+   - Grid produk 4 kolom desktop / 2 kolom mobile dengan foto bersih, badge New/Tersedia/Habis, nomor rak fisik, dan tombol aksi hijau solid.
+6. **Mid-Promo Banner**:
+   - "Pesan Bordir Satuan & Regu" dengan latar gelap dan tombol CTA hijau.
+7. **Dual Category Showcase**:
+   - Kartu "Atribut & Pangkat Resmi" dan "Bordir Komputer Custom".
+8. **Dark Footer**:
+   - Konsultasi pesanan khusus, info toko, jam operasional, dan link Kasir/Pemilik.
+9. **Penyelarasan Halaman Lain (`/pesan`, `/tracking`, `/admin`)**:
+   - Pastikan warna aksen konsisten dengan tema baru tanpa merusak fungsionalitas form dan tracking.
+10. **Verifikasi & Pengujian**:
+    - Build `npm run build` dan lint `npm run lint`.
+    - Test e2e `npm run test:e2e`.
 
-## Temuan Audit (Masalah Nyata di Kode Sekarang)
-
-### Sisi Pembeli
-1. **Tugas utama tertimbun.** Di `/`, pembeli harus melewati hero, 3 pilar, dan kartu departemen sebelum sampai ke kolom cari stok. Pintasan "Lacak Pesanan" tidak ada di halaman utama.
-2. **Data palsu di hero.** Kartu "Pangkat Serda — Tersedia (24 pcs)" ditulis langsung di kode. Isinya bisa bertentangan dengan stok asli, sehingga merusak tujuan "stok transparan".
-3. **Navigasi kategori dobel dan tidak konsisten.** Kartu departemen dan filter pill sama-sama memfilter, tapi labelnya berbeda ("Custom Bordir" vs "Badge & Bordir").
-4. **Pencarian hanya mencocokkan nama.** Mengetik "kopel" atau "A-02" tidak menemukan barang lewat kategori atau rak.
-5. **Tombol barang HABIS membingungkan.** Tombolnya mati tapi bertuliskan "Pre-Order Toko". Tidak ada jalan untuk tanya restock.
-6. **HP: katalog 1 kolom.** Kartu sangat tinggi dan pembeli harus scroll jauh. Marketplace (Tokopedia) memakai 2 kolom ringkas.
-7. **Teks terlalu kecil.** Ada 39 pemakaian `text-[10px]`/`text-[11px]`, sulit dibaca pengguna usia lanjut di HP.
-8. **Menu "Dashboard Pemilik" tampil untuk pembeli** di navbar utama, sehingga mengganggu dan membingungkan.
-9. **`/pesan`:** kolom catatan berupa teks bebas tanpa panduan sesuai jenis bordir, sehingga isinya sering kurang lengkap dan kasir harus tanya ulang via WA. Halaman tiket tidak menegaskan bahwa **4 digit WA** diperlukan untuk melacak.
-10. **`/tracking`:** stepper tidak membedakan tahap "sudah lewat", "sedang", dan "belum". Saat status SIAP, alamat dan jam buka toko tidak ditampilkan.
-
-### Sisi Kasir / Pemilik
-11. **Tidak bisa mencari pesanan.** Saat pembeli datang membawa tiket, kasir harus scroll antrean. Tidak ada pencarian berdasarkan tiket, nama, atau no. WA.
-12. **Quick-Check stok tersembunyi di tab kedua.** Padahal itu yang paling sering dipakai saat ada pembeli di depan meja.
-13. **Tidak ada ringkasan KPI di atas.** Kartu Merah, Siap Diambil, dan Stok Menipis tersebar di tab berbeda.
-14. **Update stok hanya ±1.** Restock 20 pcs berarti 20 kali klik.
-15. **Di HP, indikator stok disembunyikan** (`hidden sm:flex`). Tombol aksi kecil (h-9/py-2), di bawah target sentuh 44px.
-16. Footer admin menampilkan "Sistem Kasir Sinkron" yang selalu hijau walau sedang Mode Demo, sehingga menyesatkan.
-
-## Rencana Pengerjaan
-
-### A. Fondasi (tanpa dependensi baru)
-- Ganti teks 10–11px menjadi minimal 12px (`text-xs`) untuk informasi penting.
-- Satukan konfigurasi toko (No. WA, alamat, jam buka) ke `src/lib/store-info.ts`. Saat ini WA `6281234567890` diulang di banyak file.
-- Ekstrak `SiteFooter` agar `/pesan` dan `/tracking` juga punya info toko.
-
-### B. Halaman Utama `/` (pembeli)
-- **Hero ringkas, langsung kerja:** judul + kolom cari stok besar + 3 tombol tugas (Cek Stok, Pesan Bordir, Lacak Tiket).
-- Hapus kartu produk palsu. Ganti dengan ringkasan stok nyata (jumlah barang tersedia/habis dari data).
-- Satu baris filter kategori saja (hapus duplikasi kartu departemen), dengan label yang konsisten.
-- Pencarian mencocokkan nama + kategori + lokasi rak.
-- Kartu produk 2 kolom di HP, versi ringkas. Barang HABIS diberi tombol "Tanya Restock via WA".
-- Pilar keunggulan dipadatkan menjadi strip kecil di bawah hero.
-
-### C. Navbar
-- Menu pembeli: Katalog Stok · Pesan Bordir · Lacak Pesanan.
-- "Dashboard Pemilik" dipindah ke footer sebagai link kecil "Masuk Kasir".
-
-### D. `/pesan`
-- Kolom catatan diberi **panduan dinamis per jenis bordir** (contoh isian Nama Dada vs Pangkat vs Emblem) + tombol "Pakai contoh".
-- Validasi nomor WA (angka, 10–14 digit) dengan pesan jelas.
-- Halaman tiket menampilkan **Tiket + 4 digit WA** sebagai "kunci lacak", ringkasan pesanan, dan tips screenshot.
-
-### E. `/tracking`
-- Stepper 4 tahap (Antre → Dibordir → Siap → Diambil) dengan status selesai/aktif/belum yang jelas.
-- Saat SIAP: kotak hijau berisi alamat, jam buka, dan "bawa nomor tiket".
-
-### F. `/admin` (kasir/pemilik)
-- **Strip KPI di atas, terlihat di semua tab:** Kartu Merah · Siap Diambil · Sedang Antre · Stok Menipis. Setiap kartu bisa diklik dan langsung memfilter.
-- **Pencarian pesanan** (tiket / nama / 4 digit WA) di tab Antrean, untuk alur serah terima di kasir.
-- Tab **Kasir & Stok jadi default** saat dibuka di HP. Di desktop tetap Antrean.
-- StockRow: indikator stok tampil di HP, tombol +/− 44px, plus tombol **"Atur jumlah"** untuk mengisi stok sekaligus. Memakai `adjustStock(delta)` yang sudah ada, jadi **tanpa migrasi DB**.
-- Tombol aksi OrderRow minimal 44px. Footer admin menampilkan status asli (Demo / Supabase).
-
-### G. Verifikasi
-- `npm run lint` dan `npm run build` lulus.
-- `npm run test:e2e` tetap lulus (data layer tidak diubah).
-- Uji visual di browser pada lebar HP (375px) dan desktop untuk keempat halaman.
-- Perbarui `AGENTS.md`.
-
-## Di Luar Cakupan
-- Bot Gemini, perubahan skema Supabase, dan logo/branding baru.
-- Pembuatan gambar AI (skill `/design` untuk logo/banner butuh `GEMINI_API_KEY`; tidak diperlukan di sini).
-
-## Kriteria Selesai
-- [x] Pembeli bisa mencari stok dari hero tanpa scroll, di HP dan desktop.
-- [x] Tidak ada data produk palsu yang ditulis langsung di kode di halaman utama.
-- [x] Kasir bisa menemukan pesanan dari nomor tiket atau 4 digit WA dalam satu ketikan.
-- [x] KPI Kartu Merah / Siap Diambil / Stok Menipis terlihat di semua tab admin.
-- [x] Stok bisa diatur ke jumlah tertentu tanpa klik berulang.
-- [x] Tidak ada teks informasi di bawah 12px, dan target sentuh tombol utama ≥ 44px.
-- [x] Lint, build, dan test e2e lulus. `AGENTS.md` diperbarui.
+Kriteria Selesai:
+- [ ] Tampilan halaman utama mengadopsi estetika TechNest (Dark Hero + Clean Grid + Vibrant Green).
+- [ ] Fungsionalitas bisnis tetap utuh (cek stok, filter kategori, nomor rak, pesan bordir, lacak tiket).
+- [ ] Build, lint, dan test e2e lulus 100%.

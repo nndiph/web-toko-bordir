@@ -231,7 +231,7 @@ export default function OrderPage() {
               {/* Langkah 1 */}
               <fieldset className="space-y-4">
                 <legend className="text-lg font-extrabold mb-3">
-                  <span className="inline-flex w-7 h-7 rounded-full bg-brand text-white text-sm items-center justify-center mr-2">
+                  <span className="inline-flex w-7 h-7 rounded-full bg-vibrant text-white text-sm items-center justify-center mr-2">
                     1
                   </span>
                   Data Pemesan
@@ -295,7 +295,7 @@ export default function OrderPage() {
               {/* Langkah 2 */}
               <fieldset className="space-y-3">
                 <legend className="text-lg font-extrabold mb-3">
-                  <span className="inline-flex w-7 h-7 rounded-full bg-brand text-white text-sm items-center justify-center mr-2">
+                  <span className="inline-flex w-7 h-7 rounded-full bg-vibrant text-white text-sm items-center justify-center mr-2">
                     2
                   </span>
                   Jenis Bordir
@@ -328,7 +328,7 @@ export default function OrderPage() {
               {/* Langkah 3 */}
               <fieldset className="space-y-4">
                 <legend className="text-lg font-extrabold mb-3">
-                  <span className="inline-flex w-7 h-7 rounded-full bg-brand text-white text-sm items-center justify-center mr-2">
+                  <span className="inline-flex w-7 h-7 rounded-full bg-vibrant text-white text-sm items-center justify-center mr-2">
                     3
                   </span>
                   Rincian Bordir
@@ -405,7 +405,7 @@ export default function OrderPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-14 bg-brand hover:bg-brand-hover text-white font-bold rounded-xl text-base transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-vibrant hover:bg-vibrant-hover text-white font-bold rounded-xl text-base transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-vibrant/20"
                 >
                   {isSubmitting ? "Mengirim..." : "Kirim Pesanan & Dapatkan Tiket"}
                   {!isSubmitting && <ArrowRight className="w-5 h-5" />}
