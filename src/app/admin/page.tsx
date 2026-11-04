@@ -1,21 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  AlertTriangle,
-  ArrowUpRight,
-  CheckCircle2,
-  ClipboardList,
-  LogOut,
-  Package,
-  RefreshCw,
-  Search,
-  Shield,
-} from "lucide-react";
+import { ArrowUpRight, ClipboardList, LogOut, Package, RefreshCw, Search, Shield, X } from "lucide-react";
 import { AdminLogin } from "@/components/AdminLogin";
+import { KpiStrip, type KpiKey } from "@/components/admin/KpiStrip";
 import { OrderRow } from "@/components/admin/OrderRow";
-import { PipelineBar, type PipelineStage } from "@/components/admin/PipelineBar";
 import { RestockPanel } from "@/components/admin/RestockPanel";
 import { StockRow } from "@/components/admin/StockRow";
 import { DemoBanner, ErrorBanner } from "@/components/StatusBanner";
@@ -39,7 +29,34 @@ const LOW_STOCK = 5;
 
 type Gate = "checking" | "login" | "ready";
 type Tab = "antrean" | "stok";
-type OrderFilter = "ALL" | "OVERDUE" | PipelineStage | "COMPLETED";
+type OrderFilter = "ALL" | "OVERDUE" | OrderStatus;
+type StockFilter = "ALL" | "LOW";
+
+const ORDER_CHIPS: Array<{ id: OrderFilter; label: string; danger?: boolean }> = [
+  { id: "ALL", label: "Semua aktif" },
+  { id: "OVERDUE", label: "Terlewat", danger: true },
+  { id: "PENDING", label: "Antre" },
+  { id: "IN_PROGRESS", label: "Dibordir" },
+  { id: "READY", label: "Siap diambil" },
+  { id: "COMPLETED", label: "Sudah diambil" },
+];
+
+/** Di HP, kasir paling sering butuh cek stok saat ada pembeli di depan meja. */
+function initialTab(): Tab {
+  if (typeof window === "undefined") return "antrean";
+  return window.matchMedia("(max-width: 767px)").matches ? "stok" : "antrean";
+}
+
+function matchesOrder(order: CustomOrder, query: string) {
+  const q = query.toLowerCase();
+  const digits = query.replace(/\D/g, "");
+  return (
+    order.orderNumber.toLowerCase().includes(q) ||
+    order.customerName.toLowerCase().includes(q) ||
+    (order.customerRank ?? "").toLowerCase().includes(q) ||
+    (digits.length >= 3 && order.whatsappNumber.replace(/\D/g, "").includes(digits))
+  );
+}
 
 export default function AdminDashboardPage() {
   const [gate, setGate] = useState<Gate>("checking");
@@ -51,9 +68,12 @@ export default function AdminDashboardPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [tab, setTab] = useState<Tab>("antrean");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [cashierSearch, setCashierSearch] = useState("");
+  const [stockFilter, setStockFilter] = useState<StockFilter>("ALL");
+  const [orderSearch, setOrderSearch] = useState("");
   const [orderFilter, setOrderFilter] = useState<OrderFilter>("ALL");
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const loadDashboard = useCallback(async () => {
     setLoadError(null);
@@ -114,6 +134,18 @@ export default function AdminDashboardPage() {
     loadDashboard();
   }, [loadDashboard]);
 
+  // Tombol "/" langsung ke kolom cari (seperti mesin kasir).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (e.key !== "/" || target.closest("input, textarea, select")) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadDashboard();
@@ -130,21 +162,47 @@ export default function AdminDashboardPage() {
 
   // ─── Ringkasan angka ───
   const isOverdue = (o: CustomOrder) =>
-    o.status !== "COMPLETED" && daysSince(o.createdAt) >= OVERDUE_DAYS;
-  const overdueOrders = orders.filter(isOverdue);
-  const completedOrders = orders.filter((o) => o.status === "COMPLETED");
-  const activeOrders = orders.filter((o) => o.status !== "COMPLETED");
-  const stageCounts: Record<PipelineStage, number> = {
-    PENDING: orders.filter((o) => o.status === "PENDING").length,
-    IN_PROGRESS: orders.filter((o) => o.status === "IN_PROGRESS").length,
-    READY: orders.filter((o) => o.status === "READY").length,
-  };
+    o.status !== "COMPLETED" && o.status !== "READY" && daysSince(o.createdAt) >= OVERDUE_DAYS;
+  const countBy = (f: OrderFilter) =>
+    f === "ALL"
+      ? orders.filter((o) => o.status !== "COMPLETED").length
+      : f === "OVERDUE"
+      ? orders.filter(isOverdue).length
+      : orders.filter((o) => o.status === f).length;
   const restockItems = inventory
     .filter((p) => p.status !== "CUSTOM" && p.stock < LOW_STOCK)
     .sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name));
 
-  // ─── Kasir Quick-Check: Tambah/Kurang Stok ───
+  const selectedKpi: KpiKey | null =
+    tab === "stok"
+      ? stockFilter === "LOW"
+        ? "LOW_STOCK"
+        : null
+      : orderSearch
+      ? null
+      : orderFilter === "OVERDUE"
+      ? "OVERDUE"
+      : orderFilter === "READY"
+      ? "READY"
+      : orderFilter === "ALL"
+      ? "ACTIVE"
+      : null;
+
+  const handleKpi = (key: KpiKey) => {
+    if (key === "LOW_STOCK") {
+      setTab("stok");
+      setCashierSearch("");
+      setStockFilter((f) => (f === "LOW" && tab === "stok" ? "ALL" : "LOW"));
+      return;
+    }
+    setTab("antrean");
+    setOrderSearch("");
+    setOrderFilter(key === "OVERDUE" ? "OVERDUE" : key === "READY" ? "READY" : "ALL");
+  };
+
+  // ─── Kasir Quick-Check: ubah stok ───
   const updateStock = async (productId: string, delta: number) => {
+    if (delta === 0) return;
     setActionError(null);
     setBusyId(productId);
 
@@ -158,6 +216,11 @@ export default function AdminDashboardPage() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const setStockTo = (productId: string, target: number) => {
+    const current = inventory.find((item) => item.id === productId);
+    if (current) updateStock(productId, target - current.stock);
   };
 
   // ─── Ubah Status Pesanan ───
@@ -195,24 +258,23 @@ export default function AdminDashboardPage() {
   };
 
   // ─── Filter & urutan ───
+  const stockQuery = cashierSearch.trim().toLowerCase();
   const filteredInventory = inventory.filter((item) => {
-    const q = cashierSearch.trim().toLowerCase();
+    if (stockFilter === "LOW" && !(item.status !== "CUSTOM" && item.stock < LOW_STOCK)) return false;
     return (
-      q === "" ||
-      item.name.toLowerCase().includes(q) ||
-      item.categoryName.toLowerCase().includes(q) ||
-      item.rackLocation.toLowerCase().includes(q)
+      stockQuery === "" ||
+      `${item.name} ${item.categoryName} ${item.rackLocation}`.toLowerCase().includes(stockQuery)
     );
   });
 
+  // Saat mencari (mis. pembeli datang membawa tiket), cari di SEMUA pesanan termasuk yang sudah diambil.
+  const orderQuery = orderSearch.trim();
   const filteredOrders = orders
     .filter((order) => {
+      if (orderQuery) return matchesOrder(order, orderQuery);
       if (orderFilter === "OVERDUE") return isOverdue(order);
-      if (orderFilter === "PENDING" || orderFilter === "IN_PROGRESS" || orderFilter === "READY") {
-        return order.status === orderFilter;
-      }
-      if (orderFilter === "COMPLETED") return order.status === "COMPLETED";
-      return order.status !== "COMPLETED";
+      if (orderFilter === "ALL") return order.status !== "COMPLETED";
+      return order.status === orderFilter;
     })
     .sort((a, b) => {
       const rank = (o: CustomOrder) =>
@@ -223,12 +285,9 @@ export default function AdminDashboardPage() {
       return orderFilter === "COMPLETED" ? -byAge : byAge;
     });
 
-  const selectStage = (stage: PipelineStage) =>
-    setOrderFilter((f) => (f === stage ? "ALL" : stage));
-
   if (gate === "checking") {
     return (
-      <div className="min-h-screen bg-slate-canvas flex items-center justify-center text-sm text-slate-muted font-sans">
+      <div className="min-h-screen bg-slate-canvas flex items-center justify-center text-base text-slate-muted font-sans">
         Memeriksa hak akses admin...
       </div>
     );
@@ -239,44 +298,35 @@ export default function AdminDashboardPage() {
   }
 
   const tabClass = (active: boolean) =>
-    `relative inline-flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-colors ${
-      active
-        ? "border-brand text-brand"
-        : "border-transparent text-slate-500 hover:text-slate-ink hover:border-slate-300"
+    `inline-flex items-center gap-2 px-4 h-12 text-sm sm:text-base font-bold border-b-[3px] transition-colors whitespace-nowrap ${
+      active ? "border-brand text-brand" : "border-transparent text-slate-500 hover:text-slate-ink"
     }`;
 
-  const chipClass = (active: boolean, tone: "neutral" | "danger") =>
-    `rounded-xl px-3.5 py-1.5 text-xs font-bold border transition-colors ${
+  const chipClass = (active: boolean, danger?: boolean) =>
+    `h-10 rounded-full px-4 text-sm font-bold border whitespace-nowrap transition-colors ${
       active
-        ? tone === "danger"
-          ? "bg-red-600 border-red-600 text-white shadow-2xs"
-          : "bg-brand border-brand text-white shadow-2xs"
-        : tone === "danger"
-        ? "bg-white border-red-200 text-red-700 hover:bg-red-50"
-        : "bg-white border-slate-border text-slate-600 hover:bg-slate-50 hover:text-slate-ink"
+        ? danger
+          ? "bg-red-600 border-red-600 text-white"
+          : "bg-brand border-brand text-white"
+        : danger
+        ? "bg-white border-red-300 text-red-700 hover:bg-red-50"
+        : "bg-white border-slate-border text-slate-700 hover:border-slate-400"
     }`;
+
+  const searchInputClass =
+    "w-full h-12 bg-white border-2 border-slate-border focus:border-brand pl-11 pr-11 rounded-xl text-base text-slate-ink placeholder:text-slate-400 focus:outline-none";
 
   return (
     <div className="min-h-screen bg-slate-canvas text-slate-ink flex flex-col font-sans">
-      {/* ─── Header Panel Pemilik Cerah ─── */}
-      <header className="bg-white border-b border-slate-border sticky top-0 z-40 shadow-2xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+      <header className="bg-white border-b border-slate-border sticky top-0 z-40 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center shrink-0 shadow-xs">
-              <Shield className="w-5 h-5 text-accent-gold" />
+            <div className="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 text-amber-300" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-extrabold text-slate-ink tracking-tight truncate">
-                  Panel Pemilik · Toko Gaperta
-                </h1>
-                <span className="hidden sm:inline-block bg-amber-100 text-accent-gold text-[10px] font-bold px-2 py-0.5 rounded border border-amber-200">
-                  ADMIN KASIR
-                </span>
-              </div>
-              <p className="hidden sm:block text-xs text-slate-muted">
-                Antrean mesin bordir &amp; ketersediaan stok fisik rak Medan
-              </p>
+              <h1 className="text-base sm:text-lg font-extrabold tracking-tight truncate">Panel Kasir Gaperta</h1>
+              <p className="hidden sm:block text-sm text-slate-muted">Antrean bordir &amp; stok rak toko</p>
             </div>
           </div>
 
@@ -285,37 +335,39 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 disabled:opacity-60 text-slate-700 text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors border border-slate-border"
+              className="inline-flex items-center justify-center gap-1.5 h-11 min-w-11 px-3 bg-white hover:bg-slate-50 disabled:opacity-60 text-slate-700 text-sm font-semibold rounded-xl border border-slate-border"
               title="Muat ulang antrean pesanan & stok"
+              aria-label="Muat ulang data"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-brand ${refreshing ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">{refreshing ? "Memuat..." : "Sinkron Data"}</span>
+              <RefreshCw className={`w-4 h-4 text-brand ${refreshing ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">{refreshing ? "Memuat..." : "Muat ulang"}</span>
             </button>
 
             {!isDemo && (
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-colors border border-slate-border"
+                className="inline-flex items-center justify-center gap-1.5 h-11 min-w-11 px-3 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl border border-slate-border"
+                aria-label="Keluar"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Keluar</span>
               </button>
             )}
 
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 h-11 min-w-11 px-3 bg-brand hover:bg-brand-hover text-white text-sm font-bold rounded-xl"
+              aria-label="Lihat etalase toko"
             >
-              <span className="hidden sm:inline">Lihat Etalase</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Etalase</span>
+              <ArrowUpRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
 
-        {/* ─── Tab Navigasi Admin ─── */}
-        <div className="bg-slate-50/50 border-t border-slate-border">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2" role="tablist">
+        <div className="border-t border-slate-border">
+          <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 flex overflow-x-auto" role="tablist">
             <button
               type="button"
               role="tab"
@@ -323,21 +375,9 @@ export default function AdminDashboardPage() {
               onClick={() => setTab("antrean")}
               className={tabClass(tab === "antrean")}
             >
-              <ClipboardList className="w-4 h-4" />
-              <span>Antrean Mesin Bordir</span>
-              <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-bold text-slate-700 tabular-nums">
-                {activeOrders.length}
-              </span>
-              {overdueOrders.length > 0 && (
-                <span
-                  className="rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums animate-pulse"
-                  title={`${overdueOrders.length} pesanan terlewat`}
-                >
-                  {overdueOrders.length} terlewat
-                </span>
-              )}
+              <ClipboardList className="w-5 h-5" />
+              Antrean Bordir
             </button>
-
             <button
               type="button"
               role="tab"
@@ -345,183 +385,200 @@ export default function AdminDashboardPage() {
               onClick={() => setTab("stok")}
               className={tabClass(tab === "stok")}
             >
-              <Package className="w-4 h-4" />
-              <span>Kasir &amp; Stok Rak Fisik</span>
-              {restockItems.length > 0 && (
-                <span
-                  className="rounded-full bg-amber-600 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums"
-                  title={`${restockItems.length} barang perlu restock`}
-                >
-                  {restockItems.length} restock
-                </span>
-              )}
+              <Package className="w-5 h-5" />
+              Cek Stok &amp; Rak
             </button>
           </div>
         </div>
       </header>
 
-      {/* ─── Konten Utama ─── */}
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 w-full">
+      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5 w-full">
         {isDemo && (
           <DemoBanner>
-            Data beroperasi dalam <strong>Mode Demo Tersimpan</strong>. Pesanan baru dari pelanggan
-            dan pembaruan stok otomatis tersimpan di LocalStorage peramban ini.
+            Data disimpan di peramban ini saja (LocalStorage). Pesanan dari form /pesan di peramban yang sama akan
+            muncul di sini.
           </DemoBanner>
         )}
         {loadError && <ErrorBanner message={loadError} />}
         {actionError && <ErrorBanner message={actionError} />}
 
+        <KpiStrip
+          overdue={countBy("OVERDUE")}
+          ready={countBy("READY")}
+          active={countBy("ALL")}
+          lowStock={restockItems.length}
+          overdueDays={OVERDUE_DAYS}
+          selected={selectedKpi}
+          onSelect={handleKpi}
+        />
+
         {tab === "antrean" ? (
-          <>
-            {/* 1. Alert Kartu Merah (> 3 Hari) */}
-            {overdueOrders.length > 0 ? (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-red-300 bg-red-50 p-5 shadow-2xs">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                    <AlertTriangle className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-red-950">
-                      Alert Kartu Merah: {overdueOrders.length} Pesanan Tertahan &gt; {OVERDUE_DAYS} Hari
-                    </h3>
-                    <p className="text-xs text-red-800 mt-0.5">
-                      Dahulukan pengerjaan bordir di mesin digital agar anggota tidak komplain saat mengambil.
-                    </p>
-                  </div>
-                </div>
+          <section className="space-y-4" aria-label="Antrean bordir">
+            <div className="relative">
+              <label htmlFor="order-search" className="sr-only">
+                Cari pesanan
+              </label>
+              <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                id="order-search"
+                ref={searchRef}
+                type="search"
+                placeholder="Cari tiket, nama pemesan, atau nomor WA..."
+                value={orderSearch}
+                onChange={(e) => setOrderSearch(e.target.value)}
+                className={searchInputClass}
+              />
+              {orderSearch && (
                 <button
                   type="button"
-                  onClick={() => setOrderFilter((f) => (f === "OVERDUE" ? "ALL" : "OVERDUE"))}
-                  className="shrink-0 rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2.5 text-xs font-bold text-white transition-colors shadow-2xs"
+                  onClick={() => setOrderSearch("")}
+                  aria-label="Hapus pencarian"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-ink"
                 >
-                  {orderFilter === "OVERDUE" ? "Tampilkan Semua Antrean" : "Filter Yang Terlewat"}
+                  <X className="w-5 h-5" />
                 </button>
-              </div>
+              )}
+            </div>
+
+            {orderQuery ? (
+              <p className="text-sm text-slate-600">
+                {filteredOrders.length} pesanan cocok dengan &quot;<strong>{orderQuery}</strong>&quot; (termasuk yang
+                sudah diambil).
+              </p>
             ) : (
-              <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 text-xs sm:text-sm font-semibold text-emerald-900">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Semua pesanan tertangani tepat waktu. Tidak ada antrean yang tertahan lebih dari {OVERDUE_DAYS} hari.</span>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0" role="group" aria-label="Filter status">
+                {ORDER_CHIPS.map((chip) => (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    aria-pressed={orderFilter === chip.id}
+                    onClick={() => setOrderFilter(chip.id)}
+                    className={chipClass(orderFilter === chip.id, chip.danger)}
+                  >
+                    {chip.label} <span className="tabular-nums opacity-80">{countBy(chip.id)}</span>
+                  </button>
+                ))}
               </div>
             )}
 
-            {/* 2. Visual Pipeline Antrean */}
-            <PipelineBar counts={stageCounts} selected={orderFilter} onSelect={selectStage} />
-
-            {/* 3. Daftar Pesanan */}
-            <section className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setOrderFilter("ALL")}
-                    className={chipClass(orderFilter === "ALL", "neutral")}
-                  >
-                    Semua Aktif ({activeOrders.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOrderFilter("OVERDUE")}
-                    className={chipClass(orderFilter === "OVERDUE", "danger")}
-                  >
-                    Terlewat ({overdueOrders.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOrderFilter("COMPLETED")}
-                    className={chipClass(orderFilter === "COMPLETED", "neutral")}
-                  >
-                    Sudah Diambil ({completedOrders.length})
-                  </button>
-                </div>
-                <p className="text-xs text-slate-muted">
-                  {orderFilter === "COMPLETED" ? "Diurutkan terbaru di atas" : "Prioritas terlewat & paling lama di atas"}
-                </p>
+            {filteredOrders.length === 0 ? (
+              <div className="rounded-2xl border border-slate-border bg-white p-10 text-center text-base text-slate-muted">
+                {orders.length === 0
+                  ? "Belum ada pesanan masuk. Pesanan dari form /pesan akan muncul di sini."
+                  : orderQuery
+                  ? "Tidak ada pesanan yang cocok. Coba cari dengan 4 angka akhir WA pemesan."
+                  : orderFilter === "OVERDUE"
+                  ? `Bagus — tidak ada pesanan yang tertahan ≥ ${OVERDUE_DAYS} hari.`
+                  : "Tidak ada pesanan pada filter ini."}
               </div>
-
-              {filteredOrders.length === 0 ? (
-                <div className="rounded-2xl border border-slate-border bg-white p-12 text-center text-sm text-slate-muted">
-                  {orders.length === 0
-                    ? "Belum ada pesanan masuk. Pesanan dari form /pesan akan muncul di sini."
-                    : "Tidak ada pesanan pada filter ini."}
-                </div>
-              ) : (
-                <ul className="space-y-3">
-                  {filteredOrders.map((order) => (
-                    <OrderRow
-                      key={order.id}
-                      order={order}
-                      overdue={isOverdue(order)}
-                      days={daysSince(order.createdAt)}
-                      overdueDays={OVERDUE_DAYS}
-                      busy={busyId === order.id}
-                      onAdvance={(status) => updateOrderStatus(order.id, status)}
-                    />
-                  ))}
-                </ul>
-              )}
-            </section>
-          </>
+            ) : (
+              <ul className="space-y-3">
+                {filteredOrders.map((order) => (
+                  <OrderRow
+                    key={order.id}
+                    order={order}
+                    overdue={isOverdue(order)}
+                    days={daysSince(order.createdAt)}
+                    overdueDays={OVERDUE_DAYS}
+                    busy={busyId === order.id}
+                    onAdvance={(status) => updateOrderStatus(order.id, status)}
+                  />
+                ))}
+              </ul>
+            )}
+          </section>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[1fr_21rem]">
-            {/* Kasir Quick-Check Pencarian Stok */}
-            <section className="space-y-4 min-w-0 lg:order-1">
+          <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
+            <section className="space-y-4 min-w-0" aria-label="Cek stok dan rak">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <label htmlFor="stock-search" className="sr-only">
+                  Cari barang, kategori, atau rak
+                </label>
+                <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
+                  id="stock-search"
+                  ref={searchRef}
                   type="search"
-                  autoFocus
-                  aria-label="Cari barang, kategori, atau rak fisik"
-                  placeholder="Cari barang atau nomor rak (contoh: Kopel, Baret, Rak A-02)..."
+                  placeholder="Cari barang atau rak (kopel, baret, A-02)..."
                   value={cashierSearch}
                   onChange={(e) => setCashierSearch(e.target.value)}
-                  className="w-full bg-white border border-slate-border pl-10 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/10 focus:border-brand text-slate-ink placeholder:text-slate-400 shadow-2xs"
+                  className={searchInputClass}
                 />
+                {cashierSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCashierSearch("")}
+                    aria-label="Hapus pencarian"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-ink"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
               </div>
 
-              <div className="flex items-center justify-between text-xs text-slate-muted">
-                <span>
-                  {filteredInventory.length} dari {inventory.length} barang etalase
-                  {cashierSearch.trim() && " cocok dengan pencarian"}
-                </span>
-                <span className="text-[11px] font-medium text-brand">
-                  Klik + / - untuk update stok instan
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={stockFilter === "ALL"}
+                    onClick={() => setStockFilter("ALL")}
+                    className={chipClass(stockFilter === "ALL")}
+                  >
+                    Semua <span className="tabular-nums opacity-80">{inventory.length}</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={stockFilter === "LOW"}
+                    onClick={() => setStockFilter("LOW")}
+                    className={chipClass(stockFilter === "LOW", true)}
+                  >
+                    Menipis <span className="tabular-nums opacity-80">{restockItems.length}</span>
+                  </button>
+                </div>
+                <span>Klik angka stok untuk mengisi jumlah persis.</span>
               </div>
 
               {filteredInventory.length === 0 ? (
-                <div className="rounded-2xl border border-slate-border bg-white p-12 text-center text-sm text-slate-muted">
-                  Tidak ada barang yang cocok dengan &quot;{cashierSearch}&quot;.
+                <div className="rounded-2xl border border-slate-border bg-white p-10 text-center text-base text-slate-muted">
+                  {cashierSearch
+                    ? `Tidak ada barang yang cocok dengan "${cashierSearch}".`
+                    : "Semua stok aman."}
                 </div>
               ) : (
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {filteredInventory.map((item) => (
                     <StockRow
                       key={item.id}
                       item={item}
                       busy={busyId === item.id}
                       onAdjust={(delta) => updateStock(item.id, delta)}
+                      onSet={(target) => setStockTo(item.id, target)}
                     />
                   ))}
                 </ul>
               )}
             </section>
 
-            {/* Panel Restock Kritis */}
-            <div className="lg:order-2">
-              <RestockPanel items={restockItems} onPick={setCashierSearch} />
+            <div className="hidden lg:block">
+              <RestockPanel
+                items={restockItems}
+                onPick={(name) => {
+                  setStockFilter("ALL");
+                  setCashierSearch(name);
+                }}
+              />
             </div>
           </div>
         )}
       </main>
 
-      {/* ─── Footer Admin Cerah ─── */}
-      <footer className="bg-white border-t border-slate-border py-6 text-center text-xs text-slate-muted mt-12">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-          <p>© 2026 Toko Gaperta — Panel Kontrol Pemilik &amp; Kasir Fisik Toko Medan.</p>
-          <div className="flex items-center gap-2 text-[11px]">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>Sistem Kasir Sinkron</span>
-          </div>
+      <footer className="bg-white border-t border-slate-border py-5 text-sm text-slate-muted mt-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
+          <p>© 2026 Toko Gaperta — Panel Kasir</p>
+          <p className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full ${isDemo ? "bg-amber-500" : "bg-emerald-500"}`} />
+            {isDemo ? "Mode Demo — data di peramban ini" : "Terhubung ke database toko"}
+          </p>
         </div>
       </footer>
     </div>

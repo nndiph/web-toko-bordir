@@ -18,14 +18,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Clean Retail Scrollbar */
+/* Clean Minimalist Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F8FAFC;
+  background: #F1F5F9;
 }
 
 ::-webkit-scrollbar-thumb {

@@ -159,15 +159,37 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - **Pengujian End-to-End Otomatis (`scripts/test-e2e-flow.mjs`):** 7 skenario alur nyata diuji dan lulus 100% tanpa error (create order → track → admin antrean → update status → track update → adjust stock → catalog sync).
   - **Build & Lint:** 7/7 static routes, 0 warnings, 0 errors.
 
+- [x] **Fase 10 — Perbaikan UX Berbasis Kebutuhan Tiap Pengguna (Selesai, branch `feature/ux-per-user`)**
+  - Audit per pengguna (pembeli/anggota TNI di HP vs kasir/pemilik di meja kasir), detail di `PLAN.md`.
+  - **Pembeli:** hero search-first + 3 tombol tugas (Cek Stok, Pesan Bordir, Lacak Tiket); kartu produk palsu di hero dihapus, diganti ringkasan stok nyata; satu baris filter kategori dengan jumlah; pencarian mencocokkan nama + kategori + rak; katalog 2 kolom di HP; barang HABIS punya tombol "Tanya Restock".
+  - Navbar hanya menu pembeli; akses kasir dipindah ke `SiteFooter` ("Masuk Kasir / Pemilik"). Info toko (WA, alamat, jam) terpusat di `src/lib/store-info.ts`.
+  - `/pesan`: form 3 langkah, jenis bordir berupa pilihan radio, panduan + "Pakai contoh" per jenis, validasi WA 10–14 digit, stepper jumlah. Halaman tiket menampilkan tiket + 4 digit WA sebagai kunci lacak.
+  - `/tracking`: stepper 4 tahap (Antre → Dibordir → Siap → Diambil) dan kotak alamat/jam saat SIAP.
+  - **Kasir:** `KpiStrip` (Kartu Merah, Siap Diambil, Antrean Aktif, Stok Menipis) di semua tab dan bisa diklik; menggantikan `PipelineBar` (dihapus). Pencarian pesanan via tiket/nama/WA (termasuk yang sudah diambil). Tab "Cek Stok & Rak" default di HP. Tombol `/` untuk fokus ke kolom cari.
+  - `StockRow`: lokasi rak ditonjolkan, tombol 44px, klik angka stok untuk set jumlah persis (memakai `adjustStock(delta)`, tanpa migrasi).
+  - Perubahan perilaku: Kartu Merah tidak lagi menghitung pesanan `READY` (bordir sudah selesai, hanya belum diambil).
+  - Tidak ada teks 10–11px tersisa; target sentuh tombol utama ≥ 44px.
+  - Lint 0 warning, build 7/7, `npm run test:e2e` 7/7 lulus. Dicek visual via Chrome headless (lebar 500px & 1366px) dalam Mode Demo.
+
+- [x] **Fase 11 — Redesign Clean Retail E-Commerce (Tokopedia / Uniqlo inspired, Zero AI-Slop) (Selesai, branch `feature/redesign-dark-technest`)**
+  - **Prinsip Desain:** Menghilangkan elemen murahan/AI-slop (seperti neon blur blobs, gradien bertumpuk, latar kartun gelap) dan menggantinya dengan estetika clean e-commerce retail otentik berstandar dinas militer.
+  - **Palet Warna & Tipografi:** Background canvas Slate-50 (`#F8FAFC`), permukaan kartu putih solid (`#FFFFFF`) dengan border presisi Slate-200 (`#E2E8F0`), aksen hijau dinas militer wibawa (`#1B3C20`) dan hijau retail solid (`#15803D`). Tipografi berkontras tinggi pekat Slate-900 (`#0F172A`).
+  - **Header & Navbar:** Top announcement bar Slate-900 dengan status rak fisik live & jam toko; main navbar putih bersih dengan badge resmi TNI & DINAS, tautan navigasi jelas, dan tombol WhatsApp kasir yang kontras.
+  - **Hero Layout Fungsional (7:5 Kolom):** Headline tegas "Perlengkapan Dinas TNI & Bordir Komputer Presisi", kotak pencarian instan nama atribut / rak fisik, indikator jumlah stok toko live, serta 3 kartu aksi utama (Cek Stok Rak, Pesan Bordir Online, Lacak Status Tiket).
+  - **Value Proposition 3 Pilar:** Panel bersih horizontal (Bordir 1–2 Hari Kerja, 100% Standar Mabes TNI, Stok Rak Fisik Sinkron).
+  - **Katalog E-Commerce Grid:** Filter pills kategori responsif dengan hitungan item dinamis, kartu produk aspect 4:3 berbingkai halus dengan badge stok hijau/merah/kuning, harga tebal, nomor rak toko (`Rak A-02`), dan tombol aksi 1-klik (Pesan Bordir / Tanya WA).
+  - **Info Pemesanan Regu & Departemen Visual:** Banner editorial bersih untuk pemesanan massal batalyon/regu dan kartu showcase visual atribut resmi.
+  - **Footer Bersih & Operasional:** Banner WhatsApp konsultasi khusus regu, detail alamat, jam operasional, dan tautan akses kasir.
+  - **Pengujian & Kestabilan:** `npm run lint` lulus (0 warnings, 0 errors), `npm run test:e2e` lulus 7/7 skenario, dev server berjalan lancar di port 3000.
+
 ---
 
 ## 5. Status Terkini (Current State)
 
-- **Branch Aktif:** `feature/full-stack-integration`
-- **Kondisi Working Directory:** Bersih (semua perubahan di commit).
-- **Status Build & Lint:** 100% Lulus (7/7 static routes, 0 errors, 0 warnings).
-- **Alur End-to-End:** Berfungsi penuh di mode demo dengan LocalStorage persistensi.
-- **Tampilan UI:** Seragam seluruh halaman (`/`, `/pesan`, `/tracking`, `/admin`, `/not-found`) dengan tema cerah e-commerce retail (Tokopedia & Uniqlo reference).
+- **Branch Aktif:** `feature/redesign-dark-technest` (push ke remote, PR siap di-buka).
+- **Status Build & Lint:** Lulus (7/7 static routes, 0 errors, 0 warnings); `test:e2e` 7/7 lulus.
+- **Catatan:** Foto produk demo di `src/lib/demo-data.ts` adalah foto Unsplash yang tidak sesuai barang (mis. tas, obat). Perlu diganti foto asli toko.
+- **Catatan:** Beberapa class Tailwind v4 (`shadow-xs`, `shadow-2xs`, `w-88`) masih ada di file lama padahal proyek memakai Tailwind v3, sehingga class tersebut tidak berefek.
 
 ---
 
@@ -181,3 +203,13 @@ Jika Anda adalah agen baru yang baru saja membuka proyek ini, lakukan langkah be
 5. Jalankan `npm run build` dan `npm run lint` sebelum commit.
 6. Push branch dan berikan link PR kepada pengguna.
 7. **Perbarui bagian "Riwayat Pekerjaan Selesai" dan "Status Terkini" di file `AGENTS.md` ini.**
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
