@@ -182,6 +182,22 @@ Semua agen wajib mengikuti alur kerja pada [`WORKFLOW.md`](./WORKFLOW.md):
   - **Footer Bersih & Operasional:** Banner WhatsApp konsultasi khusus regu, detail alamat, jam operasional, dan tautan akses kasir.
   - **Pengujian & Kestabilan:** `npm run lint` lulus (0 warnings, 0 errors), `npm run test:e2e` lulus 7/7 skenario, dev server berjalan lancar di port 3000.
 
+- [x] **Fase 12 — Redesign Halaman Admin Dashboard (Data Table Focused, Zero Confusion) (Selesai, branch `feature/redesign-dark-technest`)**
+  - **Analisis Design System via UI/UX Pro Max Skill:** Menggunakan pencarian "admin dashboard retail store inventory management" dengan hasil rekomendasi: Industrial slate + stock green palette, Fira Code/Fira Sans typography, data-focused layout.
+  - **Prinsip Redesign Admin:**
+    1. **Visual Hierarchy Jelas:** KPI cards raksasa dengan angka besar (Stok Kritis, Stok Menipis, Pesanan Siap, Kartu Merah) yang mudah dibaca sekilas dari jarak jauh.
+    2. **Tabel Data Utama:** Zebra striping (baris bergantian warna) untuk memudahkan pelacakan horizontal, header sticky, dan kolom tersusun logis (Nama → Kategori → Stok → Rak → Harga → Aksi).
+    3. **Inline Quick Actions:** Edit stok langsung klik angka (muncul input field + tombol simpan/batal), tombol +/- untuk adjust cepat tanpa modal popup.
+    4. **Warna Status Semantik:** Hijau (stok aman), Kuning/Amber (menipis <5), Merah (kosong/kritis), tanpa efek neon atau gradien buatan.
+    5. **Kemudahan Modifikasi:** Semua aksi utama (edit stok, ubah status pesanan, kirim WA) tersedia di baris tabel tanpa perlu navigasi tambahan.
+  - **Komponen Utama:**
+    - **4 KPI Cards Besar:** Stok Kritis (merah), Stok Menipis (kuning), Pesanan Siap (hijau), Kartu Merah (merah).
+    - **Tab Navigation:** "Manajemen Stok Barang" (default) dan "Antrean Pesanan Bordir".
+    - **Tabel Stok:** 6 kolom (Nama Barang, Kategori, Stok, Lokasi Rak, Harga, Aksi Cepat), inline edit stok dengan validasi, tombol +/- langsung adjust.
+    - **Tabel Pesanan:** 7 kolom (Tiket, Pemesan, Jenis Bordir, Jumlah, Tanggal, Status, Aksi), tombol ubah status 1-klik, link WhatsApp konfirmasi.
+    - **Filter Cerdas:** "Semua", "Menipis", "Habis" untuk stok; pencarian real-time untuk barang dan pesanan.
+  - **Pengujian:** `npm run lint` lulus (0 errors, 0 warnings), `npm run build` sukses (7/7 static routes), `npm run test:e2e` lulus 7/7 skenario end-to-end.
+
 ---
 
 ## 5. Status Terkini (Current State)
